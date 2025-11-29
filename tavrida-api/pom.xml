@@ -11,11 +11,11 @@
 
     <artifactId>tavrida-api</artifactId>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+<!--    <properties>-->
+<!--        <maven.compiler.source>17</maven.compiler.source>-->
+<!--        <maven.compiler.target>17</maven.compiler.target>-->
+<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+<!--    </properties>-->
 
     <dependencies>
         <dependency>
@@ -24,5 +24,21 @@
             <version>2.3.0</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>tavrida-api</finalName>
+        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>${git-commit-id-maven-plugin.version}</version>
+                <configuration>
+                    <offline>true</offline>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>

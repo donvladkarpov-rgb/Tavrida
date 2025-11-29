@@ -1,0 +1,33 @@
+# docker compose up
+# docker compose down --volumes
+
+services:
+
+  tavrida-postgres:
+    container_name: tavrida-postgres
+    image: postgres:15
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      TZ: "Europe/Moscow"
+      POSTGRES_DB: tavrida
+      POSTGRES_USER: tavrida
+      POSTGRES_PASSWORD: tavrida
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - 5432:5432
+    volumes:
+      - ./db/fill-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/pgdata:/var/lib/postgresql/data/
+    # 🔥 КРИТИЧЕСКИ ВАЖНО: ограничение памяти!
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    # Для docker-compose v2 (без Swarm) используем mem_limit
+    mem_limit: 512m
+    memswap_limit: 512m
