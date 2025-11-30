@@ -5,6 +5,6 @@ import ru.vtb.msa.detr.tavrida.core.model.BlackList;
 
 import java.util.UUID;
 
-public interface BlackListRepository extends JpaRepository<BlackList, Long> {
+public interface BlackListRepository extends JpaRepository<BlackList, UUID> {
     boolean existsByCardGuid(UUID cardGuid);
 }

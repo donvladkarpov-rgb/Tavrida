@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -35,6 +36,22 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFoundException(
+            Exception ex, WebRequest request) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+
+        // В продакшене логируйте исключение, но не показывайте стек в ответе!
+        logger.error("Unexpected error", ex);
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
 
     // Обработка ошибок валидации (если используете @Valid)
     // @ExceptionHandler(MethodArgumentNotValidException.class)

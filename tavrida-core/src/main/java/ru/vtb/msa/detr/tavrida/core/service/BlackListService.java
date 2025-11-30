@@ -2,13 +2,14 @@ package ru.vtb.msa.detr.tavrida.core.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.vtb.msa.detr.tavrida.core.model.mapers.TavridaMapper;
+import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.api.model.BlackListDto;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.model.BlackList;
 import ru.vtb.msa.detr.tavrida.core.repo.BlackListRepository;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +28,7 @@ public class BlackListService {
                 .collect(Collectors.toList());
     }
 
-    public BlackListDto getBlackListEntryById(Long id) {
+    public BlackListDto getBlackListEntryById(UUID id) {
         BlackList entry = blackListRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Black list entry not found: " + id));
         return TavridaMapper.toBlackListDto(entry);
@@ -39,7 +40,7 @@ public class BlackListService {
         return TavridaMapper.toBlackListDto(saved);
     }
 
-    public void removeCardFromBlackList(Long id) {
+    public void removeCardFromBlackList(UUID id) {
         if (!blackListRepository.existsById(id)) {
             throw new EntityNotFoundException("Black list entry not found: " + id);
         }

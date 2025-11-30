@@ -1,7 +1,7 @@
 package ru.vtb.msa.detr.tavrida.core.service;
 
 import org.springframework.stereotype.Service;
-import ru.vtb.msa.detr.tavrida.core.model.mapers.TavridaMapper;
+import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.api.model.CarrierDto;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.model.Carrier;

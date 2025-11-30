@@ -47,7 +47,7 @@ public class TavridaController implements TavridaApi {
     }
 
     @Override
-    public ResponseEntity<BlackListDto> getBlackListEntryById(Long id) {
+    public ResponseEntity<BlackListDto> getBlackListEntryById(UUID id) {
         return ResponseEntity.ok(blackListService.getBlackListEntryById(id));
     }
 
@@ -57,7 +57,7 @@ public class TavridaController implements TavridaApi {
     }
 
     @Override
-    public ResponseEntity<Void> removeCardFromBlackList(Long id) {
+    public ResponseEntity<Void> removeCardFromBlackList(UUID id) {
         blackListService.removeCardFromBlackList(id);
         return ResponseEntity.noContent().build();
     }

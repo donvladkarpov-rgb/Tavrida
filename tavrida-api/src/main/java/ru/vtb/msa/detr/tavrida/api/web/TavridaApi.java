@@ -21,8 +21,8 @@ public interface TavridaApi {
     @Operation(summary = "Get blacklist entry by ID")
     @GetMapping("/blacklist/{id}")
     ResponseEntity<BlackListDto> getBlackListEntryById(
-            @Parameter(description = "Blacklist entry ID", example = "1")
-            @PathVariable("id") Long id);
+            @Parameter(description = "Blacklist entry ID", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable("id") UUID id);
 
     @Operation(summary = "Add card to blacklist")
     @PostMapping("/blacklist")
@@ -31,8 +31,8 @@ public interface TavridaApi {
     @Operation(summary = "Remove card from blacklist")
     @DeleteMapping("/blacklist/{id}")
     ResponseEntity<Void> removeCardFromBlackList(
-            @Parameter(description = "Blacklist entry ID", example = "1")
-            @PathVariable("id") Long id);
+            @Parameter(description = "Blacklist entry ID", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable("id") UUID id);
 
     @Operation(summary = "Check if card is blocked")
     @GetMapping("/blacklist/check/{cardGuid}")
