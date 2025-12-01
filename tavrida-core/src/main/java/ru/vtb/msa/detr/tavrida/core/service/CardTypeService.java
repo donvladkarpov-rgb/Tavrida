@@ -1,10 +1,10 @@
 package ru.vtb.msa.detr.tavrida.core.service;
 
 import org.springframework.stereotype.Service;
-import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.api.model.CardTypeDto;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.model.CardType;
+import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.CardTypeRepository;
 
 import java.util.List;
@@ -26,9 +26,7 @@ public class CardTypeService {
     }
 
     public CardTypeDto getCardTypeById(Integer id) {
-        CardType type = cardTypeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Card type not found: " + id));
-        return TavridaMapper.toCardTypeDto(type);
+        return TavridaMapper.toCardTypeDto(getCardTypeEntityById(id));
     }
 
     public CardTypeDto createCardType(CardTypeDto dto) {
@@ -50,5 +48,11 @@ public class CardTypeService {
             throw new EntityNotFoundException("Card type not found: " + id);
         }
         cardTypeRepository.deleteById(id);
+    }
+
+    public CardType getCardTypeEntityById(Integer id) {
+        return cardTypeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Card type not found: " + id));
+
     }
 }

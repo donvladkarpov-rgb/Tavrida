@@ -61,6 +61,10 @@
             <column name="CARD_TYPE_ID" valueNumeric="4"/>
             <column name="CARD_TYPE_NAME" value="Карта пассажира"/>
         </insert>
+        <insert tableName="CARD_TYPES">
+            <column name="CARD_TYPE_ID" valueNumeric="5"/>
+            <column name="CARD_TYPE_NAME" value="Карта кассира"/>
+        </insert>
     </changeSet>
 
     <!-- 3. Перевозчики -->
@@ -73,6 +77,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <insert tableName="CARRIERS">
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="CARRIER_NAME" value="Крымские трамваи"/>
+        </insert>
     </changeSet>
 
     <!-- 4. Пользователи -->
@@ -103,7 +111,7 @@
 
         <insert tableName="USERS">
             <column name="USER_ID" valueNumeric="1"/>
-            <column name="USER_ROLE_ID" valueNumeric="1"/>
+            <column name="USER_ROLE_ID" valueNumeric="3"/>
             <column name="USER_FIO" value="Алексей Петрович Свиридюк"/>
             <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
         </insert>
@@ -134,6 +142,13 @@
                                  constraintName="fk_transports_carrier_id"
                                  referencedTableName="CARRIERS"
                                  referencedColumnNames="CARRIER_ID"/>
+        <insert tableName="TRANSPORTS">
+            <column name="TRANSPORT_ID" valueNumeric="1"/>
+            <column name="TRANSPORT_GUID" value="264bfe9d-98c5-4cfc-a27b-9b6234054580"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="TRANSPORT_NUMBER" value="1"/>
+            <column name="TRANSPORT_NAME" value="трамвай"/>
+        </insert>
     </changeSet>
 
     <!-- 6. Терминалы -->
@@ -158,6 +173,12 @@
                                  constraintName="fk_terminals_transport_id"
                                  referencedTableName="TRANSPORTS"
                                  referencedColumnNames="TRANSPORT_ID"/>
+        <insert tableName="TERMINALS">
+            <column name="TERMINAL_ID" valueNumeric="1"/>
+            <column name="TRANSPORT_ID" valueNumeric="1"/>
+            <column name="TERMINAL_GUID" value="3f2dd185-0540-4d82-ad26-e6a181cb1893"/>
+            <column name="TERMINAL_NUMBER" value="1234567890123456"/>
+        </insert>
     </changeSet>
 
     <!-- 7. Карты -->
@@ -196,6 +217,16 @@
                                  constraintName="fk_cards_user_id"
                                  referencedTableName="USERS"
                                  referencedColumnNames="USER_ID"/>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="1"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440000"/>
+            <column name="CARD_TYPE_ID" valueNumeric="4"/>
+            <column name="USER_ID" valueNumeric="1"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
+        </insert>
     </changeSet>
 
     <!-- CHECK-ограничение для таблицы CARDS -->
@@ -204,7 +235,7 @@
             <![CDATA[
         ALTER TABLE CARDS
         ADD CONSTRAINT chk_cards_travel_count
-        CHECK (AVAILABLE_TRAVEL_COUNT >= 0 AND AVAILABLE_TRAVEL_COUNT <= MAXIMUM_UNIQUE_COUNT);
+        CHECK (AVAILABLE_TRAVEL_COUNT >= 0);
         ]]>
         </sql>
     </changeSet>

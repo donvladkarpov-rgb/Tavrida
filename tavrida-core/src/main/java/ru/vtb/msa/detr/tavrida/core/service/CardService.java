@@ -37,9 +37,12 @@ public class CardService {
     }
 
     public CardDto getCardByGuid(java.util.UUID guid) {
-        Card card = cardRepository.findByCardGuid(guid)
-                .orElseThrow(() -> new EntityNotFoundException("Card not found: " + guid));
+        Card card = getCardEntityByGuid(guid);
         return TavridaMapper.toCardDtoWithUserId(card);
+    }
+    public Card getCardEntityByGuid(java.util.UUID guid) {
+        return cardRepository.findByCardGuid(guid)
+                .orElseThrow(() -> new EntityNotFoundException("Card not found: " + guid));
     }
 
     public CardDto createCard(CardDto dto) {
@@ -78,4 +81,9 @@ public class CardService {
         }
         cardRepository.deleteById(id);
     }
+
+    public Card save(Card newCard) {
+        return cardRepository.save(newCard);
+    }
+
 }

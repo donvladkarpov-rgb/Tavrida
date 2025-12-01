@@ -6,6 +6,7 @@ import java.util.UUID;
 public class UserSessionDto {
     private UUID sessionId;
     private Long userId;
+    private Long terminalId;
     private LocalDateTime expirationTime;
 
     public UserSessionDto() {}
@@ -13,6 +14,13 @@ public class UserSessionDto {
     public UserSessionDto(UUID sessionId, Long userId, LocalDateTime expirationTime) {
         this.sessionId = sessionId;
         this.userId = userId;
+        this.expirationTime = expirationTime;
+    }
+
+    public UserSessionDto(UUID sessionId, Long userId, Long terminalId, LocalDateTime expirationTime) {
+        this.sessionId = sessionId;
+        this.userId = userId;
+        this.terminalId = terminalId;
         this.expirationTime = expirationTime;
     }
 
@@ -25,4 +33,12 @@ public class UserSessionDto {
 
     public LocalDateTime getExpirationTime() { return expirationTime; }
     public void setExpirationTime(LocalDateTime expirationTime) { this.expirationTime = expirationTime; }
+
+    public Long getTerminalId() {
+        return terminalId;
+    }
+
+    public void setTerminalId(Long terminalId) {
+        this.terminalId = terminalId;
+    }
 }

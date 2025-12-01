@@ -40,4 +40,8 @@ public class SessionService {
     public boolean isValid(UUID sessionId) {
         return sessionRepository.existsBySessionId(sessionId);
     }
+
+    public UserSession save(UserSession session) {
+        return sessionRepository.save(session);
+    }
 }

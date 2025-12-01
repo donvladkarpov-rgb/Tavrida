@@ -216,13 +216,14 @@ public class TavridaMapper {
     // UserSession
     public static UserSessionDto toUserSessionDto(UserSession s) {
         if (s == null) return null;
-        return new UserSessionDto(s.getSessionId(), s.getUserId(), s.getExpirationTime());
+        return new UserSessionDto(s.getSessionId(), s.getUserId(), s.getTerminal().getTerminalId(), s.getExpirationTime());
     }
     public static UserSession toUserSessionEntity(UserSessionDto dto) {
         if (dto == null) return null;
         UserSession s = new UserSession();
         s.setSessionId(dto.getSessionId());
         s.setUserId(dto.getUserId());
+        s.setTerminal(new Terminal());
         s.setExpirationTime(dto.getExpirationTime());
         return s;
     }

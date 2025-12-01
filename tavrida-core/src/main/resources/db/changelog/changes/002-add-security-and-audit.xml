@@ -11,6 +11,9 @@
             <column name="SESSION_ID" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="TERMINAL_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
             <column name="USER_ID" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -23,6 +26,11 @@
             <column name="USER_ID"/>
             <column name="EXPIRATION_TIME"/>
         </createIndex>
+        <addForeignKeyConstraint baseTableName="USER_SESSIONS"
+                                 baseColumnNames="TERMINAL_ID"
+                                 constraintName="fk_sessions_terminal_id"
+                                 referencedTableName="TERMINALS"
+                                 referencedColumnNames="TERMINAL_ID"/>
     </changeSet>
 
     <!-- CODES -->

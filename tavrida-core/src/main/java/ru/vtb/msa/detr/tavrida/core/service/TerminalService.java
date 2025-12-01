@@ -9,6 +9,8 @@ import ru.vtb.msa.detr.tavrida.core.model.Terminal;
 import ru.vtb.msa.detr.tavrida.core.repo.TerminalRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,9 +30,20 @@ public class TerminalService {
     }
 
     public TerminalDto getTerminalById(Long id) {
-        Terminal terminal = terminalRepository.findById(id)
+        Terminal terminal = getTerminalEntityById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Terminal not found: " + id));
         return TavridaMapper.toTerminalDto(terminal);
+    }
+    public Optional<Terminal> getTerminalEntityById(Long id) {
+        return terminalRepository.findById(id);
+    }
+    public TerminalDto getTerminalByTerminalGuid(UUID terminalGuid) {
+        Terminal terminal = getTerminalEntityByTerminalGuid(terminalGuid)
+                .orElseThrow(() -> new EntityNotFoundException("Terminal not found: " + terminalGuid));
+        return TavridaMapper.toTerminalDto(terminal);
+    }
+    public Optional<Terminal> getTerminalEntityByTerminalGuid(UUID terminalGuid) {
+        return terminalRepository.findByTerminalGuid(terminalGuid);
     }
 
     public TerminalDto createTerminal(TerminalDto dto) {

@@ -1,6 +1,7 @@
 package ru.vtb.msa.detr.tavrida.core.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,11 +16,16 @@ public class UserSession {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "terminal_id", nullable = false)
+    private Terminal terminal;
+
     @Column(name = "expiration_time", nullable = false)
     private LocalDateTime expirationTime;
 
     // Constructors
-    public UserSession() {}
+    public UserSession() {
+    }
 
     public UserSession(UUID sessionId, Long userId, LocalDateTime expirationTime) {
         this.sessionId = sessionId;
@@ -28,12 +34,35 @@ public class UserSession {
     }
 
     // Getters and Setters
-    public UUID getSessionId() { return sessionId; }
-    public void setSessionId(UUID sessionId) { this.sessionId = sessionId; }
+    public UUID getSessionId() {
+        return sessionId;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 
-    public LocalDateTime getExpirationTime() { return expirationTime; }
-    public void setExpirationTime(LocalDateTime expirationTime) { this.expirationTime = expirationTime; }
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public LocalDateTime getExpirationTime() {
+        return expirationTime;
+    }
+
+    public void setExpirationTime(LocalDateTime expirationTime) {
+        this.expirationTime = expirationTime;
+    }
+
+    public Terminal getTerminal() {
+        return terminal;
+    }
+
+    public void setTerminal(Terminal terminal) {
+        this.terminal = terminal;
+    }
 }

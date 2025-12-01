@@ -6,6 +6,10 @@ public class PaymentResultDto {
 
     public PaymentResultDto() {}
 
+    public PaymentResultDto(Integer paymentResultId) {
+        this.paymentResultId = paymentResultId;
+    }
+
     public Integer getPaymentResultId() { return paymentResultId; }
     public void setPaymentResultId(Integer paymentResultId) { this.paymentResultId = paymentResultId; }
 
