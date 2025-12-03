@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Tavrida Extended API", description = "API for sessions, codes, audit, payments and master password")
+@RequestMapping("/api/v1/tavrida/extended")
 public interface TavridaApiExtended {
 
     // ========== SESSIONS ==========

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Tag(name = "Terminal Operations API", description = "Операции терминала: списание, проверка чёрного списка")
+@RequestMapping("/api/v1/terminal/operation")
 public interface TerminalOperationApi {
 
     @Operation(summary = "Списание поездки с карты")

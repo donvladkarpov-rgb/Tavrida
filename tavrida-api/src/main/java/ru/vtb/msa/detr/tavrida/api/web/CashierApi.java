@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
 
 @Tag(name = "Cashier API", description = "Операции кассира транспортной системы")
+@RequestMapping("/api/v1/сashier")
 public interface CashierApi {
 
     @Operation(summary = "Вход кассира в приложение")

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${project.version:0.0.0}")
+    @Value("${info.app.version:?.?.?}")
     private String projectVersion;
 
     @Bean

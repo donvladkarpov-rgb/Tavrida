@@ -12,6 +12,7 @@ import ru.vtb.msa.detr.tavrida.api.model.admin.*;
  * терминалов, пользователей и транспортных карт.
  */
 @Tag(name = "Admin API", description = "Администрирование карточной транспортной системы Tavrida ")
+@RequestMapping("/api/v1/admin")
 public interface AdminApi {
 
     // --- Перевозчики ---

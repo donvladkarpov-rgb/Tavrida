@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Tavrida Transport System", description = "Unified API for Tavrida transport card system")
+@RequestMapping("/api/v1/tavrida")
 public interface TavridaApi {
 
     // ========== BLACKLIST ==========

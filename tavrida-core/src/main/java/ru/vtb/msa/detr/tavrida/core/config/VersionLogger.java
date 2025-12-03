@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class VersionLogger {
 
-    @Value("${project.version:0.0.4}")
+    @Value("${info.app.version:?.?.?}")
     private String version;
 
-    @Value("${spring.application.name:Tavrida}")
+    @Value("${info.app.name:Tavrida}")
     private String appName;
 
     private static final Logger logger = LoggerFactory.getLogger(VersionLogger.class);
@@ -27,6 +27,6 @@ public class VersionLogger {
                 ===========================================
                 """.formatted(appName, version);
 
-        logger.info("{} v{} is starting...", appName, version);
+        logger.info(banner);
     }
 }
