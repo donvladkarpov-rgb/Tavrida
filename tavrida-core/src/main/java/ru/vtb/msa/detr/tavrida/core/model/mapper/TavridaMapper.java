@@ -186,6 +186,20 @@ public class TavridaMapper {
         );
     }
 
+    public static CardDto toCardDto(Card card) {
+        if (card == null) return null;
+        return new CardDto(
+                card.getCardId(),
+                card.getCardGuid(),
+                toCardTypeDto(card.getCardType()),
+                toUserDto(card.getUser()),
+                card.getUniqueTravelCount(),
+                card.getMaximumUniqueCount(),
+                card.getAvailableTravelCount(),
+                card.getExpirationDate()
+        );
+    }
+
     public static Card toCardEntity(CardDto dto) {
         if (dto == null) return null;
         Card card = new Card();

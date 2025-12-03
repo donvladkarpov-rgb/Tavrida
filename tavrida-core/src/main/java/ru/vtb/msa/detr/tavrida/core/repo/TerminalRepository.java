@@ -13,5 +13,5 @@ public interface TerminalRepository extends JpaRepository<Terminal, Long> {
     Optional<Terminal> findByTerminalGuid(UUID terminalGuid);
     @EntityGraph(attributePaths = {"transport", "transport.carrier"})
     Optional<Terminal> findById(Long id);
-
+    boolean existsByTerminalGuid(UUID terminalGuid);
 }

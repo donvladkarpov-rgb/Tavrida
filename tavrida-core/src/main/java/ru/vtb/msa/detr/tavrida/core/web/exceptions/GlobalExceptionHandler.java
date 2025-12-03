@@ -90,6 +90,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(
+            Exception ex, WebRequest request) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Illegal Argument Exception");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+
+        // В продакшене логируйте исключение, но не показывайте стек в ответе!
+        logger.error("Unexpected error", ex);
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
     // Обработка ошибок валидации (если используете @Valid)
     // @ExceptionHandler(MethodArgumentNotValidException.class)
     // public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) { ... }
