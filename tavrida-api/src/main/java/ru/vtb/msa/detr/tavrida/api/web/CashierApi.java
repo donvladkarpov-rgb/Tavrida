@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
 
 @Tag(name = "Cashier API", description = "Операции кассира транспортной системы")
-@RequestMapping("/api/v1/сashier")
+@RequestMapping("/v1/сashier")
 public interface CashierApi {
 
     @Operation(summary = "Вход кассира в приложение")

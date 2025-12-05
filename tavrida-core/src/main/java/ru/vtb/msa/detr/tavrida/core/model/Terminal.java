@@ -34,4 +34,10 @@ public class Terminal {
 
     public String getTerminalNumber() { return terminalNumber; }
     public void setTerminalNumber(String terminalNumber) { this.terminalNumber = terminalNumber; }
+
+    public Long getTransportId() {
+        if (transport == null) return null;
+        return transport.getTransportId();
+    }
+
 }

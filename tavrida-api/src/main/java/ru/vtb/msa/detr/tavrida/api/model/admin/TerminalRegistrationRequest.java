@@ -3,6 +3,7 @@ package ru.vtb.msa.detr.tavrida.api.model.admin;
 import java.util.UUID;
 
 public class TerminalRegistrationRequest {
+    private UUID sessionId;
     private UUID terminalGuid;
     private Long transportId;
     private String terminalNumber;
@@ -16,4 +17,12 @@ public class TerminalRegistrationRequest {
 
     public String getTerminalNumber() { return terminalNumber; }
     public void setTerminalNumber(String terminalNumber) { this.terminalNumber = terminalNumber; }
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 }

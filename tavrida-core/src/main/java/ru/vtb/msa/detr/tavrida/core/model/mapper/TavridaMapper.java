@@ -3,6 +3,8 @@ package ru.vtb.msa.detr.tavrida.core.model.mapper;
 import ru.vtb.msa.detr.tavrida.api.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -161,6 +163,7 @@ public class TavridaMapper {
                 card.getCardGuid(),
                 toCardTypeDto(card.getCardType()),
                 null, // не включаем User
+                null, //не включать транспорт
                 card.getUniqueTravelCount(),
                 card.getMaximumUniqueCount(),
                 card.getAvailableTravelCount(),
@@ -174,11 +177,13 @@ public class TavridaMapper {
     public static CardDto toCardDtoWithUserId(Card card) {
         if (card == null) return null;
         Long userId = (card.getUser() != null) ? card.getUser().getUserId() : null;
+        Long transportId = (card.getTransport() != null) ? card.getTransport().getTransportId() : null;
         return new CardDto(
                 card.getCardId(),
                 card.getCardGuid(),
                 toCardTypeDto(card.getCardType()),
                 userId != null ? new UserDto(userId, null, null, null, null) : null,
+                transportId != null ? new TransportDto(transportId, null, null, null, null) : null,
                 card.getUniqueTravelCount(),
                 card.getMaximumUniqueCount(),
                 card.getAvailableTravelCount(),
@@ -193,6 +198,7 @@ public class TavridaMapper {
                 card.getCardGuid(),
                 toCardTypeDto(card.getCardType()),
                 toUserDto(card.getUser()),
+                toTransportDto(card.getTransport()),
                 card.getUniqueTravelCount(),
                 card.getMaximumUniqueCount(),
                 card.getAvailableTravelCount(),
@@ -230,15 +236,15 @@ public class TavridaMapper {
     // UserSession
     public static UserSessionDto toUserSessionDto(UserSession s) {
         if (s == null) return null;
-        return new UserSessionDto(s.getSessionId(), s.getUserId(), s.getTerminal().getTerminalId(), s.getExpirationTime());
+        return new UserSessionDto(s.getSessionId(), s.getUserId(), s.getTerminalId(), s.getExpirationTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
-    public static UserSession toUserSessionEntity(UserSessionDto dto) {
+    public static UserSession toUserSessionEntity(UserSessionDto dto, User user, Terminal terminal) {
         if (dto == null) return null;
         UserSession s = new UserSession();
         s.setSessionId(dto.getSessionId());
-        s.setUserId(dto.getUserId());
-        s.setTerminal(new Terminal());
-        s.setExpirationTime(dto.getExpirationTime());
+        s.setUser(user);
+        s.setTerminal(terminal);
+        s.setExpirationTime(dto.getExpirationTime().atZone(ZoneId.systemDefault()).toInstant());
         return s;
     }
 

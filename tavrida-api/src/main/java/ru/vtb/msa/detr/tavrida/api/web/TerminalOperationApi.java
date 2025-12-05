@@ -5,31 +5,42 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalDeductRequest;
+import ru.vtb.msa.detr.tavrida.api.model.terminal.*;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Tag(name = "Terminal Operations API", description = "Операции терминала: списание, проверка чёрного списка")
-@RequestMapping("/api/v1/terminal/operation")
+@RequestMapping("/v1/terminal/operation")
 public interface TerminalOperationApi {
 
+    @Operation(summary = "Активация водительской смены (начало сессии)")
+    @PostMapping("/driver-session/start")
+    ResponseEntity<DriverSessionResponse> startDriverSession(@RequestBody DriverSessionStartRequest request);
+
+    @Operation(summary = "Активация терминала")
+    @PostMapping("/activate")
+    ResponseEntity<TerminalActivationResponse> activateTerminal(TerminalActivationRequest request);
+
+    @PostMapping("/deactivate")
+    ResponseEntity<TerminalActivationResponse> deactivateTerminal(@RequestBody TerminalDeactivationRequest request);
+
     @Operation(summary = "Списание поездки с карты")
-    @PostMapping("/terminal/deduct")
+    @PostMapping("/deduct")
     ResponseEntity<Boolean> deductTrip(@RequestBody TerminalDeductRequest request);
 
     @Operation(summary = "Списание поездки с карт")
-    @PostMapping("/terminal/deducts")
+    @PostMapping("deducts")
     ResponseEntity<List<UUID>> deductsTrip(@RequestBody List<TerminalDeductRequest> request);
 
     @Operation(summary = "Проверить, заблокирована ли карта")
-    @GetMapping("/terminal/blacklist/check/{cardGuid}")
+    @GetMapping("/blacklist/check/{cardGuid}")
     ResponseEntity<Boolean> isCardBlocked(
             @Parameter(description = "GUID карты", example = "123e4567-e89b-42d3-a456-556642440000")
             @PathVariable("cardGuid") UUID cardGuid);
 
     @Operation(summary = "Получить полный чёрный список")
-    @GetMapping("/terminal/blacklist")
+    @GetMapping("/blacklist")
     ResponseEntity<Set<UUID>> getFullBlackList();
 }

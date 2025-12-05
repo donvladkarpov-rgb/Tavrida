@@ -3,6 +3,7 @@ package ru.vtb.msa.detr.tavrida.api.model.admin;
 import java.util.UUID;
 
 public class TransportRegistrationRequest {
+    private UUID sessionId;
     private UUID transportGuid;
     private Long carrierId;
     private String transportNumber;
@@ -20,4 +21,12 @@ public class TransportRegistrationRequest {
 
     public String getTransportName() { return transportName; }
     public void setTransportName(String transportName) { this.transportName = transportName; }
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 }

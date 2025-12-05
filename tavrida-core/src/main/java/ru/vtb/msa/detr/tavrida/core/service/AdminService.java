@@ -1,12 +1,21 @@
 package ru.vtb.msa.detr.tavrida.core.service;
 
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.detr.tavrida.api.model.*;
 import ru.vtb.msa.detr.tavrida.api.model.admin.*;
+import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
+import ru.vtb.msa.detr.tavrida.core.exception.AuthenticationTavridaException;
+import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.*;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class AdminService {
@@ -18,6 +27,10 @@ public class AdminService {
     private final UserRoleRepository userRoleRepository;
     private final CardRepository cardRepository;
     private final CardTypeRepository cardTypeRepository;
+    private final CardService cardService;
+    private final TavridaConstants tavridaConstants;
+    private final TerminalService terminalService;
+    private final SessionService sessionService;
 
     public AdminService(
             CarrierRepository carrierRepository,
@@ -26,7 +39,11 @@ public class AdminService {
             UserRepository userRepository,
             UserRoleRepository userRoleRepository,
             CardRepository cardRepository,
-            CardTypeRepository cardTypeRepository
+            CardTypeRepository cardTypeRepository,
+            CardService cardService,
+            TavridaConstants tavridaConstants,
+            TerminalService terminalService,
+            SessionService sessionService
     ) {
         this.carrierRepository = carrierRepository;
         this.transportRepository = transportRepository;
@@ -35,6 +52,10 @@ public class AdminService {
         this.userRoleRepository = userRoleRepository;
         this.cardRepository = cardRepository;
         this.cardTypeRepository = cardTypeRepository;
+        this.cardService = cardService;
+        this.tavridaConstants = tavridaConstants;
+        this.terminalService = terminalService;
+        this.sessionService = sessionService;
     }
 
     /**
@@ -42,6 +63,7 @@ public class AdminService {
      */
     @Transactional
     public CarrierDto registerCarrier(CarrierRegistrationRequest request) {
+        sessionService.getSession(request.getSessionId()); // валидация
         if (request.getCarrierName() == null || request.getCarrierName().isBlank()) {
             throw new IllegalArgumentException("Название перевозчика не может быть пустым");
         }
@@ -58,8 +80,9 @@ public class AdminService {
      */
     @Transactional
     public TransportDto registerTransport(TransportRegistrationRequest request) {
+        sessionService.getSession(request.getSessionId()); // валидация
         if (request.getTransportGuid() == null) {
-            throw new IllegalArgumentException("transportGuid не может быть null");
+            request.setTransportGuid(UUID.randomUUID());
         }
         if (request.getCarrierId() == null) {
             throw new IllegalArgumentException("carrierId не может быть null");
@@ -94,8 +117,9 @@ public class AdminService {
      */
     @Transactional
     public TerminalDto registerTerminal(TerminalRegistrationRequest request) {
+        sessionService.getSession(request.getSessionId()); // валидация
         if (request.getTerminalGuid() == null) {
-            throw new IllegalArgumentException("terminalGuid не может быть null");
+            request.setTerminalGuid(UUID.randomUUID());
         }
         if (request.getTransportId() == null) {
             throw new IllegalArgumentException("transportId не может быть null");
@@ -127,6 +151,7 @@ public class AdminService {
      */
     @Transactional
     public UserDto registerUser(UserRegistrationRequest request) {
+        sessionService.getSession(request.getSessionId()); // валидация
         if (request.getUserFio() == null || request.getUserFio().isBlank()) {
             throw new IllegalArgumentException("ФИО пользователя не может быть пустым");
         }
@@ -140,10 +165,8 @@ public class AdminService {
 
         // Найти перевозчика, если указан
         Carrier carrier = null;
-        if (request.getCarrierId() != null) {
-            carrier = carrierRepository.findById(request.getCarrierId())
-                    .orElseThrow(() -> new IllegalArgumentException("Перевозчик с ID " + request.getCarrierId() + " не найден"));
-        }
+        if (request.getCarrierId() != null)
+            carrier = carrierRepository.findById(request.getCarrierId()).orElse(null);
 
         // Валидация: некоторые роли (например, "Администратор оператора") не должны быть привязаны к перевозчику
         // Это можно вынести в отдельную логику, если нужно
@@ -170,18 +193,13 @@ public class AdminService {
      */
     @Transactional
     public CardDto registerCard(CardRegistrationRequest request) {
+        sessionService.getSession(request.getSessionId()); // валидация
         // Валидация обязательных полей
         if (request.getCardGuid() == null) {
-            throw new IllegalArgumentException("cardGuid не может быть null");
+            request.setCardGuid(UUID.randomUUID());
         }
         if (request.getCardTypeId() == null) {
             throw new IllegalArgumentException("Тип карты обязателен");
-        }
-        if (request.getUniqueTravelCount() == null) {
-            throw new IllegalArgumentException("uniqueTravelCount обязателен");
-        }
-        if (request.getMaximumUniqueCount() == null) {
-            throw new IllegalArgumentException("maximumUniqueCount обязателен");
         }
         if (request.getAvailableTravelCount() == null) {
             throw new IllegalArgumentException("availableTravelCount обязателен");
@@ -198,23 +216,16 @@ public class AdminService {
 
         // Найти пользователя
         User user = null;
-        if (request.getUserId() != null) {
-            user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + request.getUserId() + " не найден"));
-        }
+        if (request.getUserId() != null)
+            user = userRepository.findById(request.getUserId()).orElse(null);
+
+        Transport transport = null;
+        if (request.getTransportGuid() != null)
+            transport = transportRepository.findByTransportGuid(request.getTransportGuid()).orElse(null);
 
         // Проверка логических ограничений
         if (request.getAvailableTravelCount() < 0) {
             throw new IllegalArgumentException("availableTravelCount не может быть отрицательным");
-        }
-        if (request.getUniqueTravelCount() < 0) {
-            throw new IllegalArgumentException("uniqueTravelCount не может быть отрицательным");
-        }
-        if (request.getMaximumUniqueCount() <= 0) {
-            throw new IllegalArgumentException("maximumUniqueCount должен быть положительным");
-        }
-        if (request.getUniqueTravelCount() > request.getMaximumUniqueCount()) {
-            throw new IllegalArgumentException("uniqueTravelCount не может превышать maximumUniqueCount");
         }
 
         // Создание карты
@@ -222,6 +233,7 @@ public class AdminService {
         card.setCardGuid(request.getCardGuid());
         card.setCardType(cardType);
         card.setUser(user);
+        card.setTransport(transport);
         card.setUniqueTravelCount(request.getUniqueTravelCount());
         card.setMaximumUniqueCount(request.getMaximumUniqueCount());
         card.setAvailableTravelCount(request.getAvailableTravelCount());
@@ -231,4 +243,36 @@ public class AdminService {
         return TavridaMapper.toCardDto(saved);
     }
 
+    public AdminLoginResponse adminLogin(@Valid AdminLoginRequest request) {
+        // 1. Находим карту админа
+        Card cashierCard = cardService.getCardEntityByGuid(request.getCardUuid());
+
+        // 2. Проверяем, что это карта админа (CARD_TYPE_ID = 2)
+        if (!Objects.equals(cashierCard.getCardType().getCardTypeId(), tavridaConstants.getCardTypeAdmin())) {
+            throw new AuthenticationTavridaException("Карта не принадлежит администратору!");
+        }
+
+        // 3. Проверяем пароль и роль
+        User user = cashierCard.getUser();
+        if (!user.getUserPasswordHash().equals(request.getHashPassword())) {
+            throw new AuthenticationTavridaException("Неверный пароль");
+        }
+        if (!(user.getUserRole().getUserRoleId().equals(tavridaConstants.getUserRoleOperatorFundsAdmin()) ||
+                user.getUserRole().getUserRoleId().equals(tavridaConstants.getUserRoleCarrierAdmin()))) {
+            throw new AuthenticationTavridaException("Роль у пользователя должна быть - администратор, администратор перевозчика!");
+        }
+
+        // 4. Проверяем терминал
+        Terminal terminal = terminalService.getTerminalEntityByTerminalGuid(request.getTerminalGuid())
+                .orElseThrow(() -> new EntityNotFoundException("Terminal not found: " + request.getTerminalGuid()));
+
+        // 5. Создаём сессию
+        UserSession session = new UserSession();
+        session.setSessionId(UUID.randomUUID());
+        session.setUser(user);
+        session.setTerminal(terminal);
+        session.setExpirationTime(Instant.now().plus(31, ChronoUnit.DAYS));
+        UserSession savedSession = sessionService.save(session);
+        return new AdminLoginResponse(savedSession.getSessionId());
+    }
 }

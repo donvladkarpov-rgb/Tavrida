@@ -4,15 +4,27 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class CardRegistrationRequest {
+    private UUID sessionId;
     private UUID cardGuid;
     private Integer cardTypeId;
     private Long userId;
+    private UUID transportGuid;
     private Integer uniqueTravelCount;
     private Integer maximumUniqueCount;
     private Integer availableTravelCount;
     private Instant expirationDate;
 
     // getters / setters
+
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
+
     public UUID getCardGuid() { return cardGuid; }
     public void setCardGuid(UUID cardGuid) { this.cardGuid = cardGuid; }
 
@@ -21,6 +33,9 @@ public class CardRegistrationRequest {
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+
+    public UUID getTransportGuid() { return transportGuid; }
+    public void setTransportGuid(UUID transportGuid) { this.transportGuid = transportGuid; }
 
     public Integer getUniqueTravelCount() { return uniqueTravelCount; }
     public void setUniqueTravelCount(Integer uniqueTravelCount) { this.uniqueTravelCount = uniqueTravelCount; }

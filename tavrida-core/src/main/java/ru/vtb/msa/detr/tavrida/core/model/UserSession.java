@@ -2,6 +2,7 @@ package ru.vtb.msa.detr.tavrida.core.model;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,24 +14,19 @@ public class UserSession {
     @Column(name = "session_id")
     private UUID sessionId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "terminal_id", nullable = false)
     private Terminal terminal;
 
     @Column(name = "expiration_time", nullable = false)
-    private LocalDateTime expirationTime;
+    private Instant expirationTime;
 
     // Constructors
     public UserSession() {
-    }
-
-    public UserSession(UUID sessionId, Long userId, LocalDateTime expirationTime) {
-        this.sessionId = sessionId;
-        this.userId = userId;
-        this.expirationTime = expirationTime;
     }
 
     // Getters and Setters
@@ -42,19 +38,19 @@ public class UserSession {
         this.sessionId = sessionId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public LocalDateTime getExpirationTime() {
+    public Instant getExpirationTime() {
         return expirationTime;
     }
 
-    public void setExpirationTime(LocalDateTime expirationTime) {
+    public void setExpirationTime(Instant expirationTime) {
         this.expirationTime = expirationTime;
     }
 
@@ -64,5 +60,14 @@ public class UserSession {
 
     public void setTerminal(Terminal terminal) {
         this.terminal = terminal;
+    }
+
+    public Long getUserId() {
+        if (user == null) return null;
+        return user.getUserId();
+    }
+    public Long getTerminalId() {
+        if (terminal == null) return null;
+        return terminal.getTerminalId();
     }
 }

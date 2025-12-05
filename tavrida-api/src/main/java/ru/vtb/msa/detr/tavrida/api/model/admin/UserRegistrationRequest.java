@@ -1,6 +1,9 @@
 package ru.vtb.msa.detr.tavrida.api.model.admin;
 
+import java.util.UUID;
+
 public class UserRegistrationRequest {
+    private UUID sessionId;
     private String userFio;
     private Integer userRoleId;
     private Long carrierId; // может быть null, если роль не требует привязки к перевозчику
@@ -18,4 +21,12 @@ public class UserRegistrationRequest {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 }

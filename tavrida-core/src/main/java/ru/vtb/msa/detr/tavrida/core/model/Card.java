@@ -24,6 +24,10 @@ public class Card {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transport_id")
+    private Transport transport;
+
     @Column(name = "unique_travel_count", nullable = false)
     private Integer uniqueTravelCount;
 
@@ -49,6 +53,9 @@ public class Card {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
+    public Transport getTransport() { return transport; }
+    public void setTransport(Transport transport) { this.transport = transport; }
+
     public Integer getUniqueTravelCount() { return uniqueTravelCount; }
     public void setUniqueTravelCount(Integer uniqueTravelCount) { this.uniqueTravelCount = uniqueTravelCount; }
 
@@ -60,4 +67,9 @@ public class Card {
 
     public Instant getExpirationDate() { return expirationDate; }
     public void setExpirationDate(Instant expirationDate) { this.expirationDate = expirationDate; }
+
+    public Long getUserId() {
+        if (user == null) return null;
+        return user.getUserId();
+    }
 }

@@ -55,4 +55,9 @@ public class User {
         cards.add(card);
         card.setUser(this);
     }
+
+    public Integer getUserRoleId() {
+        if (userRole == null) return null;
+        return userRole.getUserRoleId();
+    }
 }

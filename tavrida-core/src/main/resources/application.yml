@@ -77,3 +77,51 @@ logging:
 
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+tavrida:
+  common:
+    constant:
+      card-type:
+        empty: ${CARD_TYPE_EMPTY:0}
+        admin: ${CARD_TYPE_ADMIN:1}
+        cashier: ${CARD_TYPE_CASHIER:2}
+        driver: ${CARD_TYPE_DRIVER:3}
+        passenger: ${CARD_TYPE_PASSENGER:4}
+        terminal-activation: ${CARD_TYPE_TERMINAL_ACTIVATION:5}
+        terminal-reset: ${CARD_TYPE_TERMINAL_RESET:6}
+      user-roles:
+        operator-funds-admin: ${USER_ROLE_OPERATOR_FUNDS_ADMIN:1}
+        carrier-admin: ${USER_ROLE_CARRIER_ADMIN:2}
+        cashier: ${USER_ROLE_CASHIER:3}
+        driver: ${USER_ROLE_DRIVER:4}
+      # Константы для таблицы CODES
+      codes:
+        # Типы кодов
+        code-types:
+          A: ${CODE_TYPE_A:A}
+          S: ${CODE_TYPE_S:S}
+        # Разрешенное использование
+        allowed-usages:
+          read-write: ${ALLOWED_USAGE_RW:RW}
+          read-only: ${ALLOWED_USAGE_R:R}
+          none: ${ALLOWED_USAGE_NONE:-}
+
+      # Типы сервисных событий
+      service-event-types:
+        user-create: ${EVENT_TYPE_USER_CREATE:CU}
+        card-create: ${EVENT_TYPE_CARD_CREATE:CC}
+        user-delete: ${EVENT_TYPE_USER_DELETE:DU}
+        card-delete: ${EVENT_TYPE_CARD_DELETE:DC}
+        other-event: ${EVENT_TYPE_OTHER:OE}
+
+      # Типы платежей
+      payment-types:
+        replenishment: ${PAYMENT_TYPE_REPLENISHMENT:1}
+        write-off: ${PAYMENT_TYPE_WRITE_OFF:2}
+
+      # Результаты платежей
+      payment-results:
+        success: ${PAYMENT_RESULT_SUCCESS:11}
+        error-card-read: ${PAYMENT_RESULT_ERROR_CARD_READ:12}
+        error-insufficient-funds: ${PAYMENT_RESULT_ERROR_INSUFFICIENT_FUNDS:13}
+        error-card-blocked: ${PAYMENT_RESULT_ERROR_CARD_BLOCKED:14}

@@ -6,6 +6,12 @@ import java.util.UUID;
 
 public class TerminalDeductRequest {
     @Schema(
+            description = "UUID сессии",
+            example = "123e4567-e89b-42d3-a456-556642440000",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private UUID sessionId;
+    @Schema(
             description = "UUID идентификатор карты",
             example = "123e4567-e89b-42d3-a456-556642440000",
             requiredMode = Schema.RequiredMode.REQUIRED
@@ -28,6 +34,16 @@ public class TerminalDeductRequest {
     public TerminalDeductRequest() {}
 
     // Геттеры и сеттеры
+
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
+
     public UUID getCardGuid() { return cardGuid; }
     public void setCardGuid(UUID cardGuid) { this.cardGuid = cardGuid; }
 

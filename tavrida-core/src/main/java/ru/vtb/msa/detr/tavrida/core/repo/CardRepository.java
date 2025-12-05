@@ -9,10 +9,10 @@ import java.util.UUID;
 
 public interface CardRepository extends JpaRepository<Card, Long> {
 
-    @EntityGraph(attributePaths = {"cardType", "user", "user.userRole", "user.carrier"})
+    @EntityGraph(attributePaths = {"cardType", "user", "transport", "user.userRole", "user.carrier", "transport.carrier"})
     Optional<Card> findByCardGuid(UUID cardGuid);
 
-    @EntityGraph(attributePaths = {"cardType", "user"})
+    @EntityGraph(attributePaths = {"cardType", "user", "transport"})
     Optional<Card> findByUserUserId(Long userId);
 
     boolean existsByCardGuid(UUID cardGuid);

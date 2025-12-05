@@ -3,7 +3,7 @@ package ru.vtb.msa.detr.tavrida.core.web;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalDeductRequest;
+import ru.vtb.msa.detr.tavrida.api.model.terminal.*;
 import ru.vtb.msa.detr.tavrida.api.web.TerminalOperationApi;
 import ru.vtb.msa.detr.tavrida.core.service.TerminalOperationService;
 
@@ -18,6 +18,24 @@ public class TerminalOperationController implements TerminalOperationApi {
 
     public TerminalOperationController(TerminalOperationService terminalOperationService) {
         this.terminalOperationService = terminalOperationService;
+    }
+
+    @Override
+    public ResponseEntity<DriverSessionResponse> startDriverSession(@RequestBody DriverSessionStartRequest request) {
+        DriverSessionResponse response = terminalOperationService.startDriverSession(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TerminalActivationResponse> activateTerminal(@RequestBody TerminalActivationRequest request) {
+        TerminalActivationResponse response = terminalOperationService.activateTerminal(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TerminalActivationResponse> deactivateTerminal(@RequestBody TerminalDeactivationRequest request) {
+        TerminalActivationResponse response = terminalOperationService.deactivateTerminal(request);
+        return ResponseEntity.ok(response);
     }
 
     @Override

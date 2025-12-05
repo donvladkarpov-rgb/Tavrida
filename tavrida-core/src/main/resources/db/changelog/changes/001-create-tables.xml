@@ -18,7 +18,7 @@
 
         <insert tableName="USER_ROLES">
             <column name="USER_ROLE_ID" valueNumeric="1"/>
-            <column name="USER_ROLE_NAME" value="Администратор оператора денежных средств"/>
+            <column name="USER_ROLE_NAME" value="Администратор"/>
         </insert>
         <insert tableName="USER_ROLES">
             <column name="USER_ROLE_ID" valueNumeric="2"/>
@@ -47,15 +47,15 @@
 
         <insert tableName="CARD_TYPES">
             <column name="CARD_TYPE_ID" valueNumeric="1"/>
-            <column name="CARD_TYPE_NAME" value="Карта сотрудника"/>
+            <column name="CARD_TYPE_NAME" value="Карта администратора"/>
         </insert>
         <insert tableName="CARD_TYPES">
             <column name="CARD_TYPE_ID" valueNumeric="2"/>
-            <column name="CARD_TYPE_NAME" value="Карта для настройки терминала"/>
+            <column name="CARD_TYPE_NAME" value="Карта кассира"/>
         </insert>
         <insert tableName="CARD_TYPES">
             <column name="CARD_TYPE_ID" valueNumeric="3"/>
-            <column name="CARD_TYPE_NAME" value="Карта сброса терминала"/>
+            <column name="CARD_TYPE_NAME" value="Карта водителя"/>
         </insert>
         <insert tableName="CARD_TYPES">
             <column name="CARD_TYPE_ID" valueNumeric="4"/>
@@ -63,7 +63,11 @@
         </insert>
         <insert tableName="CARD_TYPES">
             <column name="CARD_TYPE_ID" valueNumeric="5"/>
-            <column name="CARD_TYPE_NAME" value="Карта кассира"/>
+            <column name="CARD_TYPE_NAME" value="Карта активации терминала"/>
+        </insert>
+        <insert tableName="CARD_TYPES">
+            <column name="CARD_TYPE_ID" valueNumeric="6"/>
+            <column name="CARD_TYPE_NAME" value="Карта сброса терминала"/>
         </insert>
     </changeSet>
 
@@ -111,6 +115,12 @@
 
         <insert tableName="USERS">
             <column name="USER_ID" valueNumeric="1"/>
+            <column name="USER_ROLE_ID" valueNumeric="1"/>
+            <column name="USER_FIO" value="root"/>
+            <column name="USER_PASSWORD_HASH" value="changeit"/>
+        </insert>
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="2"/>
             <column name="USER_ROLE_ID" valueNumeric="3"/>
             <column name="USER_FIO" value="Алексей Петрович Свиридюк"/>
             <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
@@ -194,6 +204,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="USER_ID" type="BIGINT"/> <!-- Исправлено: ссылается на USERS.USER_ID (BIGSERIAL) -->
+            <column name="TRANSPORT_ID" type="BIGINT"/> <!-- Исправлено: ссылается на TRANSPORTS.TRANSPORT_ID (BIGSERIAL) -->
             <column name="UNIQUE_TRAVEL_COUNT" type="INT">
                 <constraints nullable="false"/>
             </column>
@@ -205,6 +216,12 @@
             </column>
             <column name="EXPIRATION_DATE" type="TIMESTAMP WITH TIME ZONE"/>
         </createTable>
+
+        <addForeignKeyConstraint baseTableName="CARDS"
+                                 baseColumnNames="TRANSPORT_ID"
+                                 constraintName="fk_cards_transport_id"
+                                 referencedTableName="TRANSPORTS"
+                                 referencedColumnNames="TRANSPORT_ID"/>
 
         <addForeignKeyConstraint baseTableName="CARDS"
                                  baseColumnNames="CARD_TYPE_ID"
@@ -221,7 +238,7 @@
             <column name="CARD_ID" valueNumeric="1"/>
             <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440000"/>
             <column name="CARD_TYPE_ID" valueNumeric="4"/>
-            <column name="USER_ID" valueNumeric="1"/>
+            <column name="USER_ID" valueNumeric="2"/>
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>

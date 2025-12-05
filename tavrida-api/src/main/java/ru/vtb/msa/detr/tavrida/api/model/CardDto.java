@@ -8,6 +8,7 @@ public class CardDto {
     private UUID cardGuid;
     private CardTypeDto cardType;
     private UserDto user; // или только userId, если не нужен full user
+    private TransportDto transport; // или только transportId, если не нужен full transport
     private Integer uniqueTravelCount;
     private Integer maximumUniqueCount;
     private Integer availableTravelCount;
@@ -16,12 +17,13 @@ public class CardDto {
     public CardDto() {}
 
     public CardDto(Long cardId, UUID cardGuid, CardTypeDto cardType, UserDto user,
-                   Integer uniqueTravelCount, Integer maximumUniqueCount,
+                   TransportDto transport, Integer uniqueTravelCount, Integer maximumUniqueCount,
                    Integer availableTravelCount, Instant expirationDate) {
         this.cardId = cardId;
         this.cardGuid = cardGuid;
         this.cardType = cardType;
         this.user = user;
+        this.transport = transport;
         this.uniqueTravelCount = uniqueTravelCount;
         this.maximumUniqueCount = maximumUniqueCount;
         this.availableTravelCount = availableTravelCount;
@@ -40,6 +42,9 @@ public class CardDto {
 
     public UserDto getUser() { return user; }
     public void setUser(UserDto user) { this.user = user; }
+
+    public TransportDto getTransport() { return transport; }
+    public void setTransport(TransportDto transport) { this.transport = transport; }
 
     public Integer getUniqueTravelCount() { return uniqueTravelCount; }
     public void setUniqueTravelCount(Integer uniqueTravelCount) { this.uniqueTravelCount = uniqueTravelCount; }

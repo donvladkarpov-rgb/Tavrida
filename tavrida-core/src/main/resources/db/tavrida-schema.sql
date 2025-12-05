@@ -19,11 +19,12 @@ CREATE TABLE CARD_TYPES (
 );
 
 INSERT INTO CARD_TYPES (CARD_TYPE_ID, CARD_TYPE_NAME) VALUES
-    (1, 'Карта сотрудника'),
-    (2, 'Карта для настройки терминала'),
-    (3, 'Карта сброса терминала'),
+    (1, 'Карта администратора'),
+    (2, 'Карта кассира'),
+    (3, 'Карта водителя'),
     (4, 'Карта пассажира'),
-    (5, 'Карта кассира');
+    (5, 'Карта активации терминала');
+    (6, 'Карта сброса терминала');
 
 -- 3. Перевозчики
 CREATE TABLE CARRIERS (
@@ -95,12 +96,17 @@ CREATE TABLE CARDS (
     CARD_GUID UUID NOT NULL UNIQUE,
     CARD_TYPE_ID INT NOT NULL,
     USER_ID BIGINT,
+    TRANSPORT_ID BIGINT,
     UNIQUE_TRAVEL_COUNT INT NOT NULL,
     MAXIMUM_UNIQUE_COUNT INT NOT NULL,
     AVAILABLE_TRAVEL_COUNT INT NOT NULL,
     EXPIRATION_DATE TIMESTAMP WITH TIME ZONE,
     CONSTRAINT CARDS_pkey PRIMARY KEY (CARD_ID)
 );
+
+ALTER TABLE CARDS
+    ADD CONSTRAINT fk_cards_transport_id
+    FOREIGN KEY (TRANSPORT_ID) REFERENCES TRANSPORTS(TRANSPORT_ID);
 
 ALTER TABLE CARDS
     ADD CONSTRAINT fk_cards_card_type_id
@@ -115,6 +121,7 @@ INSERT INTO CARDS (
     CARD_GUID,
     CARD_TYPE_ID,
     USER_ID,
+    TRANSPORT_ID,
     UNIQUE_TRAVEL_COUNT,
     MAXIMUM_UNIQUE_COUNT,
     AVAILABLE_TRAVEL_COUNT,

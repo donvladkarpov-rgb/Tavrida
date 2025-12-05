@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface UserSessionRepository extends JpaRepository<UserSession, UUID> {
 
-    @EntityGraph(attributePaths = {"terminal"})
+    @EntityGraph(attributePaths = {"terminal", "user"})
     @Override
     Optional<UserSession> findById(UUID uuid);
 

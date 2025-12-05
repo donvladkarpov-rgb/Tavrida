@@ -20,6 +20,11 @@ public class AdminController implements AdminApi {
     }
 
     @Override
+    public ResponseEntity<AdminLoginResponse> adminLogin(@Valid @RequestBody AdminLoginRequest request) {
+        return ResponseEntity.ok(adminService.adminLogin(request));
+    }
+
+    @Override
     public ResponseEntity<CarrierDto> registerCarrier(@Valid @RequestBody CarrierRegistrationRequest request) {
         CarrierDto dto = adminService.registerCarrier(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
