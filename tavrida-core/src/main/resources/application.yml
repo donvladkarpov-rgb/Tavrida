@@ -1,9 +1,9 @@
 spring:
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/tavrida
+    url: jdbc:postgresql://127.0.0.1:5432/tavrida
     username: tavrida
-    password: tavrida
+    password: abirvalg
     driver-class-name: org.postgresql.Driver
     hikari:
       pool-name: HikariCP-tavrida
@@ -34,7 +34,7 @@ spring:
     enabled: true
     default-schema: public
     user: tavrida
-    password: tavrida
+    password: abirvalg
     contexts: development
 
   mvc:

@@ -15,11 +15,11 @@ public class UserSession {
     private UUID sessionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "terminal_id", nullable = false)
+    @JoinColumn(name = "terminal_id")
     private Terminal terminal;
 
     @Column(name = "expiration_time", nullable = false)

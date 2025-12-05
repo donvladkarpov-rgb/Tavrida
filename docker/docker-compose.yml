@@ -16,7 +16,7 @@ services:
       TZ: "Europe/Moscow"
       POSTGRES_DB: tavrida
       POSTGRES_USER: tavrida
-      POSTGRES_PASSWORD: tavrida
+      POSTGRES_PASSWORD: abirvalg
     ports:
       - 5432:5432
     volumes:

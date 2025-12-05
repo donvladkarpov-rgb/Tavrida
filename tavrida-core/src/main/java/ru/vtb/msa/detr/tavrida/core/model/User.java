@@ -20,7 +20,7 @@ public class User {
     private String userPasswordHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_role_id")
+    @JoinColumn(name = "user_role_id", nullable = false)
     private UserRole userRole;
 
     @ManyToOne(fetch = FetchType.LAZY)

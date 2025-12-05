@@ -15,8 +15,8 @@ fi
 # -XX:MaxMetaspaceSize — ограничение метаспейса
 # Итого: ~400–450 МБ максимум
 JAVA_OPTS="
-  -Xmx384m
-  -Xms128m
+  -Xmx1024m
+  -Xms512m
   -XX:MaxMetaspaceSize=96m
   -XX:+UseG1GC
   -XX:MaxGCPauseMillis=200
@@ -31,7 +31,7 @@ SPRING_OPTS="
 # Запуск
 echo "🚀 Запуск Tavrida с ограничением памяти..."
 echo "JAR: $(pwd)/$JAR_FILE"
-echo "Память: -Xmx384m -XX:MaxMetaspaceSize=96m"
+echo "Память: -Xmx1024m -XX:MaxMetaspaceSize=96m"
 echo "----------------------------------------"
 
 java $JAVA_OPTS -jar "$JAR_FILE" $SPRING_OPTS
