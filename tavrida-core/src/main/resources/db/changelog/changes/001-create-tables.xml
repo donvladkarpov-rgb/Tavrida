@@ -214,7 +214,7 @@
             <column name="AVAILABLE_TRAVEL_COUNT" type="INT">
                 <constraints nullable="false"/>
             </column>
-            <column name="EXPIRATION_DATE" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="EXPIRATION_DATE" type="TIMESTAMP"/>
         </createTable>
 
         <addForeignKeyConstraint baseTableName="CARDS"

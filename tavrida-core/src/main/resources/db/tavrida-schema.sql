@@ -6,7 +6,7 @@ CREATE TABLE USER_ROLES (
 );
 
 INSERT INTO USER_ROLES (USER_ROLE_ID, USER_ROLE_NAME) VALUES
-    (1, 'Администратор оператора денежных средств'),
+    (1, 'Администратор'),
     (2, 'Администратор перевозчика'),
     (3, 'Кассир'),
     (4, 'Водитель');

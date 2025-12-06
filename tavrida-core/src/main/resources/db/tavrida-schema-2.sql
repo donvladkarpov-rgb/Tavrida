@@ -3,9 +3,10 @@ CREATE TABLE USER_SESSIONS (
     SESSION_ID UUID NOT NULL PRIMARY KEY,
     TERMINAL_ID BIGINT NOT NULL,
     USER_ID BIGINT NOT NULL,
+    SESSIONS_TIME TIMESTAMP NOT NULL,
     EXPIRATION_TIME TIMESTAMP NOT NULL
 );
-CREATE INDEX IX_SESSIONS ON USER_SESSIONS (SESSION_ID, USER_ID, EXPIRATION_TIME);
+CREATE INDEX IX_SESSIONS ON USER_SESSIONS (SESSION_ID, USER_ID);
 ALTER TABLE USER_SESSIONS
     ADD CONSTRAINT fk_sessions_terminal_id
     FOREIGN KEY (TERMINAL_ID) REFERENCES TERMINALS(terminal_id);
@@ -37,11 +38,15 @@ CREATE TABLE SERVICE_EVENT_TYPES (
     EVENT_TYPE_NAME VARCHAR(128) NOT NULL
 );
 INSERT INTO SERVICE_EVENT_TYPES (EVENT_TYPE, EVENT_TYPE_NAME) VALUES
-    ('CU', 'Создание пользователя'),
-    ('CC', 'Создание карты'),
-    ('DU', 'Удаление пользователя'),
-    ('DC', 'Удаление карты'),
-    ('OE', 'Другое событие');
+    ('CU', 'Создание пользователя'),     -- C + U (Create User)
+    ('CC', 'Создание карты'),            -- C + C (Create Card)
+    ('DU', 'Удаление пользователя'),     -- D + U (Delete User)
+    ('DC', 'Удаление карты'),            -- D + C (Delete Card)
+    ('TA', 'Активация терминала'),       -- T + A (Terminal Activation)
+    ('TD', 'Деактивация терминала'),     -- T + D (Terminal Deactivation)
+    ('DS', 'Открытие смены водителя'),   -- D + S (Driver Shift) или (Drive Shift)
+    ('PT', 'Оплата проезда'),            -- P + T (Payment for Transit / Payment Trip)
+    ('OE', 'Другое событие');            -- O + E (Other Event)
 
 -- SERVICE_EVENTS
 CREATE TABLE SERVICE_EVENTS (
@@ -51,7 +56,8 @@ CREATE TABLE SERVICE_EVENTS (
     DOER_USER_ID BIGINT,
     REFERENCE_TYPE_ID INT,
     REFERENCE_ID BIGINT,
-    EVENT_DETAILS VARCHAR(256)
+    EVENT_DETAILS VARCHAR(256),
+    EVENT_OBJECT JSONB
 );
 ALTER TABLE SERVICE_EVENTS
     ADD CONSTRAINT fk_service_events_type

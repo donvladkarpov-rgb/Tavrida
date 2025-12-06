@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TavridaConstants {
 
+    private final String serverTimeZone;
+
     // Card Type Constants
     private final Integer cardTypeEmpty;
     private final Integer cardTypeAdmin;
@@ -46,6 +48,9 @@ public class TavridaConstants {
     private final Integer paymentResultErrorCardBlocked;
 
     public TavridaConstants(
+
+            @Value("${tavrida.common.constant.server-time-zone}") String serverTimeZone,
+
             // Card Type Constants
             @Value("${tavrida.common.constant.card-type.empty}") Integer cardTypeEmpty,
             @Value("${tavrida.common.constant.card-type.admin}") Integer cardTypeAdmin,
@@ -84,6 +89,8 @@ public class TavridaConstants {
             @Value("${tavrida.common.constant.payment-results.error-card-read}") Integer paymentResultErrorCardRead,
             @Value("${tavrida.common.constant.payment-results.error-insufficient-funds}") Integer paymentResultErrorInsufficientFunds,
             @Value("${tavrida.common.constant.payment-results.error-card-blocked}") Integer paymentResultErrorCardBlocked) {
+
+        this.serverTimeZone = serverTimeZone;
 
         // Инициализация Card Type Constants
         this.cardTypeEmpty = cardTypeEmpty;

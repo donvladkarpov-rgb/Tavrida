@@ -81,6 +81,7 @@ logging:
 tavrida:
   common:
     constant:
+      server-time-zone: ${SERVER_TIME_ZONE:Europe/Moscow}
       card-type:
         empty: ${CARD_TYPE_EMPTY:0}
         admin: ${CARD_TYPE_ADMIN:1}
