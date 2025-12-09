@@ -121,8 +121,20 @@
         </insert>
         <insert tableName="USERS">
             <column name="USER_ID" valueNumeric="2"/>
+            <column name="USER_ROLE_ID" valueNumeric="2"/>
+            <column name="USER_FIO" value="Потап Админович Перевозчика"/>
+            <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
+        </insert>
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="3"/>
             <column name="USER_ROLE_ID" valueNumeric="3"/>
-            <column name="USER_FIO" value="Алексей Петрович Свиридюк"/>
+            <column name="USER_FIO" value="Алексей Петрович Кассир"/>
+            <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
+        </insert>
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="4"/>
+            <column name="USER_ROLE_ID" valueNumeric="4"/>
+            <column name="USER_FIO" value="Водил Водилович Водила"/>
             <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
         </insert>
     </changeSet>
@@ -156,7 +168,7 @@
             <column name="TRANSPORT_ID" valueNumeric="1"/>
             <column name="TRANSPORT_GUID" value="264bfe9d-98c5-4cfc-a27b-9b6234054580"/>
             <column name="CARRIER_ID" valueNumeric="1"/>
-            <column name="TRANSPORT_NUMBER" value="1"/>
+            <column name="TRANSPORT_NUMBER" value="A0001"/>
             <column name="TRANSPORT_NAME" value="трамвай"/>
         </insert>
     </changeSet>
@@ -241,13 +253,64 @@
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="1"/>
             <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440000"/>
-            <column name="CARD_TYPE_ID" valueNumeric="4"/>
+            <column name="CARD_TYPE_ID" valueNumeric="1"/>
+            <column name="USER_ID" valueNumeric="1"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
+        </insert>
+
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="2"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-756642440001"/>
+            <column name="CARD_TYPE_ID" valueNumeric="2"/>
             <column name="USER_ID" valueNumeric="2"/>
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
             <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
         </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="3"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440002"/>
+            <column name="CARD_TYPE_ID" valueNumeric="3"/>
+            <column name="USER_ID" valueNumeric="4"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="4"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440003"/>
+            <column name="CARD_TYPE_ID" valueNumeric="4"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="5"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440004"/>
+            <column name="CARD_TYPE_ID" valueNumeric="5"/>
+            <column name="USER_ID" valueNumeric="2"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="6"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440005"/>
+            <column name="CARD_TYPE_ID" valueNumeric="6"/>
+            <column name="USER_ID" valueNumeric="2"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="CURRENT_DATE + INTERVAL '3 years'"/>
+        </insert>
+
     </changeSet>
 
     <!-- CHECK-ограничение для таблицы CARDS -->
