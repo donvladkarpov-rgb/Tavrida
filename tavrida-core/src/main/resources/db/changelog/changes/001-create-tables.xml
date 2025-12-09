@@ -176,6 +176,9 @@
             <column name="TERMINAL_NUMBER" type="VARCHAR(16)">
                 <constraints nullable="false"/>
             </column>
+            <column name="TERMINAL_SERIAL" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <addForeignKeyConstraint baseTableName="TERMINALS"
@@ -187,7 +190,8 @@
             <column name="TERMINAL_ID" valueNumeric="1"/>
             <column name="TRANSPORT_ID" valueNumeric="1"/>
             <column name="TERMINAL_GUID" value="3f2dd185-0540-4d82-ad26-e6a181cb1893"/>
-            <column name="TERMINAL_NUMBER" value="1234567890123456"/>
+            <column name="TERMINAL_NUMBER" value="A1234"/>
+            <column name="TERMINAL_SERIAL" value="A1234_1234"/>
         </insert>
     </changeSet>
 

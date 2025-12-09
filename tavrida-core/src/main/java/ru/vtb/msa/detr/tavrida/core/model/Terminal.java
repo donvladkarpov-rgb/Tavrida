@@ -22,6 +22,9 @@ public class Terminal {
     @Column(name = "terminal_number", nullable = false)
     private String terminalNumber;
 
+    @Column(name = "terminal_serial", nullable = false)
+    private String terminalSerialNumber;
+
     // --- getters/setters ---
     public Long getTerminalId() { return terminalId; }
     public void setTerminalId(Long terminalId) { this.terminalId = terminalId; }
@@ -40,4 +43,11 @@ public class Terminal {
         return transport.getTransportId();
     }
 
+    public String getTerminalSerialNumber() {
+        return terminalSerialNumber;
+    }
+
+    public void setTerminalSerialNumber(String terminalSerialNumber) {
+        this.terminalSerialNumber = terminalSerialNumber;
+    }
 }

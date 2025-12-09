@@ -8,6 +8,8 @@ public class TerminalActivationResponse {
     private Long terminalId;
     private UUID terminalGuid;
     private String terminalNumber;
+    private String terminalSerialNumber;
+
 
     public TerminalActivationResponse(boolean success, String message) {
         this.success = success;
@@ -33,6 +35,15 @@ public class TerminalActivationResponse {
         this.terminalId = terminalId;
         this.terminalGuid = terminalGuid;
         this.terminalNumber = terminalNumber;
+    }
+
+    public TerminalActivationResponse(boolean success, String message, Long terminalId, UUID terminalGuid, String terminalNumber, String terminalSerialNumber) {
+        this.success = success;
+        this.message = message;
+        this.terminalId = terminalId;
+        this.terminalGuid = terminalGuid;
+        this.terminalNumber = terminalNumber;
+        this.terminalSerialNumber = terminalSerialNumber;
     }
 
     // getters
@@ -66,5 +77,13 @@ public class TerminalActivationResponse {
 
     public void setTerminalNumber(String terminalNumber) {
         this.terminalNumber = terminalNumber;
+    }
+
+    public String getTerminalSerialNumber() {
+        return terminalSerialNumber;
+    }
+
+    public void setTerminalSerialNumber(String terminalSerialNumber) {
+        this.terminalSerialNumber = terminalSerialNumber;
     }
 }

@@ -173,6 +173,7 @@ public class TerminalOperationService {
             terminal = new Terminal();
             terminal.setTerminalGuid(request.getTerminalGuid());
             terminal.setTerminalNumber(request.getTerminalNumber());
+            terminal.setTerminalSerialNumber(request.getTerminalNumber());
         }
         terminal.setTransport(transport);
 
@@ -216,7 +217,8 @@ public class TerminalOperationService {
                 "Терминал успешно привязан к транспорту ID " + transport.getTransportId(),
                 terminal.getTerminalId(),
                 terminal.getTerminalGuid(),
-                terminal.getTerminalNumber());
+                terminal.getTerminalNumber(),
+                terminal.getTerminalSerialNumber());
     }
 
     private String generateCode() {

@@ -7,6 +7,7 @@ public class TerminalActivationRequest {
     private UUID transportGuid;
     private UUID cardGuid; // Новая карта активации
     private String terminalNumber;
+    private String terminalSerialNumber;
 
     // getters/setters
     public UUID getTerminalGuid() { return terminalGuid; }
@@ -29,5 +30,13 @@ public class TerminalActivationRequest {
 
     public void setTerminalNumber(String terminalNumber) {
         this.terminalNumber = terminalNumber;
+    }
+
+    public String getTerminalSerialNumber() {
+        return terminalSerialNumber;
+    }
+
+    public void setTerminalSerialNumber(String terminalSerialNumber) {
+        this.terminalSerialNumber = terminalSerialNumber;
     }
 }
