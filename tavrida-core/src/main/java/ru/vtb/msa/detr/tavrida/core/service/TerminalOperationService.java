@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class TerminalOperationService {
 
+    private final Random random = new Random();
     private final CardRepository cardRepository;
     private final BlackListRepository blackListRepository;
     private final PaymentRepository paymentRepository;
@@ -139,6 +140,7 @@ public class TerminalOperationService {
     public TerminalActivationResponse activateTerminal(TerminalActivationRequest request) {
         if (request.getTerminalGuid() == null) {
             request.setTerminalGuid(UUID.randomUUID());
+            request.setTerminalNumber(generateCode());
         }
         if (request.getTransportGuid() == null) {
             return new TerminalActivationResponse(false, "transport guid не может быть null");
@@ -212,7 +214,18 @@ public class TerminalOperationService {
 
         return new TerminalActivationResponse(true,
                 "Терминал успешно привязан к транспорту ID " + transport.getTransportId(),
-                terminal.getTerminalId());
+                terminal.getTerminalId(),
+                terminal.getTerminalGuid(),
+                terminal.getTerminalNumber());
+    }
+
+    private String generateCode() {
+        // Случайная заглавная буква от 'A' до 'Z'
+        char letter = (char) ('A' + random.nextInt(26));
+        // Случайное 4-значное число от 0000 до 9999
+        int number = random.nextInt(10000);
+        // Форматируем число с ведущими нулями
+        return String.format("%c%04d", letter, number);
     }
 
     @Transactional
@@ -268,7 +281,8 @@ public class TerminalOperationService {
         terminalRepository.save(terminal);
 
         return new TerminalActivationResponse(true,
-                "Терминал успешно отвязан от транспорта", terminal.getTerminalId());
+                "Терминал успешно отвязан от транспорта", terminal.getTerminalId(),
+                request.getTerminalGuid());
     }
 
     /**

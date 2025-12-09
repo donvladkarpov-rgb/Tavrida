@@ -13,19 +13,19 @@ import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
 public interface CashierApi {
 
     @Operation(summary = "Вход кассира в приложение")
-    @PostMapping("/cashier/auth/login")
+    @PostMapping("/auth/login")
     ResponseEntity<CashierLoginResponse> cashierLogin(@RequestBody CashierLoginRequest request);
 
     @Operation(summary = "Активация пассажирской карты")
-    @PostMapping("/cashier/card/init")
+    @PostMapping("/card/init")
     ResponseEntity<CardInitResponse> initCard(@RequestBody CardInitRequest request);
 
     @Operation(summary = "Получение баланса карты")
-    @PostMapping("/cashier/card/balance")
+    @PostMapping("/card/balance")
     ResponseEntity<CardBalanceResponse> getCardBalance(@RequestBody CardBalanceRequest request);
 
     @Operation(summary = "Покупка поездок на карту")
-    @PostMapping("/cashier/card/purchase")
+    @PostMapping("/card/purchase")
     ResponseEntity<CardPurchaseResponse> purchaseTrips(@RequestBody CardPurchaseRequest request);
 
 }
