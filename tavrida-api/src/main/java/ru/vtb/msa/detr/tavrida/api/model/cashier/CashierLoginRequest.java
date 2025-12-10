@@ -7,7 +7,7 @@ import java.util.UUID;
 public class CashierLoginRequest {
     @Schema(
             description = "UUID идентификатор карты",
-            example = "123e4567-e89b-42d3-a456-556642440000",
+            example = "123e4567-e89b-42d3-a456-756642440001",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID cardUuid;

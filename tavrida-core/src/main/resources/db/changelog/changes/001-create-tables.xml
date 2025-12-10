@@ -265,7 +265,7 @@
             <column name="CARD_ID" valueNumeric="2"/>
             <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-756642440001"/>
             <column name="CARD_TYPE_ID" valueNumeric="2"/>
-            <column name="USER_ID" valueNumeric="2"/>
+            <column name="USER_ID" valueNumeric="3"/>
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
