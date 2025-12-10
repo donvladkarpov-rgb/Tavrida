@@ -180,7 +180,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="TRANSPORT_ID" type="BIGINT"> <!-- Исправлено: ссылается на TRANSPORTS.TRANSPORT_ID (BIGSERIAL) -->
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="TERMINAL_GUID" type="UUID">
                 <constraints nullable="false" unique="true"/>
