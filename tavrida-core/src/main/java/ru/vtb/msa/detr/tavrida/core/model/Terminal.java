@@ -13,7 +13,7 @@ public class Terminal {
     private Long terminalId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transport_id", nullable = false)
+    @JoinColumn(name = "transport_id")
     private Transport transport;
 
     @Column(name = "terminal_guid", nullable = false, unique = true)
