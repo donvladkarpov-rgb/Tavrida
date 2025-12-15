@@ -200,6 +200,7 @@ public class TerminalOperationService {
             terminal.setTerminalSerialNumber(request.getTerminalNumber());
         }
         terminal.setTransport(transport);
+        terminal.setCarrier(null);
 
         // 3. Проверка карты активации
         Card card = cardRepository.findByCardGuid(request.getCardGuid())

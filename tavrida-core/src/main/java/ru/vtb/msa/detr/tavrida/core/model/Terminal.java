@@ -16,6 +16,10 @@ public class Terminal {
     @JoinColumn(name = "transport_id")
     private Transport transport;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carrier_id")
+    private Carrier carrier;
+
     @Column(name = "terminal_guid", nullable = false, unique = true)
     private UUID terminalGuid;
 
@@ -49,5 +53,13 @@ public class Terminal {
 
     public void setTerminalSerialNumber(String terminalSerialNumber) {
         this.terminalSerialNumber = terminalSerialNumber;
+    }
+
+    public Carrier getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(Carrier carrier) {
+        this.carrier = carrier;
     }
 }

@@ -56,6 +56,7 @@ public class TerminalService {
         Terminal existing = terminalRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Terminal not found: " + id));
         existing.setTransport(TavridaMapper.toTransportEntity(dto.getTransport()));
+        existing.setCarrier(TavridaMapper.toCarrierEntity(dto.getCarrier()));
         existing.setTerminalGuid(dto.getTerminalGuid());
         existing.setTerminalNumber(dto.getTerminalNumber());
         Terminal updated = terminalRepository.save(existing);

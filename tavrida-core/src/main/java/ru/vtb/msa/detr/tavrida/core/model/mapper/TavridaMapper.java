@@ -118,7 +118,8 @@ public class TavridaMapper {
                 terminal.getTerminalId(),
                 toTransportDto(terminal.getTransport()),
                 terminal.getTerminalGuid(),
-                terminal.getTerminalNumber()
+                terminal.getTerminalNumber(),
+                toCarrierDto(terminal.getCarrier())
         );
     }
 
@@ -126,6 +127,7 @@ public class TavridaMapper {
         if (dto == null) return null;
         Terminal terminal = new Terminal();
         terminal.setTerminalId(dto.getTerminalId());
+        terminal.setCarrier(toCarrierEntity(dto.getCarrier()));
         terminal.setTransport(toTransportEntity(dto.getTransport()));
         terminal.setTerminalGuid(dto.getTerminalGuid());
         terminal.setTerminalNumber(dto.getTerminalNumber());

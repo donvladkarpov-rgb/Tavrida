@@ -121,16 +121,18 @@ public class AdminService {
         if (request.getTerminalGuid() == null) {
             request.setTerminalGuid(UUID.randomUUID());
         }
-        if (request.getTransportId() == null) {
-            throw new IllegalArgumentException("transportId не может быть null");
-        }
+//        if (request.getTransportId() == null) {
+//            throw new IllegalArgumentException("transportId не может быть null");
+//        }
         if (request.getTerminalNumber() == null || request.getTerminalNumber().isBlank()) {
             throw new IllegalArgumentException("Номер терминала не может быть пустым");
         }
 
         // Найдём транспорт и убедимся, что он существует
         Transport transport = transportRepository.findById(request.getTransportId())
-                .orElseThrow(() -> new IllegalArgumentException("Транспорт с ID " + request.getTransportId() + " не найден"));
+                .orElse(null);
+        Carrier carrier = carrierRepository.findById(request.getCarrierId())
+                .orElse(null);
 
         // Опционально: можно проверить, что терминал с таким GUID ещё не зарегистрирован
         if (terminalRepository.existsByTerminalGuid(request.getTerminalGuid())) {
@@ -140,6 +142,7 @@ public class AdminService {
         Terminal terminal = new Terminal();
         terminal.setTerminalGuid(request.getTerminalGuid());
         terminal.setTransport(transport);
+        terminal.setCarrier(carrier);
         terminal.setTerminalNumber(request.getTerminalNumber());
 
         Terminal saved = terminalRepository.save(terminal);

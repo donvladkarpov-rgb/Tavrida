@@ -8,6 +8,7 @@ public class TerminalActivationRequest {
     private UUID cardGuid; // Новая карта активации
     private String terminalNumber;
     private String terminalSerialNumber;
+    private Long carrierId;
 
     // getters/setters
     public UUID getTerminalGuid() { return terminalGuid; }
@@ -38,5 +39,13 @@ public class TerminalActivationRequest {
 
     public void setTerminalSerialNumber(String terminalSerialNumber) {
         this.terminalSerialNumber = terminalSerialNumber;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
     }
 }

@@ -7,6 +7,7 @@ public class TerminalRegistrationRequest {
     private UUID terminalGuid;
     private Long transportId;
     private String terminalNumber;
+    private Long carrierId;
 
     // getters / setters
     public UUID getTerminalGuid() { return terminalGuid; }
@@ -24,5 +25,13 @@ public class TerminalRegistrationRequest {
 
     public void setSessionId(UUID sessionId) {
         this.sessionId = sessionId;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
     }
 }

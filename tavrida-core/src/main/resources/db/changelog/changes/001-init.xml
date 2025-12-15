@@ -164,6 +164,9 @@
             <column name="TRANSPORT_ID" type="BIGINT">
                 <constraints nullable="true"/>
             </column>
+            <column name="CARRIER_ID" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
             <column name="TERMINAL_GUID" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
@@ -181,6 +184,11 @@
             ]]>
         </sql>
 
+        <addForeignKeyConstraint baseTableName="TERMINALS"
+                                 baseColumnNames="CARRIER_ID"
+                                 constraintName="fk_terminals_carrier_id"
+                                 referencedTableName="CARRIERS"
+                                 referencedColumnNames="CARRIER_ID"/>
         <addForeignKeyConstraint baseTableName="TERMINALS"
                                  baseColumnNames="TRANSPORT_ID"
                                  constraintName="fk_terminals_transport_id"
