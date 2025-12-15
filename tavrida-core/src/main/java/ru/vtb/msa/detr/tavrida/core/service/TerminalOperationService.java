@@ -122,6 +122,8 @@ public class TerminalOperationService {
         session.setSessionId(sessionId);
         session.setTerminal(terminal);
         session.setUser(driver);
+        session.setStartedAt(Instant.now());
+        session.setClosedAt(null);
         session.setExpirationTime(Instant.now().plus(31, ChronoUnit.DAYS));
         userSessionRepository.save(session);
 
@@ -142,6 +144,8 @@ public class TerminalOperationService {
     public DriverSessionResponse stopDriverSession(DriverSessionStopRequest request) {
 
         UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
+        session.setClosedAt(Instant.now());
+        userSessionRepository.save(session);
 
         // 9. Возвращаем ответ — транспорт берём из терминала (или из request, они совпадают)
         LocalDateTime now = LocalDateTime.now();

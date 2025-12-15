@@ -27,7 +27,7 @@ public class UserSession {
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
 
-    @Column(name = "closed_at", nullable = false)
+    @Column(name = "closed_at")
     private Instant closedAt;
 
     @Column(name = "expiration_time", nullable = false)

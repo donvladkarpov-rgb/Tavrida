@@ -6,7 +6,7 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <!-- Тестовые данные: перевозчики -->
-    <changeSet id="test-1" author="Vlad" context="test">
+    <changeSet id="test-1" author="Vlad" context="development">
         <insert tableName="CARRIERS">
             <column name="CARRIER_ID" valueNumeric="1"/>
             <column name="CARRIER_NAME" value="Крымские тачанки"/>
@@ -14,7 +14,7 @@
     </changeSet>
 
     <!-- Тестовые данные: пользователи -->
-    <changeSet id="test-2" author="Vlad" context="test">
+    <changeSet id="test-2" author="Vlad" context="development">
         <insert tableName="USERS">
             <column name="USER_ID" valueNumeric="1"/>
             <column name="USER_ROLE_ID" valueNumeric="1"/>
@@ -42,7 +42,7 @@
     </changeSet>
 
     <!-- Тестовые данные: транспорт -->
-    <changeSet id="test-3" author="Vlad" context="test">
+    <changeSet id="test-3" author="Vlad" context="development">
         <insert tableName="TRANSPORTS">
             <column name="TRANSPORT_ID" valueNumeric="1"/>
             <column name="TRANSPORT_GUID" value="264bfe9d-98c5-4cfc-a27b-9b6234054580"/>
@@ -53,7 +53,7 @@
     </changeSet>
 
     <!-- Тестовые данные: терминалы -->
-    <changeSet id="test-4" author="Vlad" context="test">
+    <changeSet id="test-4" author="Vlad" context="development">
         <insert tableName="TERMINALS">
             <column name="TERMINAL_ID" valueNumeric="1"/>
             <column name="TRANSPORT_ID" valueNumeric="1"/>
@@ -64,7 +64,7 @@
     </changeSet>
 
     <!-- Тестовые данные: карты -->
-    <changeSet id="test-5" author="Vlad" context="test">
+    <changeSet id="test-5" author="Vlad" context="development">
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="1"/>
             <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440000"/>
@@ -73,7 +73,9 @@
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="ISSUE_DATE" valueDate="2025-01-15"/>
             <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+            <column name="EXPIRATION_RIDES_PACKAGE" valueDate="2028-01-15"/>
         </insert>
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="2"/>
@@ -83,7 +85,9 @@
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="ISSUE_DATE" valueDate="2025-01-15"/>
             <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+            <column name="EXPIRATION_RIDES_PACKAGE" valueDate="2028-01-15"/>
         </insert>
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="3"/>
@@ -93,7 +97,9 @@
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="ISSUE_DATE" valueDate="2025-01-15"/>
             <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+            <column name="EXPIRATION_RIDES_PACKAGE" valueDate="2028-01-15"/>
         </insert>
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="4"/>
@@ -102,7 +108,9 @@
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="ISSUE_DATE" valueDate="2025-01-15"/>
             <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+            <column name="EXPIRATION_RIDES_PACKAGE" valueDate="2028-01-15"/>
         </insert>
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="5"/>
@@ -112,7 +120,9 @@
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="ISSUE_DATE" valueDate="2025-01-15"/>
             <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+            <column name="EXPIRATION_RIDES_PACKAGE" valueDate="2028-01-15"/>
         </insert>
         <insert tableName="CARDS">
             <column name="CARD_ID" valueNumeric="6"/>
@@ -122,24 +132,14 @@
             <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
             <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
             <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="ISSUE_DATE" valueDate="2025-01-15"/>
             <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
-        </insert>
-    </changeSet>
-
-    <!-- Тестовые данные: типы маршрутов -->
-    <changeSet id="test-6" author="Vlad" context="test">
-        <insert tableName="ROUTE_TYPES">
-            <column name="ROUTE_TYPES_ID" valueNumeric="1"/>
-            <column name="ROUTE_TYPES_NAME" value="Маршрут"/>
-        </insert>
-        <insert tableName="ROUTE_TYPES">
-            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
-            <column name="ROUTE_TYPES_NAME" value="Путь"/>
+            <column name="EXPIRATION_RIDES_PACKAGE" valueDate="2028-01-15"/>
         </insert>
     </changeSet>
 
     <!-- Тестовые данные: маршруты -->
-    <changeSet id="test-7" author="Vlad" context="test">
+    <changeSet id="test-7" author="Vlad" context="development">
         <!-- Родительский маршрут -->
         <insert tableName="ROUTES">
             <column name="ROUTE_ID" valueNumeric="1"/>
@@ -268,7 +268,7 @@
     </changeSet>
 
     <!-- Тестовые данные: привязка маршрутов к перевозчику -->
-    <changeSet id="test-8" author="Vlad" context="test">
+    <changeSet id="test-8" author="Vlad" context="development">
         <insert tableName="CARRIER_ROUTE_MAP">
             <column name="CARRIER_ROUTE_MAP_ID" valueNumeric="1"/>
             <column name="CARRIER_ID" valueNumeric="1"/>
@@ -307,35 +307,43 @@
     </changeSet>
 
     <!-- Тестовые данные: тарифные зоны -->
-    <changeSet id="test-9" author="Vlad" context="test">
+    <changeSet id="test-9" author="Vlad" context="development">
         <insert tableName="FARE_ZONES">
             <column name="ZONE_ID" valueNumeric="1"/>
             <column name="ZONE_CODE" value="С"/>
             <column name="ZONE_NAME" value="Север"/>
             <column name="DESCRIPTION" value="Север"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
         </insert>
         <insert tableName="FARE_ZONES">
             <column name="ZONE_ID" valueNumeric="2"/>
             <column name="ZONE_CODE" value="Ю"/>
             <column name="ZONE_NAME" value="Юг"/>
             <column name="DESCRIPTION" value="Юг"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
         </insert>
         <insert tableName="FARE_ZONES">
             <column name="ZONE_ID" valueNumeric="3"/>
             <column name="ZONE_CODE" value="З"/>
             <column name="ZONE_NAME" value="Запад"/>
             <column name="DESCRIPTION" value="Запад"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
         </insert>
         <insert tableName="FARE_ZONES">
             <column name="ZONE_ID" valueNumeric="4"/>
             <column name="ZONE_CODE" value="В"/>
             <column name="ZONE_NAME" value="Восток"/>
             <column name="DESCRIPTION" value="Восток"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
         </insert>
     </changeSet>
 
     <!-- Тестовые данные: тарифы по зонам -->
-    <changeSet id="test-10" author="Vlad" context="test">
+    <changeSet id="test-10" author="Vlad" context="development">
         <insert tableName="CARRIER_ZONE_MAP">
             <column name="CARRIER_ZONE_MAP_ID" valueNumeric="1"/>
             <column name="CARRIER_ID" valueNumeric="1"/>
@@ -371,7 +379,7 @@
     </changeSet>
 
     <!-- Тестовые данные: остановки -->
-    <changeSet id="test-11" author="Vlad" context="test">
+    <changeSet id="test-11" author="Vlad" context="development">
         <!-- Северная зона -->
         <insert tableName="TRANSPORT_STOPS">
             <column name="STOP_ID" valueNumeric="1"/>
@@ -622,7 +630,7 @@
     </changeSet>
 
     <!-- Тестовые данные: привязка остановок к маршрутам -->
-    <changeSet id="test-12" author="Vlad" context="test">
+    <changeSet id="test-12" author="Vlad" context="development">
         <!-- Центральный сегмент (ROUTE_ID = 2) -->
         <insert tableName="STOPS_ROUTE_MAP">
             <column name="STOP_ID" valueNumeric="1"/>

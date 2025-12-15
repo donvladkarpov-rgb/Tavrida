@@ -341,9 +341,7 @@
             <column name="STARTED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="CLOSED_AT" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
+            <column name="CLOSED_AT" type="TIMESTAMP"/>
             <column name="EXPIRATION_TIME" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
@@ -877,15 +875,15 @@
         </sql>
     </changeSet>
 
-    <!-- 25. Остановки -->
-    <changeSet id="25" author="Vlad">
-        <preConditions onFail="MARK_RAN">
-            <dbms type="postgresql"/>
-        </preConditions>
-        <sql>
-            CREATE EXTENSION IF NOT EXISTS postgis;
-        </sql>
-    </changeSet>
+<!--    &lt;!&ndash; 25. Остановки &ndash;&gt;-->
+<!--    <changeSet id="25" author="Vlad">-->
+<!--        <preConditions onFail="MARK_RAN">-->
+<!--            <dbms type="postgresql"/>-->
+<!--        </preConditions>-->
+<!--        <sql>-->
+<!--            CREATE EXTENSION IF NOT EXISTS postgis;-->
+<!--        </sql>-->
+<!--    </changeSet>-->
 
     <changeSet id="26" author="Vlad">
         <createTable tableName="TRANSPORT_STOPS">
