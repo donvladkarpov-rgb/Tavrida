@@ -1,0 +1,37 @@
+package ru.vtb.msa.detr.tavrida.api.web;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.vtb.msa.detr.tavrida.api.model.route.RouteTypeDto;
+
+import java.util.List;
+
+@Tag(name = "Route Types", description = "Управление типами маршрутов")
+public interface RouteTypeApi {
+
+    @Operation(summary = "Получить все типы маршрутов")
+    @GetMapping("/api/v1/route-types")
+    ResponseEntity<List<RouteTypeDto>> getAll();
+
+    @Operation(summary = "Получить тип маршрута по ID")
+    @GetMapping("/api/v1/route-types/{id}")
+    ResponseEntity<RouteTypeDto> getById(@PathVariable Long id);
+
+    @Operation(summary = "Получить тип маршрута по названию")
+    @GetMapping("/api/v1/route-types/name/{name}")
+    ResponseEntity<RouteTypeDto> getByName(@PathVariable String name);
+
+    @Operation(summary = "Создать новый тип маршрута")
+    @PostMapping("/api/v1/route-types")
+    ResponseEntity<RouteTypeDto> create(@RequestBody RouteTypeDto dto);
+
+    @Operation(summary = "Обновить тип маршрута")
+    @PutMapping("/api/v1/route-types/{id}")
+    ResponseEntity<RouteTypeDto> update(@PathVariable Long id, @RequestBody RouteTypeDto dto);
+
+    @Operation(summary = "Удалить тип маршрута")
+    @DeleteMapping("/api/v1/route-types/{id}")
+    ResponseEntity<Void> delete(@PathVariable Long id);
+}
