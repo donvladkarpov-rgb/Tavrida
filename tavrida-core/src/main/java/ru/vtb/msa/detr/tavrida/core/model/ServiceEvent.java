@@ -19,8 +19,8 @@ public class ServiceEvent {
     @JoinColumn(name = "service_event_type", nullable = false)
     private ServiceEventType serviceEventType;
 
-    @Column(name = "doer_user_id")
-    private Long doerUserId;
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "reference_type_id")
     private Integer referenceTypeId;
@@ -44,8 +44,8 @@ public class ServiceEvent {
     public ServiceEventType getServiceEventType() { return serviceEventType; }
     public void setServiceEventType(ServiceEventType serviceEventType) { this.serviceEventType = serviceEventType; }
 
-    public Long getDoerUserId() { return doerUserId; }
-    public void setDoerUserId(Long doerUserId) { this.doerUserId = doerUserId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Integer getReferenceTypeId() { return referenceTypeId; }
     public void setReferenceTypeId(Integer referenceTypeId) { this.referenceTypeId = referenceTypeId; }

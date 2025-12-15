@@ -4,7 +4,6 @@ import ru.vtb.msa.detr.tavrida.api.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -310,7 +309,7 @@ public class TavridaMapper {
         dto.setServiceEventId(e.getServiceEventId());
         dto.setEventTime(e.getEventTime());
         dto.setServiceEventType(toServiceEventTypeDto(e.getServiceEventType()));
-        dto.setDoerUserId(e.getDoerUserId());
+        dto.setUserId(e.getUserId());
         dto.setReferenceTypeId(e.getReferenceTypeId());
         dto.setReferenceId(e.getReferenceId());
         dto.setEventDetails(e.getEventDetails());
@@ -322,7 +321,7 @@ public class TavridaMapper {
         e.setServiceEventId(dto.getServiceEventId());
         e.setEventTime(dto.getEventTime());
         e.setServiceEventType(toServiceEventTypeEntity(dto.getServiceEventType()));
-        e.setDoerUserId(dto.getDoerUserId());
+        e.setUserId(dto.getUserId());
         e.setReferenceTypeId(dto.getReferenceTypeId());
         e.setReferenceId(dto.getReferenceId());
         e.setEventDetails(dto.getEventDetails());

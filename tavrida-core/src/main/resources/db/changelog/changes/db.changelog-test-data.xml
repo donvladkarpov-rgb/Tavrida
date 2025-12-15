@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Тестовые данные: перевозчики -->
+    <changeSet id="test-1" author="Vlad" context="test">
+        <insert tableName="CARRIERS">
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="CARRIER_NAME" value="Крымские тачанки"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: пользователи -->
+    <changeSet id="test-2" author="Vlad" context="test">
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="1"/>
+            <column name="USER_ROLE_ID" valueNumeric="1"/>
+            <column name="USER_FIO" value="root"/>
+            <column name="USER_PASSWORD_HASH" value="changeit"/>
+        </insert>
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="2"/>
+            <column name="USER_ROLE_ID" valueNumeric="2"/>
+            <column name="USER_FIO" value="Потап Админович Перевозчика"/>
+            <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
+        </insert>
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="3"/>
+            <column name="USER_ROLE_ID" valueNumeric="3"/>
+            <column name="USER_FIO" value="Алексей Петрович Кассир"/>
+            <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
+        </insert>
+        <insert tableName="USERS">
+            <column name="USER_ID" valueNumeric="4"/>
+            <column name="USER_ROLE_ID" valueNumeric="4"/>
+            <column name="USER_FIO" value="Водил Водилович Водила"/>
+            <column name="USER_PASSWORD_HASH" value="FIRST_PASSWORD"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: транспорт -->
+    <changeSet id="test-3" author="Vlad" context="test">
+        <insert tableName="TRANSPORTS">
+            <column name="TRANSPORT_ID" valueNumeric="1"/>
+            <column name="TRANSPORT_GUID" value="264bfe9d-98c5-4cfc-a27b-9b6234054580"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="TRANSPORT_NUMBER" value="1"/>
+            <column name="TRANSPORT_NAME" value="трамвай"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: терминалы -->
+    <changeSet id="test-4" author="Vlad" context="test">
+        <insert tableName="TERMINALS">
+            <column name="TERMINAL_ID" valueNumeric="1"/>
+            <column name="TRANSPORT_ID" valueNumeric="1"/>
+            <column name="TERMINAL_GUID" value="3f2dd185-0540-4d82-ad26-e6a181cb1893"/>
+            <column name="TERMINAL_NUMBER" value="A1234"/>
+            <column name="TERMINAL_SERIAL" value="A1234_1234"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: карты -->
+    <changeSet id="test-5" author="Vlad" context="test">
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="1"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440000"/>
+            <column name="CARD_TYPE_ID" valueNumeric="1"/>
+            <column name="USER_ID" valueNumeric="1"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="2"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-756642440001"/>
+            <column name="CARD_TYPE_ID" valueNumeric="2"/>
+            <column name="USER_ID" valueNumeric="3"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="3"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440002"/>
+            <column name="CARD_TYPE_ID" valueNumeric="3"/>
+            <column name="USER_ID" valueNumeric="4"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="4"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440003"/>
+            <column name="CARD_TYPE_ID" valueNumeric="4"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="5"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440004"/>
+            <column name="CARD_TYPE_ID" valueNumeric="5"/>
+            <column name="USER_ID" valueNumeric="2"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+        </insert>
+        <insert tableName="CARDS">
+            <column name="CARD_ID" valueNumeric="6"/>
+            <column name="CARD_GUID" value="123e4567-e89b-42d3-a456-556642440005"/>
+            <column name="CARD_TYPE_ID" valueNumeric="6"/>
+            <column name="USER_ID" valueNumeric="2"/>
+            <column name="UNIQUE_TRAVEL_COUNT" valueNumeric="0"/>
+            <column name="MAXIMUM_UNIQUE_COUNT" valueNumeric="10000"/>
+            <column name="AVAILABLE_TRAVEL_COUNT" valueNumeric="1000"/>
+            <column name="EXPIRATION_DATE" valueDate="2028-01-15"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: типы маршрутов -->
+    <changeSet id="test-6" author="Vlad" context="test">
+        <insert tableName="ROUTE_TYPES">
+            <column name="ROUTE_TYPES_ID" valueNumeric="1"/>
+            <column name="ROUTE_TYPES_NAME" value="Маршрут"/>
+        </insert>
+        <insert tableName="ROUTE_TYPES">
+            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
+            <column name="ROUTE_TYPES_NAME" value="Путь"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: маршруты -->
+    <changeSet id="test-7" author="Vlad" context="test">
+        <!-- Родительский маршрут -->
+        <insert tableName="ROUTES">
+            <column name="ROUTE_ID" valueNumeric="1"/>
+            <column name="ROUTE_GUID" value="a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="1"/>
+            <column name="PARENT_ROUTE_ID" value="NULL"/>
+            <column name="ROUTE_NAME" value="Автобусный маршрут №25 &quot;Центр-Север&quot;"/>
+            <column name="DESCRIPTION" value="Основной городской маршрут от ЖД вокзала до Северного района через центр города"/>
+            <column name="ROUTE_OBJECT" value="{
+        &quot;vehicle_type&quot;: &quot;bus&quot;,
+        &quot;total_stops&quot;: 12,
+        &quot;total_length_km&quot;: 15.3,
+        &quot;total_travel_time_minutes&quot;: 52,
+        &quot;operating_hours&quot;: {&quot;first_departure&quot;: &quot;06:00&quot;, &quot;last_departure&quot;: &quot;23:00&quot;},
+        &quot;base_fare&quot;: 50,
+        &quot;interval_minutes&quot;: 12,
+        &quot;is_active&quot;: true,
+        &quot;requires_driver_shift&quot;: true
+    }"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 09:00:00"/>
+        </insert>
+
+        <!-- Путь 1: Центральный сегмент -->
+        <insert tableName="ROUTES">
+            <column name="ROUTE_ID" valueNumeric="2"/>
+            <column name="ROUTE_GUID" value="b1ffc999-9c0b-4ef8-bb6d-6bb9bd380a12"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
+            <column name="PARENT_ROUTE_ID" valueNumeric="1"/>
+            <column name="ROUTE_NAME" value="Центральный сегмент"/>
+            <column name="DESCRIPTION" value="Начальный участок маршрута через исторический центр города"/>
+            <column name="ROUTE_OBJECT" value="{
+        &quot;segment_type&quot;: &quot;central&quot;,
+        &quot;segment_order&quot;: 1,
+        &quot;from_stop&quot;: &quot;ЖД Вокзал&quot;,
+        &quot;to_stop&quot;: &quot;Площадь Ленина&quot;,
+        &quot;intermediate_stops&quot;: [&quot;Улица Мира&quot;, &quot;Центральный рынок&quot;],
+        &quot;length_km&quot;: 3.2,
+        &quot;travel_time_minutes&quot;: 10,
+        &quot;zones&quot;: [&quot;A&quot;],
+        &quot;fare_segment&quot;: 50,
+        &quot;is_boarding_allowed&quot;: true,
+        &quot;is_alighting_allowed&quot;: true
+    }"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 09:05:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 09:05:00"/>
+        </insert>
+
+        <!-- Путь 2: Торговый сегмент -->
+        <insert tableName="ROUTES">
+            <column name="ROUTE_ID" valueNumeric="3"/>
+            <column name="ROUTE_GUID" value="c2eecc99-9c0b-4ef8-bb6d-6bb9bd380a13"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
+            <column name="PARENT_ROUTE_ID" valueNumeric="1"/>
+            <column name="ROUTE_NAME" value="Торговый сегмент"/>
+            <column name="DESCRIPTION" value="Участок через торговые районы и бизнес-центры"/>
+            <column name="ROUTE_OBJECT" value="{
+        &quot;segment_type&quot;: &quot;commercial&quot;,
+        &quot;segment_order&quot;: 2,
+        &quot;from_stop&quot;: &quot;Площадь Ленина&quot;,
+        &quot;to_stop&quot;: &quot;Торговый центр&quot;,
+        &quot;intermediate_stops&quot;: [&quot;Банковский квартал&quot;, &quot;Офисный район&quot;],
+        &quot;length_km&quot;: 4.1,
+        &quot;travel_time_minutes&quot;: 15,
+        &quot;zones&quot;: [&quot;A&quot;, &quot;B&quot;],
+        &quot;fare_segment&quot;: 75,
+        &quot;is_boarding_allowed&quot;: true,
+        &quot;is_alighting_allowed&quot;: true,
+        &quot;peak_hours_congestion&quot;: &quot;high&quot;
+    }"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 09:10:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 09:10:00"/>
+        </insert>
+
+        <!-- Путь 3: Жилой сегмент -->
+        <insert tableName="ROUTES">
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="ROUTE_GUID" value="d3ffdd99-9c0b-4ef8-bb6d-6bb9bd380a14"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
+            <column name="PARENT_ROUTE_ID" valueNumeric="1"/>
+            <column name="ROUTE_NAME" value="Жилой сегмент"/>
+            <column name="DESCRIPTION" value="Участок через спальные районы и жилые массивы"/>
+            <column name="ROUTE_OBJECT" value="{
+        &quot;segment_type&quot;: &quot;residential&quot;,
+        &quot;segment_order&quot;: 3,
+        &quot;from_stop&quot;: &quot;Торговый центр&quot;,
+        &quot;to_stop&quot;: &quot;Микрорайон Северный-1&quot;,
+        &quot;intermediate_stops&quot;: [&quot;Школа №15&quot;, &quot;Поликлиника&quot;, &quot;Спортивный комплекс&quot;],
+        &quot;length_km&quot;: 5.8,
+        &quot;travel_time_minutes&quot;: 18,
+        &quot;zones&quot;: [&quot;B&quot;],
+        &quot;fare_segment&quot;: 100,
+        &quot;is_boarding_allowed&quot;: true,
+        &quot;is_alighting_allowed&quot;: true,
+        &quot;passenger_flow&quot;: &quot;medium&quot;
+    }"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 09:15:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 09:15:00"/>
+        </insert>
+
+        <!-- Путь 4: Конечный сегмент -->
+        <insert tableName="ROUTES">
+            <column name="ROUTE_ID" valueNumeric="5"/>
+            <column name="ROUTE_GUID" value="e4eeee99-9c0b-4ef8-bb6d-6bb9bd380a15"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
+            <column name="PARENT_ROUTE_ID" valueNumeric="1"/>
+            <column name="ROUTE_NAME" value="Конечный сегмент"/>
+            <column name="DESCRIPTION" value="Финальный участок маршрута до северной конечной остановки"/>
+            <column name="ROUTE_OBJECT" value="{
+        &quot;segment_type&quot;: &quot;final&quot;,
+        &quot;segment_order&quot;: 4,
+        &quot;from_stop&quot;: &quot;Микрорайон Северный-1&quot;,
+        &quot;to_stop&quot;: &quot;Конечная Северная&quot;,
+        &quot;intermediate_stops&quot;: [&quot;Микрорайон Северный-2&quot;, &quot;Автостанция Северная&quot;],
+        &quot;length_km&quot;: 2.2,
+        &quot;travel_time_minutes&quot;: 9,
+        &quot;zones&quot;: [&quot;B&quot;],
+        &quot;fare_segment&quot;: 50,
+        &quot;is_boarding_allowed&quot;: true,
+        &quot;is_alighting_allowed&quot;: true,
+        &quot;is_terminal_stop&quot;: true
+    }"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 09:20:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 09:20:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: привязка маршрутов к перевозчику -->
+    <changeSet id="test-8" author="Vlad" context="test">
+        <insert tableName="CARRIER_ROUTE_MAP">
+            <column name="CARRIER_ROUTE_MAP_ID" valueNumeric="1"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ROUTE_ID" valueNumeric="1"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ROUTE_MAP">
+            <column name="CARRIER_ROUTE_MAP_ID" valueNumeric="2"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ROUTE_ID" valueNumeric="2"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ROUTE_MAP">
+            <column name="CARRIER_ROUTE_MAP_ID" valueNumeric="3"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ROUTE_ID" valueNumeric="3"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ROUTE_MAP">
+            <column name="CARRIER_ROUTE_MAP_ID" valueNumeric="4"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ROUTE_MAP">
+            <column name="CARRIER_ROUTE_MAP_ID" valueNumeric="5"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ROUTE_ID" valueNumeric="5"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 10:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 10:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: тарифные зоны -->
+    <changeSet id="test-9" author="Vlad" context="test">
+        <insert tableName="FARE_ZONES">
+            <column name="ZONE_ID" valueNumeric="1"/>
+            <column name="ZONE_CODE" value="С"/>
+            <column name="ZONE_NAME" value="Север"/>
+            <column name="DESCRIPTION" value="Север"/>
+        </insert>
+        <insert tableName="FARE_ZONES">
+            <column name="ZONE_ID" valueNumeric="2"/>
+            <column name="ZONE_CODE" value="Ю"/>
+            <column name="ZONE_NAME" value="Юг"/>
+            <column name="DESCRIPTION" value="Юг"/>
+        </insert>
+        <insert tableName="FARE_ZONES">
+            <column name="ZONE_ID" valueNumeric="3"/>
+            <column name="ZONE_CODE" value="З"/>
+            <column name="ZONE_NAME" value="Запад"/>
+            <column name="DESCRIPTION" value="Запад"/>
+        </insert>
+        <insert tableName="FARE_ZONES">
+            <column name="ZONE_ID" valueNumeric="4"/>
+            <column name="ZONE_CODE" value="В"/>
+            <column name="ZONE_NAME" value="Восток"/>
+            <column name="DESCRIPTION" value="Восток"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: тарифы по зонам -->
+    <changeSet id="test-10" author="Vlad" context="test">
+        <insert tableName="CARRIER_ZONE_MAP">
+            <column name="CARRIER_ZONE_MAP_ID" valueNumeric="1"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ZONE_ID" valueNumeric="1"/>
+            <column name="BASE_FARE" valueNumeric="50.00"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 11:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 11:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ZONE_MAP">
+            <column name="CARRIER_ZONE_MAP_ID" valueNumeric="2"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ZONE_ID" valueNumeric="2"/>
+            <column name="BASE_FARE" valueNumeric="55.00"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 11:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 11:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ZONE_MAP">
+            <column name="CARRIER_ZONE_MAP_ID" valueNumeric="3"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ZONE_ID" valueNumeric="3"/>
+            <column name="BASE_FARE" valueNumeric="60.00"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 11:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 11:00:00"/>
+        </insert>
+        <insert tableName="CARRIER_ZONE_MAP">
+            <column name="CARRIER_ZONE_MAP_ID" valueNumeric="4"/>
+            <column name="CARRIER_ID" valueNumeric="1"/>
+            <column name="ZONE_ID" valueNumeric="4"/>
+            <column name="BASE_FARE" valueNumeric="65.00"/>
+            <column name="CREATED_AT" valueDate="2024-01-15 11:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-15 11:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: остановки -->
+    <changeSet id="test-11" author="Vlad" context="test">
+        <!-- Северная зона -->
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="1"/>
+            <column name="FARE_ZONE_ID" valueNumeric="1"/>
+            <column name="STOP_CODE" value="С-001"/>
+            <column name="STOP_NAME" value="Северный вокзал"/>
+            <column name="STOP_ADDRESS" value="ул. Вокзальная, 1, Джанкой"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.3923 45.7098)"/>
+            <column name="DESCRIPTION" value="Главный вокзал северного направления"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="2"/>
+            <column name="FARE_ZONE_ID" valueNumeric="1"/>
+            <column name="STOP_CODE" value="С-002"/>
+            <column name="STOP_NAME" value="Автостанция &quot;Северная&quot;"/>
+            <column name="STOP_ADDRESS" value="пр. Победы, 15, Джанкой"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.3987 45.7123)"/>
+            <column name="DESCRIPTION" value="Автовокзал северной части города"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="3"/>
+            <column name="FARE_ZONE_ID" valueNumeric="1"/>
+            <column name="STOP_CODE" value="С-003"/>
+            <column name="STOP_NAME" value="Рынок &quot;Северный&quot;"/>
+            <column name="STOP_ADDRESS" value="ул. Рыночная, 25, Джанкой"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.4012 45.7089)"/>
+            <column name="DESCRIPTION" value="Центральный рынок северного района"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="4"/>
+            <column name="FARE_ZONE_ID" valueNumeric="1"/>
+            <column name="STOP_CODE" value="С-004"/>
+            <column name="STOP_NAME" value="Микрорайон &quot;Северный&quot;"/>
+            <column name="STOP_ADDRESS" value="ул. Северная, 45, Джанкой"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.3956 45.7154)"/>
+            <column name="DESCRIPTION" value="Спальный район северной части"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="5"/>
+            <column name="FARE_ZONE_ID" valueNumeric="1"/>
+            <column name="STOP_CODE" value="С-005"/>
+            <column name="STOP_NAME" value="Школа №1 (Северная)"/>
+            <column name="STOP_ADDRESS" value="ул. Школьная, 10, Джанкой"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.3901 45.7105)"/>
+            <column name="DESCRIPTION" value="Старейшая школа северного района"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+
+        <!-- Южная зона -->
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="6"/>
+            <column name="FARE_ZONE_ID" valueNumeric="2"/>
+            <column name="STOP_CODE" value="Ю-001"/>
+            <column name="STOP_NAME" value="Ялтинский автовокзал"/>
+            <column name="STOP_ADDRESS" value="ул. Московская, 8, Ялта"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.1641 44.4953)"/>
+            <column name="DESCRIPTION" value="Главный автовокзал ЮБК"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="7"/>
+            <column name="FARE_ZONE_ID" valueNumeric="2"/>
+            <column name="STOP_CODE" value="Ю-002"/>
+            <column name="STOP_NAME" value="Набережная Ялты"/>
+            <column name="STOP_ADDRESS" value="Набережная им. Ленина, 1, Ялта"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.1665 44.4921)"/>
+            <column name="DESCRIPTION" value="Центральная набережная курорта"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="8"/>
+            <column name="FARE_ZONE_ID" valueNumeric="2"/>
+            <column name="STOP_CODE" value="Ю-003"/>
+            <column name="STOP_NAME" value="Массандра (винзавод)"/>
+            <column name="STOP_ADDRESS" value="ул. Винодела Егорова, 9, Массандра"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.1889 44.5182)"/>
+            <column name="DESCRIPTION" value="Знаменитый винзавод Массандра"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="9"/>
+            <column name="FARE_ZONE_ID" valueNumeric="2"/>
+            <column name="STOP_CODE" value="Ю-004"/>
+            <column name="STOP_NAME" value="Ливадийский дворец"/>
+            <column name="STOP_ADDRESS" value="ул. Батурина, 44, Ливадия"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.1435 44.4675)"/>
+            <column name="DESCRIPTION" value="Бывшая резиденция русских царей"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="10"/>
+            <column name="FARE_ZONE_ID" valueNumeric="2"/>
+            <column name="STOP_CODE" value="Ю-005"/>
+            <column name="STOP_NAME" value="Ай-Петри (канатная дорога)"/>
+            <column name="STOP_ADDRESS" value="пос. Кореиз, канатная дорога"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.0567 44.4511)"/>
+            <column name="DESCRIPTION" value="Нижняя станция канатной дороги"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+
+        <!-- Западная зона -->
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="11"/>
+            <column name="FARE_ZONE_ID" valueNumeric="3"/>
+            <column name="STOP_CODE" value="З-001"/>
+            <column name="STOP_NAME" value="Севастополь (Автовокзал)"/>
+            <column name="STOP_ADDRESS" value="ул. Вокзальная, 12, Севастополь"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(33.5224 44.6166)"/>
+            <column name="DESCRIPTION" value="Центральный автовокзал Севастополя"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="12"/>
+            <column name="FARE_ZONE_ID" valueNumeric="3"/>
+            <column name="STOP_CODE" value="З-002"/>
+            <column name="STOP_NAME" value="Площадь Нахимова"/>
+            <column name="STOP_ADDRESS" value="пл. Нахимова, Севастополь"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(33.5243 44.6168)"/>
+            <column name="DESCRIPTION" value="Центральная площадь города-героя"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="13"/>
+            <column name="FARE_ZONE_ID" valueNumeric="3"/>
+            <column name="STOP_CODE" value="З-003"/>
+            <column name="STOP_NAME" value="Херсонес Таврический"/>
+            <column name="STOP_ADDRESS" value="ул. Древняя, 1, Севастополь"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(33.4912 44.6105)"/>
+            <column name="DESCRIPTION" value="Древнегреческий полис, музей-заповедник"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="14"/>
+            <column name="FARE_ZONE_ID" valueNumeric="3"/>
+            <column name="STOP_CODE" value="З-004"/>
+            <column name="STOP_NAME" value="Балаклава (набережная)"/>
+            <column name="STOP_ADDRESS" value="наб. Назукина, Балаклава"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(33.5954 44.5004)"/>
+            <column name="DESCRIPTION" value="Историческая набережная Балаклавы"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="15"/>
+            <column name="FARE_ZONE_ID" valueNumeric="3"/>
+            <column name="STOP_CODE" value="З-005"/>
+            <column name="STOP_NAME" value="Инкерман (винзавод)"/>
+            <column name="STOP_ADDRESS" value="ул. Малиновского, 1, Инкерман"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(33.6087 44.6140)"/>
+            <column name="DESCRIPTION" value="Знаменитый инкерманский завод марочных вин"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+
+        <!-- Восточная зона -->
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="16"/>
+            <column name="FARE_ZONE_ID" valueNumeric="4"/>
+            <column name="STOP_CODE" value="В-001"/>
+            <column name="STOP_NAME" value="Феодосийский автовокзал"/>
+            <column name="STOP_ADDRESS" value="ул. Федько, 32, Феодосия"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(35.3822 45.0489)"/>
+            <column name="DESCRIPTION" value="Автовокзал Феодосии"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="17"/>
+            <column name="FARE_ZONE_ID" valueNumeric="4"/>
+            <column name="STOP_CODE" value="В-002"/>
+            <column name="STOP_NAME" value="Ж/д вокзал Феодосия"/>
+            <column name="STOP_ADDRESS" value="ул. Галерейная, 2, Феодосия"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(35.3834 45.0311)"/>
+            <column name="DESCRIPTION" value="Железнодорожный вокзал города"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="18"/>
+            <column name="FARE_ZONE_ID" valueNumeric="4"/>
+            <column name="STOP_CODE" value="В-003"/>
+            <column name="STOP_NAME" value="Картинная галерея Айвазовского"/>
+            <column name="STOP_ADDRESS" value="ул. Галерейная, 2, Феодосия"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(35.3828 45.0325)"/>
+            <column name="DESCRIPTION" value="Знаменитая галерея мариниста"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="19"/>
+            <column name="FARE_ZONE_ID" valueNumeric="4"/>
+            <column name="STOP_CODE" value="В-004"/>
+            <column name="STOP_NAME" value="Коктебель (автостанция)"/>
+            <column name="STOP_ADDRESS" value="ул. Ленина, 109, Коктебель"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(35.2458 44.9633)"/>
+            <column name="DESCRIPTION" value="Автостанция курортного поселка"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+        <insert tableName="TRANSPORT_STOPS">
+            <column name="STOP_ID" valueNumeric="20"/>
+            <column name="FARE_ZONE_ID" valueNumeric="4"/>
+            <column name="STOP_CODE" value="В-005"/>
+            <column name="STOP_NAME" value="Судакская крепость"/>
+            <column name="STOP_ADDRESS" value="ул. Генуэзская крепость, 1, Судак"/>
+            <column name="GEO_LOCATION" value="SRID=4326;POINT(34.9576 44.8416)"/>
+            <column name="DESCRIPTION" value="Генуэзская крепость - музей-заповедник"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueDate="2024-01-01 09:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-01-01 09:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- Тестовые данные: привязка остановок к маршрутам -->
+    <changeSet id="test-12" author="Vlad" context="test">
+        <!-- Центральный сегмент (ROUTE_ID = 2) -->
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="1"/>
+            <column name="ROUTE_ID" valueNumeric="2"/>
+            <column name="SERIAL_NUMBER" valueNumeric="1"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="3"/>
+            <column name="ROUTE_ID" valueNumeric="2"/>
+            <column name="SERIAL_NUMBER" valueNumeric="2"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="5"/>
+            <column name="ROUTE_ID" valueNumeric="2"/>
+            <column name="SERIAL_NUMBER" valueNumeric="3"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="2"/>
+            <column name="ROUTE_ID" valueNumeric="2"/>
+            <column name="SERIAL_NUMBER" valueNumeric="4"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+
+        <!-- Торговый сегмент (ROUTE_ID = 3) -->
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="11"/>
+            <column name="ROUTE_ID" valueNumeric="3"/>
+            <column name="SERIAL_NUMBER" valueNumeric="1"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="12"/>
+            <column name="ROUTE_ID" valueNumeric="3"/>
+            <column name="SERIAL_NUMBER" valueNumeric="2"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="13"/>
+            <column name="ROUTE_ID" valueNumeric="3"/>
+            <column name="SERIAL_NUMBER" valueNumeric="3"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="14"/>
+            <column name="ROUTE_ID" valueNumeric="3"/>
+            <column name="SERIAL_NUMBER" valueNumeric="4"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+
+        <!-- Жилой сегмент (ROUTE_ID = 4) -->
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="6"/>
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="SERIAL_NUMBER" valueNumeric="1"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="7"/>
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="SERIAL_NUMBER" valueNumeric="2"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="8"/>
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="SERIAL_NUMBER" valueNumeric="3"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="9"/>
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="SERIAL_NUMBER" valueNumeric="4"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="10"/>
+            <column name="ROUTE_ID" valueNumeric="4"/>
+            <column name="SERIAL_NUMBER" valueNumeric="5"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+
+        <!-- Конечный сегмент (ROUTE_ID = 5) -->
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="16"/>
+            <column name="ROUTE_ID" valueNumeric="5"/>
+            <column name="SERIAL_NUMBER" valueNumeric="1"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="17"/>
+            <column name="ROUTE_ID" valueNumeric="5"/>
+            <column name="SERIAL_NUMBER" valueNumeric="2"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="18"/>
+            <column name="ROUTE_ID" valueNumeric="5"/>
+            <column name="SERIAL_NUMBER" valueNumeric="3"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+        <insert tableName="STOPS_ROUTE_MAP">
+            <column name="STOP_ID" valueNumeric="19"/>
+            <column name="ROUTE_ID" valueNumeric="5"/>
+            <column name="SERIAL_NUMBER" valueNumeric="4"/>
+            <column name="CREATED_AT" valueDate="2024-12-15 12:00:00"/>
+            <column name="UPDATED_AT" valueDate="2024-12-15 12:00:00"/>
+        </insert>
+
+        <!-- Основной маршрут (ROUTE_ID = 1) — все 20 остановок -->
+        <sql dbms="postgresql">
+            <![CDATA[
+                INSERT INTO STOPS_ROUTE_MAP (STOP_ID, ROUTE_ID, SERIAL_NUMBER, CREATED_AT, UPDATED_AT)
+                SELECT
+                    STOP_ID,
+                    1,
+                    ROW_NUMBER() OVER (ORDER BY STOP_ID),
+                    '2024-12-15 12:00:00',
+                    '2024-12-15 12:00:00'
+                FROM TRANSPORT_STOPS
+                ORDER BY STOP_ID;
+            ]]>
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

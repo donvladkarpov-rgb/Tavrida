@@ -1,6 +1,7 @@
 package ru.vtb.msa.detr.tavrida.core.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -28,6 +29,10 @@ public class Card {
     @JoinColumn(name = "transport_id")
     private Transport transport;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tariff_type_id") // ← НОВОЕ ПОЛЕ
+    private TariffType tariffType;
+
     @Column(name = "unique_travel_count", nullable = false)
     private Integer uniqueTravelCount;
 
@@ -37,10 +42,23 @@ public class Card {
     @Column(name = "available_travel_count", nullable = false)
     private Integer availableTravelCount;
 
-    @Column(name = "expiration_date")
+    @Column(name = "expiration_rides_package") // ← НОВОЕ ПОЛЕ
+    private Instant expirationRidesPackage;
+
+    @Column(name = "unlimited_until_date") // ← НОВОЕ ПОЛЕ
+    private Instant unlimitedUntilDate;
+
+    @Column(name = "wallet_balance") // ← НОВОЕ ПОЛЕ
+    private BigDecimal walletBalance;
+
+    @Column(name = "issue_date", nullable = false) // ← НОВОЕ ПОЛЕ
+    private Instant issueDate;
+
+    @Column(name = "expiration_date", nullable = false) // ← теперь NOT NULL
     private Instant expirationDate;
 
-    // --- getters/setters ---
+    // Getters and setters
+
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
 
@@ -56,6 +74,9 @@ public class Card {
     public Transport getTransport() { return transport; }
     public void setTransport(Transport transport) { this.transport = transport; }
 
+    public TariffType getTariffType() { return tariffType; }
+    public void setTariffType(TariffType tariffType) { this.tariffType = tariffType; }
+
     public Integer getUniqueTravelCount() { return uniqueTravelCount; }
     public void setUniqueTravelCount(Integer uniqueTravelCount) { this.uniqueTravelCount = uniqueTravelCount; }
 
@@ -65,11 +86,23 @@ public class Card {
     public Integer getAvailableTravelCount() { return availableTravelCount; }
     public void setAvailableTravelCount(Integer availableTravelCount) { this.availableTravelCount = availableTravelCount; }
 
+    public Instant getExpirationRidesPackage() { return expirationRidesPackage; }
+    public void setExpirationRidesPackage(Instant expirationRidesPackage) { this.expirationRidesPackage = expirationRidesPackage; }
+
+    public Instant getUnlimitedUntilDate() { return unlimitedUntilDate; }
+    public void setUnlimitedUntilDate(Instant unlimitedUntilDate) { this.unlimitedUntilDate = unlimitedUntilDate; }
+
+    public BigDecimal getWalletBalance() { return walletBalance; }
+    public void setWalletBalance(BigDecimal walletBalance) { this.walletBalance = walletBalance; }
+
+    public Instant getIssueDate() { return issueDate; }
+    public void setIssueDate(Instant issueDate) { this.issueDate = issueDate; }
+
     public Instant getExpirationDate() { return expirationDate; }
     public void setExpirationDate(Instant expirationDate) { this.expirationDate = expirationDate; }
 
     public Long getUserId() {
-        if (user == null) return null;
-        return user.getUserId();
+        return user != null ? user.getUserId() : null;
     }
+
 }

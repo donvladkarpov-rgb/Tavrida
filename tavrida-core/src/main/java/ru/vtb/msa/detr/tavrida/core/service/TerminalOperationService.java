@@ -7,6 +7,7 @@ import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
 import ru.vtb.msa.detr.tavrida.core.model.*;
+import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.*;
 
 import java.time.Instant;
@@ -132,7 +133,26 @@ public class TerminalOperationService {
                 sessionId,
                 request.getDriverCardGuid(),
                 request.getTransportGuid(), // или terminal.getTransport().getTransportGuid()
-                now
+                now,
+                TavridaMapper.toUserDto(driver)
+        );
+    }
+
+    @Transactional
+    public DriverSessionResponse stopDriverSession(DriverSessionStopRequest request) {
+
+        UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
+
+        // 9. Возвращаем ответ — транспорт берём из терминала (или из request, они совпадают)
+        LocalDateTime now = LocalDateTime.now();
+        return new DriverSessionResponse(
+                true,
+                "Сессия водителя успешно закрыта",
+                request.getSessionId(),
+                null,
+                null, // или terminal.getTransport().getTransportGuid()
+                now,
+                TavridaMapper.toUserDto(session.getUser())
         );
     }
 

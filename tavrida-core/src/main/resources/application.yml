@@ -26,6 +26,7 @@ spring:
         generate_statistics: false
         jdbc:
           batch_size: 20
+          time_zone: UTC
         order_inserts: true
         order_updates: true
 

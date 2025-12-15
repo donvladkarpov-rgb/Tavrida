@@ -1,5 +1,7 @@
 package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
+import ru.vtb.msa.detr.tavrida.api.model.UserDto;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -10,19 +12,43 @@ public class DriverSessionResponse {
     private UUID driverCardGuid;
     private UUID transportGuid;
     private LocalDateTime startTime;
+    private UserDto driver;
 
     public DriverSessionResponse(boolean success, String message) {
         this.success = success;
         this.message = message;
     }
 
-    public DriverSessionResponse(boolean success, String message, UUID sessionId, UUID driverCardGuid, UUID transportGuid, LocalDateTime startTime) {
+    public DriverSessionResponse(
+            boolean success,
+            String message,
+            UUID sessionId,
+            UUID driverCardGuid,
+            UUID transportGuid,
+            LocalDateTime startTime) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
         this.driverCardGuid = driverCardGuid;
         this.transportGuid = transportGuid;
         this.startTime = startTime;
+    }
+
+    public DriverSessionResponse(
+            boolean success,
+            String message,
+            UUID sessionId,
+            UUID driverCardGuid,
+            UUID transportGuid,
+            LocalDateTime startTime,
+            UserDto driver) {
+        this.success = success;
+        this.message = message;
+        this.sessionId = sessionId;
+        this.driverCardGuid = driverCardGuid;
+        this.transportGuid = transportGuid;
+        this.startTime = startTime;
+        this.driver = driver;
     }
 
     // Getters & Setters

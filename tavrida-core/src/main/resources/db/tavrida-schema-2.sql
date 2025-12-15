@@ -4,7 +4,8 @@ CREATE TABLE USER_SESSIONS (
     TERMINAL_ID BIGINT NOT NULL,
     USER_ID BIGINT NOT NULL,
     CARD_ID BIGINT,
-    SESSIONS_TIME TIMESTAMP NOT NULL,
+    STARTED_AT TIMESTAMP NOT NULL,
+    CLOSED_AT TIMESTAMP NOT NULL
     EXPIRATION_TIME TIMESTAMP NOT NULL
 );
 CREATE INDEX IX_SESSIONS ON USER_SESSIONS (SESSION_ID, USER_ID);
@@ -42,15 +43,19 @@ CREATE TABLE SERVICE_EVENT_TYPES (
     EVENT_TYPE_NAME VARCHAR(128) NOT NULL
 );
 INSERT INTO SERVICE_EVENT_TYPES (EVENT_TYPE, EVENT_TYPE_NAME) VALUES
-    ('CU', 'Создание пользователя'),     -- C + U (Create User)
-    ('CC', 'Создание карты'),            -- C + C (Create Card)
-    ('DU', 'Удаление пользователя'),     -- D + U (Delete User)
-    ('DC', 'Удаление карты'),            -- D + C (Delete Card)
-    ('TA', 'Активация терминала'),       -- T + A (Terminal Activation)
-    ('TD', 'Деактивация терминала'),     -- T + D (Terminal Deactivation)
-    ('DS', 'Открытие смены водителя'),   -- D + S (Driver Shift) или (Drive Shift)
-    ('PT', 'Оплата проезда'),            -- P + T (Payment for Transit / Payment Trip)
-    ('OE', 'Другое событие');            -- O + E (Other Event)
+    ('CU', 'Создание пользователя'),        -- C + U (Create User)
+    ('CC', 'Создание карты'),               -- C + C (Create Card)
+    ('RC', 'Пополнение карты'),             -- R + C (Recharge Card)
+    ('DU', 'Удаление пользователя'),        -- D + U (Delete User)
+    ('DC', 'Удаление карты'),               -- D + C (Delete Card)
+    ('TA', 'Активация терминала'),          -- T + A (Terminal Activation)
+    ('TD', 'Деактивация терминала'),        -- T + D (Terminal Deactivation)
+    ('DS', 'Открытие смены водителя'),      -- D + S (Driver Shift)
+    ('CS', 'Закрытие смены водителя'),      -- C + S (Close Shift)
+    ('OR', 'Открыть маршрут водителем'),    -- O + R (Open Route)
+    ('CR', 'Закрыть маршрут водителем'),    -- C + R (Close Route)
+    ('PT', 'Оплата проезда'),               -- P + T (Payment for Transit)
+    ('OE', 'Другое событие');               -- O + E (Other Event)
 
 -- SERVICE_EVENTS
 CREATE TABLE SERVICE_EVENTS (
@@ -64,6 +69,8 @@ CREATE TABLE SERVICE_EVENTS (
     EVENT_DETAILS VARCHAR(256),
     EVENT_OBJECT JSONB
 );
+ALTER SEQUENCE SERVICE_EVENTS_SERVICE_EVENT_ID_seq
+RESTART WITH 1000;
 ALTER TABLE SERVICE_EVENTS
     ADD CONSTRAINT fk_service_events_type
     FOREIGN KEY (SERVICE_EVENT_TYPE) REFERENCES SERVICE_EVENT_TYPES(EVENT_TYPE);
@@ -105,6 +112,8 @@ CREATE TABLE PAYMENTS (
     PAYMENT_RESULT_ID INT NOT NULL,
     TERMINAL_ID BIGINT NOT NULL
 );
+ALTER SEQUENCE PAYMENTS_PAYMENT_ID_seq
+RESTART WITH 1000;
 ALTER TABLE PAYMENTS
     ADD CONSTRAINT fk_payments_card
     FOREIGN KEY (CARD_ID) REFERENCES CARDS(CARD_ID);

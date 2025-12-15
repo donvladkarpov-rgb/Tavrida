@@ -6,7 +6,7 @@ public class ServiceEventDto {
     private Long serviceEventId;
     private LocalDateTime eventTime;
     private ServiceEventTypeDto serviceEventType;
-    private Long doerUserId;
+    private Long userId;
     private Integer referenceTypeId;
     private Long referenceId;
     private String eventDetails;
@@ -23,8 +23,8 @@ public class ServiceEventDto {
     public ServiceEventTypeDto getServiceEventType() { return serviceEventType; }
     public void setServiceEventType(ServiceEventTypeDto serviceEventType) { this.serviceEventType = serviceEventType; }
 
-    public Long getDoerUserId() { return doerUserId; }
-    public void setDoerUserId(Long doerUserId) { this.doerUserId = doerUserId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Integer getReferenceTypeId() { return referenceTypeId; }
     public void setReferenceTypeId(Integer referenceTypeId) { this.referenceTypeId = referenceTypeId; }

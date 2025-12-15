@@ -19,6 +19,10 @@ public interface TerminalOperationApi {
     @PostMapping("/driver-session/start")
     ResponseEntity<DriverSessionResponse> startDriverSession(@RequestBody DriverSessionStartRequest request);
 
+    @Operation(summary = "Деактивация водительской смены (конец сессии)")
+    @PostMapping("/driver-session/stop")
+    ResponseEntity<DriverSessionResponse> stopDriverSession(@RequestBody DriverSessionStopRequest request);
+
     @Operation(summary = "Активация терминала")
     @PostMapping("/activate")
     ResponseEntity<TerminalActivationResponse> activateTerminal(TerminalActivationRequest request);

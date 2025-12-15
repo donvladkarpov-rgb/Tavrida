@@ -26,7 +26,7 @@ public class AuditService {
     }
 
     public List<ServiceEventDto> getEventsByUser(Long userId) {
-        return serviceEventRepository.findByDoerUserId(userId).stream()
+        return serviceEventRepository.findByUserId(userId).stream()
                 .map(TavridaMapper::toServiceEventDto)
                 .toList();
     }
