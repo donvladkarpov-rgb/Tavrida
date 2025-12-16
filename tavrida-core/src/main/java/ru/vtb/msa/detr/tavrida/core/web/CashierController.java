@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
+import ru.vtb.msa.detr.tavrida.api.model.terminal.CashierTerminalActivationRequest;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalActivationRequest;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalActivationResponse;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalDeactivationRequest;
@@ -20,7 +21,7 @@ public class CashierController implements CashierApi {
     }
 
     @Override
-    public ResponseEntity<TerminalActivationResponse> activateTerminal(@RequestBody TerminalActivationRequest request) {
+    public ResponseEntity<TerminalActivationResponse> activateTerminal(@RequestBody CashierTerminalActivationRequest request) {
         TerminalActivationResponse response = cashierService.activateTerminal(request);
         return ResponseEntity.ok(response);
     }

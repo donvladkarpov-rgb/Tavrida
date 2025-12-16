@@ -7,16 +7,14 @@ import ru.vtb.msa.detr.tavrida.api.model.PaymentResultDto;
 import ru.vtb.msa.detr.tavrida.api.model.PaymentTypeDto;
 import ru.vtb.msa.detr.tavrida.api.model.UserSessionDto;
 import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
-import ru.vtb.msa.detr.tavrida.api.model.terminal.DriverSessionResponse;
-import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalActivationRequest;
-import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalActivationResponse;
-import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalDeactivationRequest;
+import ru.vtb.msa.detr.tavrida.api.model.terminal.*;
 import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
 import ru.vtb.msa.detr.tavrida.core.exception.AuthenticationTavridaException;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.*;
+import ru.vtb.msa.detr.tavrida.core.util.TavridaUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -38,12 +36,12 @@ public class CashierService {
     private final CardTypeService cardTypeService;
     private final TavridaConstants tavridaConstants;
     private final TransportRepository transportRepository;
-    private final Random random = new Random();
     private final TerminalRepository terminalRepository;
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
     private final CarrierRepository carrierRepository;
     private final UserSessionRepository userSessionRepository;
+    private final TavridaUtils util;
 
     public CashierService(
             SessionService sessionService,
@@ -58,7 +56,8 @@ public class CashierService {
             CardRepository cardRepository,
             UserRepository userRepository,
             CarrierRepository carrierRepository,
-            UserSessionRepository userSessionRepository) {
+            UserSessionRepository userSessionRepository,
+            TavridaUtils util) {
         this.sessionService = sessionService;
         this.cardService = cardService;
         this.userService = userService;
@@ -72,22 +71,14 @@ public class CashierService {
         this.userRepository = userRepository;
         this.carrierRepository = carrierRepository;
         this.userSessionRepository = userSessionRepository;
-    }
-
-    private String generateCode() {
-        // Случайная заглавная буква от 'A' до 'Z'
-        char letter = (char) ('A' + random.nextInt(26));
-        // Случайное 4-значное число от 0000 до 9999
-        int number = random.nextInt(10000);
-        // Форматируем число с ведущими нулями
-        return String.format("%c%04d", letter, number);
+        this.util = util;
     }
 
     @Transactional
-    public TerminalActivationResponse activateTerminal(TerminalActivationRequest request) {
+    public TerminalActivationResponse activateTerminal(CashierTerminalActivationRequest request) {
         if (request.getTerminalGuid() == null) {
             request.setTerminalGuid(UUID.randomUUID());
-            request.setTerminalNumber(generateCode());
+            request.setTerminalNumber(util.generateCode());
         }
         if (request.getCardGuid() == null) {
             return new TerminalActivationResponse(false, "cardGuid не может быть null");

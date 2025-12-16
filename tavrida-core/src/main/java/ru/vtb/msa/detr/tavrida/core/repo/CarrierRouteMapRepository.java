@@ -8,4 +8,6 @@ import java.util.List;
 public interface CarrierRouteMapRepository extends JpaRepository<CarrierRouteMap, Long> {
     List<CarrierRouteMap> findByCarrier_CarrierId(Long carrierId);
     List<CarrierRouteMap> findByRoute_RouteId(Long routeId);
+
+    boolean existsByCarrierIdAndRouteId(Long carrierId, Long routeId);
 }

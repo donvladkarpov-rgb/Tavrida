@@ -1,0 +1,43 @@
+package ru.vtb.msa.detr.tavrida.api.model.terminal;
+
+import java.util.UUID;
+
+public class CashierTerminalActivationRequest {
+    private UUID terminalGuid;
+    private UUID cardGuid; // Новая карта активации
+    private String terminalNumber;
+    private String terminalSerialNumber;
+    private Long carrierId;
+
+    // getters/setters
+    public UUID getTerminalGuid() { return terminalGuid; }
+    public void setTerminalGuid(UUID terminalGuid) { this.terminalGuid = terminalGuid; }
+
+    public UUID getCardGuid() { return cardGuid; }
+    public void setCardGuid(UUID cardGuid) { this.cardGuid = cardGuid; }
+
+
+    public String getTerminalNumber() {
+        return terminalNumber;
+    }
+
+    public void setTerminalNumber(String terminalNumber) {
+        this.terminalNumber = terminalNumber;
+    }
+
+    public String getTerminalSerialNumber() {
+        return terminalSerialNumber;
+    }
+
+    public void setTerminalSerialNumber(String terminalSerialNumber) {
+        this.terminalSerialNumber = terminalSerialNumber;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
+    }
+}

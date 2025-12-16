@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface TripRepository extends JpaRepository<Trip, Long> {
     List<Trip> findByRoute_RouteId(Long routeId);
     List<Trip> findBySession_SessionId(UUID sessionId);
+
+    boolean existsBySession_SessionIdAndClosedAtIsNull(UUID sessionId);
 }

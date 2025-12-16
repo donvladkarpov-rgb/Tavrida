@@ -33,6 +33,18 @@ public class TerminalOperationController implements TerminalOperationApi {
     }
 
     @Override
+    public ResponseEntity<DriverTripResponse> startDriverTrip(@RequestBody DriverTripStartRequest request) {
+        DriverTripResponse response = terminalOperationService.startDriverTrip(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<DriverTripResponse> stopDriverTrip(@RequestBody DriverTripStopRequest request) {
+        DriverTripResponse response = terminalOperationService.stopDriverTrip(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     public ResponseEntity<TerminalActivationResponse> activateTerminal(@RequestBody TerminalActivationRequest request) {
         TerminalActivationResponse response = terminalOperationService.activateTerminal(request);
         return ResponseEntity.ok(response);

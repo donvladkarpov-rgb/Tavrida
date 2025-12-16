@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
+import ru.vtb.msa.detr.tavrida.api.model.terminal.CashierTerminalActivationRequest;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalActivationRequest;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalActivationResponse;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalDeactivationRequest;
@@ -17,7 +18,7 @@ public interface CashierApi {
 
     @Operation(summary = "Активация терминала (кассы) кассиром.")
     @PostMapping("/terminal/activate")
-    ResponseEntity<TerminalActivationResponse> activateTerminal(@RequestBody TerminalActivationRequest request);
+    ResponseEntity<TerminalActivationResponse> activateTerminal(@RequestBody CashierTerminalActivationRequest request);
 
     @Operation(summary = "Деактивация терминала (кассы) кассиром.")
     @PostMapping("/terminal/deactivate")

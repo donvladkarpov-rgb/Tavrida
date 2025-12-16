@@ -9,6 +9,7 @@ import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.*;
+import ru.vtb.msa.detr.tavrida.core.util.TavridaUtils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 @Service
 public class TerminalOperationService {
 
-    private final Random random = new Random();
     private final CardRepository cardRepository;
     private final BlackListRepository blackListRepository;
     private final PaymentRepository paymentRepository;
@@ -29,6 +29,10 @@ public class TerminalOperationService {
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
     private final SessionService sessionService;
+    private final TavridaUtils util;
+    private final RouteRepository routeRepository;
+    private final CarrierRouteMapRepository carrierRouteMapRepository;
+    private final TripRepository tripRepository;
 
     public TerminalOperationService(
             SessionService sessionService,
@@ -39,7 +43,11 @@ public class TerminalOperationService {
             TransportRepository transportRepository,
             TavridaConstants tavridaConstants,
             UserRepository userRepository,
-            UserSessionRepository userSessionRepository) {
+            UserSessionRepository userSessionRepository,
+            TavridaUtils util,
+            RouteRepository routeRepository,
+            CarrierRouteMapRepository carrierRouteMapRepository,
+            TripRepository tripRepository) {
         this.cardRepository = cardRepository;
         this.blackListRepository = blackListRepository;
         this.paymentRepository = paymentRepository;
@@ -49,6 +57,10 @@ public class TerminalOperationService {
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
         this.sessionService = sessionService;
+        this.util = util;
+        this.routeRepository = routeRepository;
+        this.carrierRouteMapRepository = carrierRouteMapRepository;
+        this.tripRepository = tripRepository;
     }
 
     @Transactional
@@ -164,7 +176,7 @@ public class TerminalOperationService {
     public TerminalActivationResponse activateTerminal(TerminalActivationRequest request) {
         if (request.getTerminalGuid() == null) {
             request.setTerminalGuid(UUID.randomUUID());
-            request.setTerminalNumber(generateCode());
+            request.setTerminalNumber(util.generateCode());
         }
         if (request.getTransportGuid() == null) {
             return new TerminalActivationResponse(false, "transport guid не может быть null");
@@ -244,15 +256,6 @@ public class TerminalOperationService {
                 terminal.getTerminalGuid(),
                 terminal.getTerminalNumber(),
                 terminal.getTerminalSerialNumber());
-    }
-
-    private String generateCode() {
-        // Случайная заглавная буква от 'A' до 'Z'
-        char letter = (char) ('A' + random.nextInt(26));
-        // Случайное 4-значное число от 0000 до 9999
-        int number = random.nextInt(10000);
-        // Форматируем число с ведущими нулями
-        return String.format("%c%04d", letter, number);
     }
 
     @Transactional
@@ -371,6 +374,90 @@ public class TerminalOperationService {
             }
         });
         return result;
+    }
+
+    @Transactional
+    public DriverTripResponse startDriverTrip(DriverTripStartRequest request) {
+        // 1. Валидация входных данных
+        if (request.getSessionId() == null) {
+            return new DriverTripResponse(null, "ERROR", "sessionId не может быть null");
+        }
+        if (request.getRouteGuid() == null) {
+            return new DriverTripResponse(null, "ERROR", "routeGuid не может быть null");
+        }
+
+        // 2. Проверка сессии водителя
+        UserSession session = userSessionRepository.findById(request.getSessionId())
+                .orElseThrow(() -> new EntityNotFoundException("Сессия не найдена: " + request.getSessionId()));
+
+        if (session.getClosedAt() != null) {
+            return new DriverTripResponse(null, "ERROR", "Сессия уже завершена");
+        }
+
+        // 3. Проверка маршрута
+        Route route = routeRepository.findByRouteGuid(request.getRouteGuid())
+                .orElseThrow(() -> new EntityNotFoundException("Маршрут не найден: " + request.getRouteGuid()));
+
+        // 4. Проверка привязки маршрута к перевозчику
+        boolean isRouteAssigned = carrierRouteMapRepository.existsByCarrierIdAndRouteId(
+                session.getTerminal().getTransport().getCarrier().getCarrierId(),
+                route.getRouteId()
+        );
+        if (!isRouteAssigned) {
+            return new DriverTripResponse(null, "ERROR", "Маршрут не привязан к перевозчику терминала");
+        }
+
+//        // 5. Проверка, что маршрут — родительский (тип "Маршрут")
+//        if (!Objects.equals(route.getRouteType().getRouteTypesId(), tavridaConstants.getRouteTypeRoute())) {
+//            return new DriverTripResponse(null, "ERROR", "Можно начать рейс только для маршрута (тип 1), а не для пути (тип 2)");
+//        }
+
+        // 6. Проверка, что у водителя нет активного рейса
+        if (tripRepository.existsBySession_SessionIdAndClosedAtIsNull(request.getSessionId())) {
+            return new DriverTripResponse(null, "ERROR", "У водителя уже есть активный рейс");
+        }
+
+        // 7. Создание рейса
+        Trip trip = new Trip();
+        trip.setRoute(route);
+        trip.setSession(session);
+        trip.setStartedAt(Instant.now());
+        trip.setClosedAt(null); // будет закрыт позже
+
+        Trip savedTrip = tripRepository.save(trip);
+
+        return new DriverTripResponse(
+                savedTrip.getTripId(),
+                "SUCCESS",
+                "Рейс успешно начат для маршрута: " + route.getRouteName()
+        );
+    }
+
+    @Transactional
+    public DriverTripResponse stopDriverTrip(DriverTripStopRequest request) {
+        // 1. Валидация входных данных
+        if (request.getTripId() == null) {
+            return new DriverTripResponse(null, "ERROR", "tripId не может быть null");
+        }
+
+        // 2. Поиск рейса
+        Trip trip = tripRepository.findById(request.getTripId())
+                .orElseThrow(() -> new EntityNotFoundException("Рейс не найден: " + request.getTripId()));
+
+        // 3. Проверка, что рейс ещё не закрыт
+        if (trip.getClosedAt() != null) {
+            return new DriverTripResponse(null, "ERROR", "Рейс уже завершён");
+        }
+
+        // 4. Закрываем рейс
+        trip.setClosedAt(Instant.now());
+        tripRepository.save(trip);
+
+        return new DriverTripResponse(
+                trip.getTripId(),
+                "SUCCESS",
+                "Рейс успешно завершён"
+        );
     }
 
 }
