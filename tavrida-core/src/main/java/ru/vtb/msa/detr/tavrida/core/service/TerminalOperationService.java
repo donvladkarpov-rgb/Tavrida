@@ -399,7 +399,7 @@ public class TerminalOperationService {
                 .orElseThrow(() -> new EntityNotFoundException("Маршрут не найден: " + request.getRouteGuid()));
 
         // 4. Проверка привязки маршрута к перевозчику
-        boolean isRouteAssigned = carrierRouteMapRepository.existsByCarrierIdAndRouteId(
+        boolean isRouteAssigned = carrierRouteMapRepository.existsByCarrier_CarrierIdAndRoute_RouteId(
                 session.getTerminal().getTransport().getCarrier().getCarrierId(),
                 route.getRouteId()
         );

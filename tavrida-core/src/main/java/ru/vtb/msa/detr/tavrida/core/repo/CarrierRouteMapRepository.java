@@ -9,5 +9,5 @@ public interface CarrierRouteMapRepository extends JpaRepository<CarrierRouteMap
     List<CarrierRouteMap> findByCarrier_CarrierId(Long carrierId);
     List<CarrierRouteMap> findByRoute_RouteId(Long routeId);
 
-    boolean existsByCarrierIdAndRouteId(Long carrierId, Long routeId);
+    boolean existsByCarrier_CarrierIdAndRoute_RouteId(Long carrierId, Long routeId);
 }
