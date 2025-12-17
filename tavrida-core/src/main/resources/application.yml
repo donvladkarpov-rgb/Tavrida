@@ -112,8 +112,16 @@ tavrida:
       service-event-types:
         user-create: ${EVENT_TYPE_USER_CREATE:CU}
         card-create: ${EVENT_TYPE_CARD_CREATE:CC}
+        card-recharge: ${EVENT_TYPE_CARD_RECHARGE:RC}
         user-delete: ${EVENT_TYPE_USER_DELETE:DU}
         card-delete: ${EVENT_TYPE_CARD_DELETE:DC}
+        terminal-activation: ${EVENT_TYPE_TERMINAL_ACTIVATION:TA}
+        terminal-deactivation: ${EVENT_TYPE_TERMINAL_DEACTIVATION:TD}
+        driver-session-start: ${EVENT_TYPE_DRIVER_SESSION_START:DS}
+        driver-session-stop: ${EVENT_TYPE_DRIVER_SESSION_STOP:CS}
+        driver-route-start: ${EVENT_TYPE_DRIVER_ROUTE_START:OR}
+        driver-route-stop: ${EVENT_TYPE_DRIVER_ROUTE_STOP:CR}
+        payment-transit: ${EVENT_TYPE_PAYMENT_TRANSIT:PT}
         other-event: ${EVENT_TYPE_OTHER:OE}
 
       # Типы платежей

@@ -35,6 +35,14 @@ public class TavridaConstants {
     private final String serviceEventTypeCardCreate;
     private final String serviceEventTypeUserDelete;
     private final String serviceEventTypeCardDelete;
+    private final String serviceEventTypeCardRecharge;
+    private final String serviceEventTypeTerminalActivation;
+    private final String serviceEventTypeTerminalDeactivation;
+    private final String serviceEventTypeDriverSessionStart;
+    private final String serviceEventTypeDriverSessionStop;
+    private final String serviceEventTypeDriverRouteStart;
+    private final String serviceEventTypeDriverRouteStop;
+    private final String serviceEventTypePaymentTransit;
     private final String serviceEventTypeOther;
 
     // Payment Types Constants
@@ -78,6 +86,14 @@ public class TavridaConstants {
             @Value("${tavrida.common.constant.service-event-types.card-create}") String serviceEventTypeCardCreate,
             @Value("${tavrida.common.constant.service-event-types.user-delete}") String serviceEventTypeUserDelete,
             @Value("${tavrida.common.constant.service-event-types.card-delete}") String serviceEventTypeCardDelete,
+            @Value("${tavrida.common.constant.service-event-types.card-recharge}") String serviceEventTypeCardRecharge,
+            @Value("${tavrida.common.constant.service-event-types.terminal-activation}") String serviceEventTypeTerminalActivation,
+            @Value("${tavrida.common.constant.service-event-types.terminal-deactivation}") String serviceEventTypeTerminalDeactivation,
+            @Value("${tavrida.common.constant.service-event-types.driver-session-start}") String serviceEventTypeDriverSessionStart,
+            @Value("${tavrida.common.constant.service-event-types.driver-session-stop}") String serviceEventTypeDriverSessionStop,
+            @Value("${tavrida.common.constant.service-event-types.driver-route-start}") String serviceEventTypeDriverRouteStart,
+            @Value("${tavrida.common.constant.service-event-types.driver-route-stop}") String serviceEventTypeDriverRouteStop,
+            @Value("${tavrida.common.constant.service-event-types.payment-transit}") String serviceEventTypePaymentTransit,
             @Value("${tavrida.common.constant.service-event-types.other-event}") String serviceEventTypeOther,
 
             // Payment Types Constants
@@ -120,6 +136,14 @@ public class TavridaConstants {
         this.serviceEventTypeUserDelete = serviceEventTypeUserDelete;
         this.serviceEventTypeCardDelete = serviceEventTypeCardDelete;
         this.serviceEventTypeOther = serviceEventTypeOther;
+        this.serviceEventTypeCardRecharge = serviceEventTypeCardRecharge;
+        this.serviceEventTypeTerminalActivation = serviceEventTypeTerminalActivation;
+        this.serviceEventTypeTerminalDeactivation = serviceEventTypeTerminalDeactivation;
+        this.serviceEventTypeDriverSessionStart = serviceEventTypeDriverSessionStart;
+        this.serviceEventTypeDriverSessionStop = serviceEventTypeDriverSessionStop;
+        this.serviceEventTypeDriverRouteStart = serviceEventTypeDriverRouteStart;
+        this.serviceEventTypeDriverRouteStop = serviceEventTypeDriverRouteStop;
+        this.serviceEventTypePaymentTransit = serviceEventTypePaymentTransit;
 
         // Инициализация Payment Types Constants
         this.paymentTypeReplenishment = paymentTypeReplenishment;
@@ -211,6 +235,38 @@ public class TavridaConstants {
 
     public String getServiceEventTypeCardDelete() {
         return serviceEventTypeCardDelete;
+    }
+
+    public String getServiceEventTypeCardRecharge() {
+        return serviceEventTypeCardRecharge;
+    }
+
+    public String getServiceEventTypeTerminalActivation() {
+        return serviceEventTypeTerminalActivation;
+    }
+
+    public String getServiceEventTypeTerminalDeactivation() {
+        return serviceEventTypeTerminalDeactivation;
+    }
+
+    public String getServiceEventTypeDriverSessionStart() {
+        return serviceEventTypeDriverSessionStart;
+    }
+
+    public String getServiceEventTypeDriverSessionStop() {
+        return serviceEventTypeDriverSessionStop;
+    }
+
+    public String getServiceEventTypeDriverRouteStart() {
+        return serviceEventTypeDriverRouteStart;
+    }
+
+    public String getServiceEventTypeDriverRouteStop() {
+        return serviceEventTypeDriverRouteStop;
+    }
+
+    public String getServiceEventTypePaymentTransit() {
+        return serviceEventTypePaymentTransit;
     }
 
     public String getServiceEventTypeOther() {

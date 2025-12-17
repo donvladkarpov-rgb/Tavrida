@@ -1,59 +1,27 @@
 package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
-import java.util.UUID;
+import ru.vtb.msa.detr.tavrida.api.model.TerminalDto;
+
 
 public class TerminalActivationResponse {
     private boolean success;
     private String message;
-    private Long terminalId;
-    private UUID terminalGuid;
-    private String terminalNumber;
-    private String terminalSerialNumber;
-
+    private TerminalDto terminal;
 
     public TerminalActivationResponse(boolean success, String message) {
         this.success = success;
         this.message = message;
     }
 
-    public TerminalActivationResponse(boolean success, String message, Long terminalId) {
+    public TerminalActivationResponse(boolean success, String message, TerminalDto terminal) {
         this.success = success;
         this.message = message;
-        this.terminalId = terminalId;
-    }
-
-    public TerminalActivationResponse(boolean success, String message, Long terminalId, UUID terminalGuid) {
-        this.success = success;
-        this.message = message;
-        this.terminalId = terminalId;
-        this.terminalGuid = terminalGuid;
-    }
-
-    public TerminalActivationResponse(boolean success, String message, Long terminalId, UUID terminalGuid, String terminalNumber) {
-        this.success = success;
-        this.message = message;
-        this.terminalId = terminalId;
-        this.terminalGuid = terminalGuid;
-        this.terminalNumber = terminalNumber;
-    }
-
-    public TerminalActivationResponse(boolean success, String message, Long terminalId, UUID terminalGuid, String terminalNumber, String terminalSerialNumber) {
-        this.success = success;
-        this.message = message;
-        this.terminalId = terminalId;
-        this.terminalGuid = terminalGuid;
-        this.terminalNumber = terminalNumber;
-        this.terminalSerialNumber = terminalSerialNumber;
+        this.terminal = terminal;
     }
 
     // getters
     public boolean isSuccess() { return success; }
     public String getMessage() { return message; }
-    public Long getTerminalId() { return terminalId; }
-
-    public UUID getTerminalGuid() {
-        return terminalGuid;
-    }
 
     public void setSuccess(boolean success) {
         this.success = success;
@@ -63,27 +31,11 @@ public class TerminalActivationResponse {
         this.message = message;
     }
 
-    public void setTerminalId(Long terminalId) {
-        this.terminalId = terminalId;
+    public TerminalDto getTerminal() {
+        return terminal;
     }
 
-    public void setTerminalGuid(UUID terminalGuid) {
-        this.terminalGuid = terminalGuid;
-    }
-
-    public String getTerminalNumber() {
-        return terminalNumber;
-    }
-
-    public void setTerminalNumber(String terminalNumber) {
-        this.terminalNumber = terminalNumber;
-    }
-
-    public String getTerminalSerialNumber() {
-        return terminalSerialNumber;
-    }
-
-    public void setTerminalSerialNumber(String terminalSerialNumber) {
-        this.terminalSerialNumber = terminalSerialNumber;
+    public void setTerminal(TerminalDto terminal) {
+        this.terminal = terminal;
     }
 }

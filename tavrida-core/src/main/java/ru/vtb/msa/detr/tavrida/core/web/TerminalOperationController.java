@@ -57,9 +57,9 @@ public class TerminalOperationController implements TerminalOperationApi {
     }
 
     @Override
-    public ResponseEntity<Boolean> deductTrip(TerminalDeductRequest request) {
-        boolean success = terminalOperationService.deductTrip(request);
-        return ResponseEntity.ok(success);
+    public ResponseEntity<TerminalDeductResponse> deductTrip(TerminalDeductRequest request) {
+        TerminalDeductResponse response = terminalOperationService.deductTrip(request);
+        return ResponseEntity.ok(response);
     }
 
     @Override

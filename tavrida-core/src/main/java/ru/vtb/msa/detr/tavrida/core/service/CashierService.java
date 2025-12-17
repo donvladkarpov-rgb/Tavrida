@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -99,7 +98,7 @@ public class CashierService {
                 } else {
                     // 6. Если уже привязан к тому же — ничего не делаем (идемпотентность)
                     return new TerminalActivationResponse(true,
-                            "Терминал уже привязан к перевозчику ID " + carrier.getCarrierId(), terminal.getTerminalId());
+                            "Терминал уже привязан к перевозчику ID " + carrier.getCarrierId(), TavridaMapper.toTerminalDto(terminal));
                 }
             }
         } else {
@@ -151,10 +150,7 @@ public class CashierService {
 
         return new TerminalActivationResponse(true,
                 "Терминал успешно привязан к перевозчику ID " + carrier.getCarrierId(),
-                terminal.getTerminalId(),
-                terminal.getTerminalGuid(),
-                terminal.getTerminalNumber(),
-                terminal.getTerminalSerialNumber());
+                TavridaMapper.toTerminalDto(terminal));
     }
 
 
@@ -303,8 +299,7 @@ public class CashierService {
         terminalRepository.save(terminal);
 
         return new TerminalActivationResponse(true,
-                "Терминал успешно отвязан от перевозчика", terminal.getTerminalId(),
-                request.getTerminalGuid());
+                "Терминал успешно отвязан от перевозчика", TavridaMapper.toTerminalDto(terminal));
     }
 
     public CashierLogoutResponse cashierLogout(CashierLogoutRequest request) {

@@ -38,13 +38,13 @@ public class SessionService {
         User user = userRepository.findById(dto.getUserId()).orElse(null);
         UserSession session = TavridaMapper.toUserSessionEntity(dto, user, terminal);
         UserSession saved = sessionRepository.save(session);
-        return TavridaMapper.toUserSessionDto(saved);
+        return TavridaMapper.toUserSessionDto(saved, null);
     }
 
     public UserSessionDto getSession(UUID sessionId) {
         UserSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found: " + sessionId));
-        return TavridaMapper.toUserSessionDto(session);
+        return TavridaMapper.toUserSessionDto(session, null);
     }
 
     public void deleteExpiredSessions() {

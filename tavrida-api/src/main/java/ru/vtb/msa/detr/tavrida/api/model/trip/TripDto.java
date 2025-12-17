@@ -10,6 +10,8 @@ public class TripDto implements Serializable {
     private UUID sessionId;
     private Instant startedAt;
     private Instant closedAt;
+    private Instant startedAtLocal;
+    private Instant closedAtLocal;
 
     public TripDto() {}
 
@@ -51,5 +53,21 @@ public class TripDto implements Serializable {
 
     public void setClosedAt(Instant closedAt) {
         this.closedAt = closedAt;
+    }
+
+    public Instant getStartedAtLocal() {
+        return startedAtLocal;
+    }
+
+    public void setStartedAtLocal(Instant startedAtLocal) {
+        this.startedAtLocal = startedAtLocal;
+    }
+
+    public Instant getClosedAtLocal() {
+        return closedAtLocal;
+    }
+
+    public void setClosedAtLocal(Instant closedAtLocal) {
+        this.closedAtLocal = closedAtLocal;
     }
 }

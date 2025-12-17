@@ -15,7 +15,7 @@ public class TavridaExtendedController implements TavridaApiExtended {
     private final SessionService sessionService;
     private final CodeService codeService;
     private final MasterPasswordService masterPasswordService;
-    private final AuditService auditService;
+    private final ServiceEventService serviceEventService;
     private final PaymentService paymentService;
     private final ServiceEventTypeService eventTypeService;
     private final PaymentTypeService paymentTypeService;
@@ -25,7 +25,7 @@ public class TavridaExtendedController implements TavridaApiExtended {
             SessionService sessionService,
             CodeService codeService,
             MasterPasswordService masterPasswordService,
-            AuditService auditService,
+            ServiceEventService serviceEventService,
             PaymentService paymentService,
             ServiceEventTypeService eventTypeService,
             PaymentTypeService paymentTypeService,
@@ -33,7 +33,7 @@ public class TavridaExtendedController implements TavridaApiExtended {
         this.sessionService = sessionService;
         this.codeService = codeService;
         this.masterPasswordService = masterPasswordService;
-        this.auditService = auditService;
+        this.serviceEventService = serviceEventService;
         this.paymentService = paymentService;
         this.eventTypeService = eventTypeService;
         this.paymentTypeService = paymentTypeService;
@@ -93,17 +93,17 @@ public class TavridaExtendedController implements TavridaApiExtended {
     // ========== AUDIT ==========
     @Override
     public ResponseEntity<ServiceEventDto> logEvent(ServiceEventDto dto) {
-        return ResponseEntity.ok(auditService.logEvent(dto));
+        return ResponseEntity.ok(serviceEventService.logEvent(dto));
     }
 
     @Override
     public ResponseEntity<List<ServiceEventDto>> getEventsByUser(Long userId) {
-        return ResponseEntity.ok(auditService.getEventsByUser(userId));
+        return ResponseEntity.ok(serviceEventService.getEventsByUser(userId));
     }
 
     @Override
     public ResponseEntity<List<ServiceEventDto>> getEventsByReference(Long referenceId) {
-        return ResponseEntity.ok(auditService.getEventsByReference(referenceId));
+        return ResponseEntity.ok(serviceEventService.getEventsByReference(referenceId));
     }
 
     // ========== PAYMENTS ==========
