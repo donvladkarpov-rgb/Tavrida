@@ -4,23 +4,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.detr.tavrida.api.model.ServiceEventDto;
 import ru.vtb.msa.detr.tavrida.core.model.ServiceEvent;
+import ru.vtb.msa.detr.tavrida.core.model.Terminal;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.ServiceEventRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.TerminalRepository;
 
 import java.util.List;
 
 @Service
 @Transactional
-public class AuditService {
+public class ServiceEventService {
 
     private final ServiceEventRepository serviceEventRepository;
+    private final TerminalRepository terminalRepository;
 
-    public AuditService(ServiceEventRepository serviceEventRepository) {
+    public ServiceEventService(
+            ServiceEventRepository serviceEventRepository,
+            TerminalRepository terminalRepository
+    ) {
         this.serviceEventRepository = serviceEventRepository;
+        this.terminalRepository = terminalRepository;
     }
 
     public ServiceEventDto logEvent(ServiceEventDto dto) {
-        ServiceEvent event = TavridaMapper.toServiceEventEntity(dto);
+        Terminal terminal = terminalRepository.findById(dto.getSession().getTerminalId()).orElse(null);
+        ServiceEvent event = TavridaMapper.toServiceEventEntity(dto, terminal);
         ServiceEvent saved = serviceEventRepository.save(event);
         return TavridaMapper.toServiceEventDto(saved);
     }

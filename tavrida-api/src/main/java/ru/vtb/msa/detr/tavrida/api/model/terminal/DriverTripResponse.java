@@ -1,25 +1,27 @@
 package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
+import ru.vtb.msa.detr.tavrida.api.model.trip.TripDto;
+
 public class DriverTripResponse {
-    private Long tripId;
+    private TripDto tripDto;
     private String status;
     private String message;
 
     public DriverTripResponse() {
     }
 
-    public DriverTripResponse(Long tripId, String status, String message) {
-        this.tripId = tripId;
+    public DriverTripResponse(TripDto tripDto, String status, String message) {
+        this.tripDto = tripDto;
         this.status = status;
         this.message = message;
     }
 
-    public Long getTripId() {
-        return tripId;
+    public TripDto getTripDto() {
+        return tripDto;
     }
 
-    public void setTripId(Long tripId) {
-        this.tripId = tripId;
+    public void setTripDto(TripDto tripId) {
+        this.tripDto = tripDto;
     }
 
     public String getStatus() {

@@ -7,6 +7,7 @@ public class TerminalDto {
     private TransportDto transport;
     private UUID terminalGuid;
     private String terminalNumber;
+    private String serialNumber;
     private CarrierDto carrier;
 
     public TerminalDto() {}
@@ -17,12 +18,13 @@ public class TerminalDto {
         this.terminalGuid = terminalGuid;
         this.terminalNumber = terminalNumber;
     }
-    public TerminalDto(Long terminalId, TransportDto transport, UUID terminalGuid, String terminalNumber, CarrierDto carrier) {
+    public TerminalDto(Long terminalId, TransportDto transport, UUID terminalGuid, String terminalNumber, CarrierDto carrier, String serialNumber) {
         this.terminalId = terminalId;
         this.transport = transport;
         this.terminalGuid = terminalGuid;
         this.terminalNumber = terminalNumber;
         this.carrier = carrier;
+        this.serialNumber = serialNumber;
     }
 
     public Long getTerminalId() { return terminalId; }
@@ -43,5 +45,13 @@ public class TerminalDto {
 
     public void setCarrier(CarrierDto carrier) {
         this.carrier = carrier;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 }

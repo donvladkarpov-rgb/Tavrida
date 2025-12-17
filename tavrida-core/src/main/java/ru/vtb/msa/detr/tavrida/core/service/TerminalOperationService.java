@@ -1,18 +1,22 @@
 package ru.vtb.msa.detr.tavrida.core.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vtb.msa.detr.tavrida.api.model.ServiceEventDto;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.*;
 import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
+import ru.vtb.msa.detr.tavrida.core.model.mapper.TripMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.*;
 import ru.vtb.msa.detr.tavrida.core.util.TavridaUtils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +37,9 @@ public class TerminalOperationService {
     private final RouteRepository routeRepository;
     private final CarrierRouteMapRepository carrierRouteMapRepository;
     private final TripRepository tripRepository;
+    private final ServiceEventRepository serviceEventRepository;
+    private final ServiceEventTypeRepository serviceEventTypeRepository;
+    private final ObjectMapper objectMapper;
 
     public TerminalOperationService(
             SessionService sessionService,
@@ -47,7 +54,10 @@ public class TerminalOperationService {
             TavridaUtils util,
             RouteRepository routeRepository,
             CarrierRouteMapRepository carrierRouteMapRepository,
-            TripRepository tripRepository) {
+            TripRepository tripRepository,
+            ServiceEventRepository serviceEventRepository,
+            ServiceEventTypeRepository serviceEventTypeRepository,
+            ObjectMapper objectMapper) {
         this.cardRepository = cardRepository;
         this.blackListRepository = blackListRepository;
         this.paymentRepository = paymentRepository;
@@ -61,6 +71,9 @@ public class TerminalOperationService {
         this.routeRepository = routeRepository;
         this.carrierRouteMapRepository = carrierRouteMapRepository;
         this.tripRepository = tripRepository;
+        this.serviceEventRepository = serviceEventRepository;
+        this.serviceEventTypeRepository = serviceEventTypeRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -135,33 +148,51 @@ public class TerminalOperationService {
         session.setTerminal(terminal);
         session.setUser(driver);
         session.setStartedAt(Instant.now());
+        session.setStartedAtLocal(request.getSessionStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset())));
         session.setClosedAt(null);
         session.setExpirationTime(Instant.now().plus(31, ChronoUnit.DAYS));
         userSessionRepository.save(session);
 
-        // 9. Возвращаем ответ — транспорт берём из терминала (или из request, они совпадают)
-        LocalDateTime now = LocalDateTime.now();
-        return new DriverSessionResponse(
+        // 10. Возвращаем ответ — транспорт берём из терминала (или из request, они совпадают)
+        DriverSessionResponse driverSessionResponse = new DriverSessionResponse(
                 true,
                 "Сессия водителя успешно начата",
                 sessionId,
                 request.getDriverCardGuid(),
                 request.getTransportGuid(), // или terminal.getTransport().getTransportGuid()
-                now,
+                Instant.now().atZone(ZoneOffset.of(request.getTimeZoneOffset())).toLocalDateTime(),
                 TavridaMapper.toUserDto(driver)
         );
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeDriverSessionStart()).orElse(null)
+        );
+        serviceEvent.setEventTime(Instant.now());
+        serviceEvent.setUser(driver);
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails("Старт смены водителя '" + driver.getUserFio() + "' на '" + terminal.getTransport().getTransportNumber() + "' время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(driverSessionResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return driverSessionResponse;
     }
 
     @Transactional
     public DriverSessionResponse stopDriverSession(DriverSessionStopRequest request) {
 
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getSessionStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
-        session.setClosedAt(Instant.now());
+        session.setClosedAt(now1);
+        session.setClosedAtLocal(localTime);
         userSessionRepository.save(session);
 
         // 9. Возвращаем ответ — транспорт берём из терминала (или из request, они совпадают)
-        LocalDateTime now = LocalDateTime.now();
-        return new DriverSessionResponse(
+        LocalDateTime now = now1.atZone(ZoneOffset.of(request.getTimeZoneOffset())).toLocalDateTime();
+        DriverSessionResponse driverSessionResponse =  new DriverSessionResponse(
                 true,
                 "Сессия водителя успешно закрыта",
                 request.getSessionId(),
@@ -170,10 +201,30 @@ public class TerminalOperationService {
                 now,
                 TavridaMapper.toUserDto(session.getUser())
         );
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeDriverSessionStop()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(session.getUser());
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails("Старт смены водителя '" + session.getUser().getUserFio() + "' на '" + session.getTerminal().getTransport().getTransportNumber() + "' время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(driverSessionResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return driverSessionResponse;
+
     }
 
     @Transactional
     public TerminalActivationResponse activateTerminal(TerminalActivationRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getTerminalActivationStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         if (request.getTerminalGuid() == null) {
             request.setTerminalGuid(UUID.randomUUID());
             request.setTerminalNumber(util.generateCode());
@@ -202,7 +253,7 @@ public class TerminalOperationService {
                 } else {
                     // 6. Если уже привязан к тому же — ничего не делаем (идемпотентность)
                     return new TerminalActivationResponse(true,
-                            "Терминал уже привязан к транспорту ID " + transport.getTransportId(), terminal.getTerminalId());
+                            "Терминал уже привязан к транспорту ID " + transport.getTransportId(), TavridaMapper.toTerminalDto(terminal));
                 }
             }
         } else {
@@ -250,16 +301,34 @@ public class TerminalOperationService {
         // 7. Привязываем
         terminalRepository.save(terminal);
 
-        return new TerminalActivationResponse(true,
+
+        TerminalActivationResponse terminalActivationResponse =  new TerminalActivationResponse(true,
                 "Терминал успешно привязан к транспорту ID " + transport.getTransportId(),
-                terminal.getTerminalId(),
-                terminal.getTerminalGuid(),
-                terminal.getTerminalNumber(),
-                terminal.getTerminalSerialNumber());
+                TavridaMapper.toTerminalDto(terminal));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeTerminalActivation()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(user);
+        serviceEvent.setSession(null);
+        serviceEvent.setEventDetails("Активация терминала '" + terminal.getTerminalNumber() + "' на '" + transport.getTransportNumber() + "' время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(terminalActivationResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return terminalActivationResponse;
+
     }
 
     @Transactional
     public TerminalActivationResponse deactivateTerminal(TerminalDeactivationRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getTerminalActivationStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         // Валидация входных данных
         if (request.getTerminalGuid() == null) {
             return new TerminalActivationResponse(false, "terminalGuid не может быть null");
@@ -310,17 +379,36 @@ public class TerminalOperationService {
         terminal.setTransport(null);
         terminalRepository.save(terminal);
 
-        return new TerminalActivationResponse(true,
-                "Терминал успешно отвязан от транспорта", terminal.getTerminalId(),
-                request.getTerminalGuid());
+        TerminalActivationResponse terminalActivationResponse = new TerminalActivationResponse(true,
+                "Терминал успешно отвязан от транспорта", TavridaMapper.toTerminalDto(terminal));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeTerminalDeactivation()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(user);
+        serviceEvent.setSession(null);
+        serviceEvent.setEventDetails(terminalActivationResponse.getMessage());
+        serviceEvent.setEventObject(objectMapper.valueToTree(terminalActivationResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return terminalActivationResponse;
     }
 
     /**
      * Списание поездки с карты
      */
     @Transactional
-    public boolean deductTrip(TerminalDeductRequest request) {
-        sessionService.getSession(request.getSessionId());
+    public TerminalDeductResponse deductTrip(TerminalDeductRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getTerminalDeductStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
+        Trip trip = tripRepository.findById(request.getTripId()).orElseThrow(() -> new EntityNotFoundException("Рейс водителя не найден: " + request.getTripId()));
+        UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
 
         UUID cardGuid = request.getCardGuid();
         UUID terminalGuid = request.getTerminalGuid();
@@ -345,7 +433,26 @@ public class TerminalOperationService {
         serverCard.setAvailableTravelCount(actualBalance);
         cardRepository.save(serverCard);
 
-        return true;
+        TerminalDeductResponse terminalDeductResponse = new TerminalDeductResponse();
+        terminalDeductResponse.setSuccess(true);
+        terminalDeductResponse.setMessage("Проезд оплаен.");
+        terminalDeductResponse.setTripDto(TripMapper.toDto(trip));
+        terminalDeductResponse.setSessionDto(TavridaMapper.toUserSessionDto(session, request.getTimeZoneOffset()));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypePaymentTransit()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(null);
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails(terminalDeductResponse.getMessage());
+        serviceEvent.setEventObject(objectMapper.valueToTree(terminalDeductResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return terminalDeductResponse;
     }
 
     /**
@@ -378,6 +485,10 @@ public class TerminalOperationService {
 
     @Transactional
     public DriverTripResponse startDriverTrip(DriverTripStartRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getTerminalDeductStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         // 1. Валидация входных данных
         if (request.getSessionId() == null) {
             return new DriverTripResponse(null, "ERROR", "sessionId не может быть null");
@@ -407,11 +518,6 @@ public class TerminalOperationService {
             return new DriverTripResponse(null, "ERROR", "Маршрут не привязан к перевозчику терминала");
         }
 
-//        // 5. Проверка, что маршрут — родительский (тип "Маршрут")
-//        if (!Objects.equals(route.getRouteType().getRouteTypesId(), tavridaConstants.getRouteTypeRoute())) {
-//            return new DriverTripResponse(null, "ERROR", "Можно начать рейс только для маршрута (тип 1), а не для пути (тип 2)");
-//        }
-
         // 6. Проверка, что у водителя нет активного рейса
         if (tripRepository.existsBySession_SessionIdAndClosedAtIsNull(request.getSessionId())) {
             return new DriverTripResponse(null, "ERROR", "У водителя уже есть активный рейс");
@@ -426,15 +532,34 @@ public class TerminalOperationService {
 
         Trip savedTrip = tripRepository.save(trip);
 
-        return new DriverTripResponse(
-                savedTrip.getTripId(),
+        DriverTripResponse driverTripResponse = new DriverTripResponse(
+                TripMapper.toDto(savedTrip),
                 "SUCCESS",
                 "Рейс успешно начат для маршрута: " + route.getRouteName()
         );
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeDriverRouteStart()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(session.getUser());
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails(driverTripResponse.getMessage());
+        serviceEvent.setEventObject(objectMapper.valueToTree(driverTripResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return driverTripResponse;
     }
 
     @Transactional
     public DriverTripResponse stopDriverTrip(DriverTripStopRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getTripStopTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         // 1. Валидация входных данных
         if (request.getTripId() == null) {
             return new DriverTripResponse(null, "ERROR", "tripId не может быть null");
@@ -450,14 +575,30 @@ public class TerminalOperationService {
         }
 
         // 4. Закрываем рейс
-        trip.setClosedAt(Instant.now());
+        trip.setClosedAt(now1);
+        trip.setClosedAtLocal(localTime);
         tripRepository.save(trip);
 
-        return new DriverTripResponse(
-                trip.getTripId(),
+        DriverTripResponse driverTripResponse = new DriverTripResponse(
+                TripMapper.toDto(trip),
                 "SUCCESS",
                 "Рейс успешно завершён"
         );
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeDriverRouteStart()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(trip.getSession().getUser());
+        serviceEvent.setSession(trip.getSession());
+        serviceEvent.setEventDetails(driverTripResponse.getMessage());
+        serviceEvent.setEventObject(objectMapper.valueToTree(driverTripResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return driverTripResponse;
     }
 
 }

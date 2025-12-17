@@ -22,9 +22,13 @@ public class Trip {
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
+    @Column(name = "started_at_local")
+    private Instant startedAtLocal;
 
     @Column(name = "closed_at", nullable = false)
     private Instant closedAt;
+    @Column(name = "closed_at_local")
+    private Instant closedAtLocal;
 
     public Long getTripId() {
         return tripId;
@@ -64,5 +68,21 @@ public class Trip {
 
     public void setClosedAt(Instant closedAt) {
         this.closedAt = closedAt;
+    }
+
+    public Instant getStartedAtLocal() {
+        return startedAtLocal;
+    }
+
+    public void setStartedAtLocal(Instant startedAtLocal) {
+        this.startedAtLocal = startedAtLocal;
+    }
+
+    public Instant getClosedAtLocal() {
+        return closedAtLocal;
+    }
+
+    public void setClosedAtLocal(Instant closedAtLocal) {
+        this.closedAtLocal = closedAtLocal;
     }
 }

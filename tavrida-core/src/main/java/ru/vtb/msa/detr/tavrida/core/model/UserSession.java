@@ -26,9 +26,13 @@ public class UserSession {
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
+    @Column(name = "started_at_local", nullable = false)
+    private Instant startedAtLocal;
 
     @Column(name = "closed_at")
     private Instant closedAt;
+    @Column(name = "closed_at_local")
+    private Instant closedAtLocal;
 
     @Column(name = "expiration_time", nullable = false)
     private Instant expirationTime;
@@ -76,6 +80,22 @@ public class UserSession {
 
     public void setStartedAt(Instant startedAt) {
         this.startedAt = startedAt;
+    }
+
+    public Instant getStartedAtLocal() {
+        return startedAtLocal;
+    }
+
+    public void setStartedAtLocal(Instant startedAtLocal) {
+        this.startedAtLocal = startedAtLocal;
+    }
+
+    public Instant getClosedAtLocal() {
+        return closedAtLocal;
+    }
+
+    public void setClosedAtLocal(Instant closedAtLocal) {
+        this.closedAtLocal = closedAtLocal;
     }
 
     public Instant getClosedAt() {

@@ -3,7 +3,9 @@ package ru.vtb.msa.detr.tavrida.core.model.mapper;
 import ru.vtb.msa.detr.tavrida.api.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -119,7 +121,8 @@ public class TavridaMapper {
                 toTransportDto(terminal.getTransport()),
                 terminal.getTerminalGuid(),
                 terminal.getTerminalNumber(),
-                toCarrierDto(terminal.getCarrier())
+                toCarrierDto(terminal.getCarrier()),
+                terminal.getTerminalSerialNumber()
         );
     }
 
@@ -235,11 +238,24 @@ public class TavridaMapper {
         return blackList;
     }
     // UserSession
-    public static UserSessionDto toUserSessionDto(UserSession s) {
+    public static UserSessionDto toUserSessionDto(UserSession s, String timeZoneOffset) {
         if (s == null) return null;
-        return new UserSessionDto(s.getSessionId(), s.getUserId(), s.getTerminalId(), s.getExpirationTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        LocalDateTime localDateTime;
+        if (timeZoneOffset != null) {
+            localDateTime = s.getExpirationTime().atZone(ZoneOffset.of(timeZoneOffset)).toLocalDateTime();
+        } else {
+            localDateTime = s.getExpirationTime().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        }
+        return new UserSessionDto(
+                s.getSessionId(),
+                s.getUserId(),
+                s.getTerminalId(),
+                localDateTime);
     }
-    public static UserSession toUserSessionEntity(UserSessionDto dto, User user, Terminal terminal) {
+    public static UserSession toUserSessionEntity(
+            UserSessionDto dto,
+            User user,
+            Terminal terminal) {
         if (dto == null) return null;
         UserSession s = new UserSession();
         s.setSessionId(dto.getSessionId());
@@ -311,19 +327,21 @@ public class TavridaMapper {
         dto.setServiceEventId(e.getServiceEventId());
         dto.setEventTime(e.getEventTime());
         dto.setServiceEventType(toServiceEventTypeDto(e.getServiceEventType()));
-        dto.setUserId(e.getUserId());
+        dto.setUser(toUserDto(e.getUser()));
+        dto.setSession(toUserSessionDto(e.getSession(), null));
         dto.setReferenceTypeId(e.getReferenceTypeId());
         dto.setReferenceId(e.getReferenceId());
         dto.setEventDetails(e.getEventDetails());
         return dto;
     }
-    public static ServiceEvent toServiceEventEntity(ServiceEventDto dto) {
+    public static ServiceEvent toServiceEventEntity(ServiceEventDto dto, Terminal terminal) {
         if (dto == null) return null;
         ServiceEvent e = new ServiceEvent();
         e.setServiceEventId(dto.getServiceEventId());
         e.setEventTime(dto.getEventTime());
         e.setServiceEventType(toServiceEventTypeEntity(dto.getServiceEventType()));
-        e.setUserId(dto.getUserId());
+        e.setUser(toUserEntity(dto.getUser()));
+        e.setSession(toUserSessionEntity(dto.getSession(), e.getUser(), terminal));
         e.setReferenceTypeId(dto.getReferenceTypeId());
         e.setReferenceId(dto.getReferenceId());
         e.setEventDetails(dto.getEventDetails());

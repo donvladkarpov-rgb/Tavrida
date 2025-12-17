@@ -40,7 +40,7 @@ public interface TerminalOperationApi {
 
     @Operation(summary = "Списание поездки с карты")
     @PostMapping("/deduct")
-    ResponseEntity<Boolean> deductTrip(@RequestBody TerminalDeductRequest request);
+    ResponseEntity<TerminalDeductResponse> deductTrip(@RequestBody TerminalDeductRequest request);
 
     @Operation(summary = "Списание поездки с карт")
     @PostMapping("deducts")

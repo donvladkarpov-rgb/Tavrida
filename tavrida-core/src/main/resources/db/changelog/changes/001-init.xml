@@ -350,6 +350,10 @@
                 <constraints nullable="false"/>
             </column>
             <column name="CLOSED_AT" type="TIMESTAMP"/>
+            <column name="STARTED_AT_LOCAL" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CLOSED_AT_LOCAL" type="TIMESTAMP"/>
             <column name="EXPIRATION_TIME" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
@@ -357,6 +361,26 @@
 
         <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS">
             <column name="SESSION_ID"/>
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_USERS">
+            <column name="USER_ID"/>
+            <column name="SESSION_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_STARTED">
+            <column name="STARTED_AT"/>
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_STARTED_LOCAL">
+            <column name="STARTED_AT_LOCAL"/>
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_TERMINAL">
+            <column name="TERMINAL_ID"/>
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_CARDS">
+            <column name="CARD_ID"/>
             <column name="USER_ID"/>
         </createIndex>
 
@@ -497,6 +521,9 @@
             <column name="EVENT_TIME" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
+            <column name="EVENT_LOCAL_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
             <column name="SERVICE_EVENT_TYPE" type="CHAR(2)">
                 <constraints nullable="false"/>
             </column>
@@ -507,6 +534,22 @@
             <column name="EVENT_DETAILS" type="VARCHAR(256)"/>
             <column name="EVENT_OBJECT" type="JSONB"/>
         </createTable>
+
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_EVENT_TIME">
+            <column name="EVENT_TIME"/>
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_EVENT_LOCAL_TIME">
+            <column name="EVENT_LOCAL_TIME"/>
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_USER_ID">
+            <column name="USER_ID"/>
+            <column name="SESSION_ID"/>
+        </createIndex>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_SESSION_ID">
+            <column name="SESSION_ID"/>
+        </createIndex>
 
         <sql dbms="postgresql">
             <![CDATA[
@@ -1020,7 +1063,20 @@
             <column name="CLOSED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
+            <column name="STARTED_AT_LOCAL" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CLOSED_AT_LOCAL" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
+
+        <createIndex tableName="trips" indexName="IDX_trips_CREATED_AT">
+            <column name="CREATED_AT"/>
+        </createIndex>
+        <createIndex tableName="trips" indexName="IDX_trips_CREATED_AT_LOCAL">
+            <column name="CREATED_AT_LOCAL"/>
+        </createIndex>
 
         <addForeignKeyConstraint baseTableName="trips"
                                  baseColumnNames="ROUTE_ID"
