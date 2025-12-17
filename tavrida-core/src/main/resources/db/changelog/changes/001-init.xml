@@ -1071,11 +1071,11 @@
             </column>
         </createTable>
 
-        <createIndex tableName="trips" indexName="IDX_trips_CREATED_AT">
-            <column name="CREATED_AT"/>
+        <createIndex tableName="trips" indexName="IDX_trips_STARTED_AT">
+            <column name="STARTED_AT"/>
         </createIndex>
-        <createIndex tableName="trips" indexName="IDX_trips_CREATED_AT_LOCAL">
-            <column name="CREATED_AT_LOCAL"/>
+        <createIndex tableName="trips" indexName="IDX_trips_STARTED_AT_LOCAL">
+            <column name="STARTED_AT_LOCAL"/>
         </createIndex>
 
         <addForeignKeyConstraint baseTableName="trips"
