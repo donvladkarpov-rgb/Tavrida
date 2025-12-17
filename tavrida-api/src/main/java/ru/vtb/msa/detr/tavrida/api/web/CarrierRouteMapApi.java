@@ -1,6 +1,7 @@
 package ru.vtb.msa.detr.tavrida.api.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,15 +18,21 @@ public interface CarrierRouteMapApi {
 
     @Operation(summary = "Получить привязку по ID")
     @GetMapping("/v1/carrier-route-maps/{id}")
-    ResponseEntity<CarrierRouteMapDto> getById(@PathVariable Long id);
+    ResponseEntity<CarrierRouteMapDto> getById(
+        @Parameter(description = "ID маршрута", example = "1")
+        @PathVariable("id") Long id);
 
     @Operation(summary = "Получить все привязки по ID перевозчика")
     @GetMapping("/v1/carrier-route-maps/carrier/{carrierId}")
-    ResponseEntity<List<CarrierRouteMapDto>> getByCarrierId(@PathVariable Long carrierId);
+    ResponseEntity<List<CarrierRouteMapDto>> getByCarrierId(
+        @Parameter(description = "ID перевозчика", example = "1")
+        @PathVariable("carrierId")  Long carrierId);
 
     @Operation(summary = "Получить все привязки по ID маршрута")
     @GetMapping("/v1/carrier-route-maps/route/{routeId}")
-    ResponseEntity<List<CarrierRouteMapDto>> getByRouteId(@PathVariable Long routeId);
+    ResponseEntity<List<CarrierRouteMapDto>> getByRouteId(
+        @Parameter(description = "ID маршрута", example = "1")
+        @PathVariable("routeId")  Long routeId);
 
     @Operation(summary = "Создать новую привязку")
     @PostMapping("/v1/carrier-route-maps")
@@ -33,9 +40,13 @@ public interface CarrierRouteMapApi {
 
     @Operation(summary = "Обновить привязку")
     @PutMapping("/v1/carrier-route-maps/{id}")
-    ResponseEntity<CarrierRouteMapDto> update(@PathVariable Long id, @RequestBody CarrierRouteMapDto dto);
+    ResponseEntity<CarrierRouteMapDto> update(
+        @Parameter(description = "ID маршрута", example = "1")
+        @PathVariable("id") Long id, @RequestBody CarrierRouteMapDto dto);
 
     @Operation(summary = "Удалить привязку")
     @DeleteMapping("/v1/carrier-route-maps/{id}")
-    ResponseEntity<Void> delete(@PathVariable Long id);
+    ResponseEntity<Void> delete(
+        @Parameter(description = "ID маршрута", example = "1")
+        @PathVariable("id") Long id);
 }

@@ -1,6 +1,7 @@
 package ru.vtb.msa.detr.tavrida.api.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +18,15 @@ public interface RouteTypeApi {
 
     @Operation(summary = "Получить тип маршрута по ID")
     @GetMapping("/v1/route-types/{id}")
-    ResponseEntity<RouteTypeDto> getById(@PathVariable Long id);
+    ResponseEntity<RouteTypeDto> getById(
+        @Parameter(description = "ID типа маршрута", example = "1")
+        @PathVariable("id") Long id);
 
     @Operation(summary = "Получить тип маршрута по названию")
     @GetMapping("/v1/route-types/name/{name}")
-    ResponseEntity<RouteTypeDto> getByName(@PathVariable String name);
+    ResponseEntity<RouteTypeDto> getByName(
+        @Parameter(description = "Название типа маршрута")
+        @PathVariable("name") String name);
 
     @Operation(summary = "Создать новый тип маршрута")
     @PostMapping("/v1/route-types")
@@ -29,9 +34,13 @@ public interface RouteTypeApi {
 
     @Operation(summary = "Обновить тип маршрута")
     @PutMapping("/v1/route-types/{id}")
-    ResponseEntity<RouteTypeDto> update(@PathVariable Long id, @RequestBody RouteTypeDto dto);
+    ResponseEntity<RouteTypeDto> update(
+        @Parameter(description = "ID типа маршрута", example = "1")
+        @PathVariable("id") Long id, @RequestBody RouteTypeDto dto);
 
     @Operation(summary = "Удалить тип маршрута")
     @DeleteMapping("/v1/route-types/{id}")
-    ResponseEntity<Void> delete(@PathVariable Long id);
+    ResponseEntity<Void> delete(
+        @Parameter(description = "ID типа маршрута", example = "1")
+        @PathVariable("id") Long id);
 }

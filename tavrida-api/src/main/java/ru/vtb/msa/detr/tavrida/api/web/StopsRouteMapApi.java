@@ -1,6 +1,7 @@
 package ru.vtb.msa.detr.tavrida.api.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,15 +18,21 @@ public interface StopsRouteMapApi {
 
     @Operation(summary = "Получить привязку по ID")
     @GetMapping("/v1/stops-route-maps/{id}")
-    ResponseEntity<StopsRouteMapDto> getById(@PathVariable Long id);
+    ResponseEntity<StopsRouteMapDto> getById(
+        @Parameter(description = "ID остановки", example = "1")
+        @PathVariable("id") Long id);
 
     @Operation(summary = "Получить все привязки по ID маршрута")
     @GetMapping("/v1/stops-route-maps/route/{routeId}")
-    ResponseEntity<List<StopsRouteMapDto>> getByRouteId(@PathVariable Long routeId);
+    ResponseEntity<List<StopsRouteMapDto>> getByRouteId(
+        @Parameter(description = "ID маршрута", example = "1")
+        @PathVariable("routeId") Long routeId);
 
     @Operation(summary = "Получить все привязки по ID остановки")
     @GetMapping("/v1/stops-route-maps/stop/{stopId}")
-    ResponseEntity<List<StopsRouteMapDto>> getByStopId(@PathVariable Long stopId);
+    ResponseEntity<List<StopsRouteMapDto>> getByStopId(
+        @Parameter(description = "ID остановки", example = "1")
+        @PathVariable("stopId") Long stopId);
 
     @Operation(summary = "Создать новую привязку")
     @PostMapping("/v1/stops-route-maps")
@@ -33,9 +40,13 @@ public interface StopsRouteMapApi {
 
     @Operation(summary = "Обновить привязку")
     @PutMapping("/v1/stops-route-maps/{id}")
-    ResponseEntity<StopsRouteMapDto> update(@PathVariable Long id, @RequestBody StopsRouteMapDto dto);
+    ResponseEntity<StopsRouteMapDto> update(
+        @Parameter(description = "ID остановки", example = "1")
+        @PathVariable("id") Long id, @RequestBody StopsRouteMapDto dto);
 
     @Operation(summary = "Удалить привязку")
     @DeleteMapping("/v1/stops-route-maps/{id}")
-    ResponseEntity<Void> delete(@PathVariable Long id);
+    ResponseEntity<Void> delete(
+        @Parameter(description = "ID остановки", example = "1")
+        @PathVariable("id") Long id);
 }
