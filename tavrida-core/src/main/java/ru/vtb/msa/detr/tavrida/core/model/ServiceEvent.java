@@ -1,7 +1,10 @@
 package ru.vtb.msa.detr.tavrida.core.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
+import ru.vtb.msa.detr.tavrida.core.util.JsonUtils;
+
 import java.time.Instant;
 
 @Entity
@@ -40,7 +43,7 @@ public class ServiceEvent {
     private String eventDetails;
 
     @Column(name = "event_object", columnDefinition = "JSONB")
-    private JsonNode eventObject;
+    private String eventObject;
 
     // --- getters / setters ---
 
@@ -116,11 +119,21 @@ public class ServiceEvent {
         this.eventDetails = eventDetails;
     }
 
-    public JsonNode getEventObject() {
-        return eventObject;
+    public JsonNode getEventObject()  {
+        try {
+            return eventObject == null ? null : JsonUtils.readTree(eventObject);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void setEventObject(JsonNode eventObject) {
-        this.eventObject = eventObject;
+    // сеттер
+    public void setEventObject(JsonNode node)  {
+        try {
+            this.eventObject = node == null ? null : JsonUtils.writeValue(node);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 }

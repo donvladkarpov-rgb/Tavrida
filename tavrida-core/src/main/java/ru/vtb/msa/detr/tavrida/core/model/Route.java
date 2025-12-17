@@ -1,6 +1,9 @@
 package ru.vtb.msa.detr.tavrida.core.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
+import ru.vtb.msa.detr.tavrida.core.util.JsonUtils;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -31,7 +34,7 @@ public class Route {
     private String description;
 
     @Column(name = "route_object", columnDefinition = "JSONB")
-    private String routeObject; // или JsonNode, если используете Jackson
+    private String routeObject;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -87,13 +90,23 @@ public class Route {
         this.description = description;
     }
 
-    public String getRouteObject() {
-        return routeObject;
+    public JsonNode getRouteObject()  {
+        try {
+            return routeObject == null ? null : JsonUtils.readTree(routeObject);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void setRouteObject(String routeObject) {
-        this.routeObject = routeObject;
+    // сеттер
+    public void setRouteObject(JsonNode node)  {
+        try {
+            this.routeObject = node == null ? null : JsonUtils.writeValue(node);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     public Instant getCreatedAt() {
         return createdAt;

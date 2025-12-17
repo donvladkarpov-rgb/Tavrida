@@ -1,5 +1,7 @@
 package ru.vtb.msa.detr.tavrida.api.model.route;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
@@ -11,7 +13,7 @@ public class RouteDto implements Serializable {
     private Long parentRouteId;
     private String routeName;
     private String description;
-    private String routeObject;
+    private JsonNode routeObject;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -66,11 +68,11 @@ public class RouteDto implements Serializable {
         this.description = description;
     }
 
-    public String getRouteObject() {
+    public JsonNode getRouteObject() {
         return routeObject;
     }
 
-    public void setRouteObject(String routeObject) {
+    public void setRouteObject(JsonNode routeObject) {
         this.routeObject = routeObject;
     }
 
