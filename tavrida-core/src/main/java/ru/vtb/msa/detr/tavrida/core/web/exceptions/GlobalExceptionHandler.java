@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import ru.vtb.msa.detr.tavrida.core.exception.AuthenticationTavridaException;
+import ru.vtb.msa.detr.tavrida.core.exception.EntityAlreadyExistsException;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
 
@@ -105,6 +106,22 @@ public class GlobalExceptionHandler {
         logger.error("Unexpected error", ex);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public ResponseEntity<Object> handleEntityAlreadyExistsException(
+            Exception ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Entity Already Exists");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+
+        // В продакшене логируйте исключение, но не показывайте стек в ответе!
+        logger.error("Unexpected error", ex);
+
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
     // Обработка ошибок валидации (если используете @Valid)

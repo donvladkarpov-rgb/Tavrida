@@ -1091,4 +1091,62 @@
                                  referencedColumnNames="SESSION_ID"/>
     </changeSet>
 
+    <!-- 29. Привязка остановок к тарифным зонам -->
+    <changeSet id="29" author="Vlad">
+        <createTable tableName="STOPS_ZONE_MAP">
+            <column name="STOPS_ZONE_MAP_ID" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="STOP_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ZONE_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UPDATED_AT" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql dbms="postgresql">
+            <![CDATA[
+            ALTER SEQUENCE STOPS_ZONE_MAP_STOPS_ZONE_MAP_ID_SEQ RESTART WITH 1000;
+        ]]>
+        </sql>
+
+        <addForeignKeyConstraint baseTableName="STOPS_ZONE_MAP"
+                                 baseColumnNames="STOP_ID"
+                                 constraintName="fk_stops_zone_map_stop_id"
+                                 referencedTableName="TRANSPORT_STOPS"
+                                 referencedColumnNames="STOP_ID"/>
+
+        <addForeignKeyConstraint baseTableName="STOPS_ZONE_MAP"
+                                 baseColumnNames="ZONE_ID"
+                                 constraintName="fk_stops_zone_map_zone_id"
+                                 referencedTableName="FARE_ZONES"
+                                 referencedColumnNames="ZONE_ID"/>
+
+        <createIndex tableName="STOPS_ZONE_MAP" indexName="IDX_STOPS_ZONE_MAP_CREATED_AT">
+            <column name="CREATED_AT"/>
+        </createIndex>
+        <createIndex tableName="STOPS_ZONE_MAP" indexName="IDX_STOPS_ZONE_MAP_UPDATED_AT">
+            <column name="UPDATED_AT"/>
+        </createIndex>
+        <createIndex tableName="STOPS_ZONE_MAP" indexName="IDX_STOPS_ZONE_MAP_STOP_ID">
+            <column name="STOP_ID"/>
+        </createIndex>
+        <createIndex tableName="STOPS_ZONE_MAP" indexName="IDX_STOPS_ZONE_MAP_ZONE_ID">
+            <column name="ZONE_ID"/>
+        </createIndex>
+        <createIndex tableName="STOPS_ZONE_MAP"
+                     indexName="UK_STOPS_ZONE_MAP_STOP_ZONE"
+                     unique="true">
+            <column name="STOP_ID"/>
+            <column name="ZONE_ID"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
