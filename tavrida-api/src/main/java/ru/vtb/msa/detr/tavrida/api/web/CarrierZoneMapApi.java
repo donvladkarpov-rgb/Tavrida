@@ -1,6 +1,7 @@
 package ru.vtb.msa.detr.tavrida.api.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,22 +18,30 @@ public interface CarrierZoneMapApi {
 
     @Operation(summary = "Получить привязку по ID")
     @GetMapping("/v1/carrier-zone-maps/{id}")
-    ResponseEntity<CarrierZoneMapDto> getById(@PathVariable Long id);
+    ResponseEntity<CarrierZoneMapDto> getById(
+        @Parameter(description = "ID зоны", example = "1")
+        @PathVariable("id") Long id);
 
     @Operation(summary = "Получить привязку по ID перевозчика и ID зоны")
     @GetMapping("/v1/carrier-zone-maps/carrier/{carrierId}/zone/{zoneId}")
     ResponseEntity<CarrierZoneMapDto> getByCarrierAndZone(
-            @PathVariable Long carrierId,
-            @PathVariable Long zoneId
+        @Parameter(description = "ID перевозчика", example = "1")
+        @PathVariable("carrierId") Long carrierId,
+        @Parameter(description = "ID зоны", example = "1")
+        @PathVariable("zoneId") Long zoneId
     );
 
     @Operation(summary = "Получить все привязки по ID перевозчика")
     @GetMapping("/v1/carrier-zone-maps/carrier/{carrierId}")
-    ResponseEntity<List<CarrierZoneMapDto>> getByCarrierId(@PathVariable Long carrierId);
+    ResponseEntity<List<CarrierZoneMapDto>> getByCarrierId(
+        @Parameter(description = "ID перевозчика", example = "1")
+        @PathVariable("carrierId") Long carrierId);
 
     @Operation(summary = "Получить все привязки по ID зоны")
     @GetMapping("/v1/carrier-zone-maps/zone/{zoneId}")
-    ResponseEntity<List<CarrierZoneMapDto>> getByZoneId(@PathVariable Long zoneId);
+    ResponseEntity<List<CarrierZoneMapDto>> getByZoneId(
+        @Parameter(description = "ID зоны", example = "1")
+        @PathVariable("zoneId") Long zoneId);
 
     @Operation(summary = "Создать новую привязку")
     @PostMapping("/v1/carrier-zone-maps")
@@ -40,9 +49,13 @@ public interface CarrierZoneMapApi {
 
     @Operation(summary = "Обновить привязку")
     @PutMapping("/v1/carrier-zone-maps/{id}")
-    ResponseEntity<CarrierZoneMapDto> update(@PathVariable Long id, @RequestBody CarrierZoneMapDto dto);
+    ResponseEntity<CarrierZoneMapDto> update(
+        @Parameter(description = "ID зоны", example = "1")
+        @PathVariable("id") Long id, @RequestBody CarrierZoneMapDto dto);
 
     @Operation(summary = "Удалить привязку")
     @DeleteMapping("/v1/carrier-zone-maps/{id}")
-    ResponseEntity<Void> delete(@PathVariable Long id);
+    ResponseEntity<Void> delete(
+        @Parameter(description = "ID зоны", example = "1")
+        @PathVariable("id") Long id);
 }
