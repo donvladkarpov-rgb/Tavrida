@@ -212,10 +212,13 @@ public class CashierService {
         );
     }
 
+    @Transactional
     public CardBalanceResponse getCardBalance(CardBalanceRequest request) {
         sessionService.getSession(request.getSessionId()); // валидация
 
         Card card = cardService.getCardEntityByGuid(request.getCardUuid());
+        card.setAvailableTravelCount(Math.min(card.getAvailableTravelCount(), request.getCurrentTripsCount()));
+        cardService.save(card);
         return new CardBalanceResponse(card.getAvailableTravelCount());
     }
 
@@ -224,7 +227,7 @@ public class CashierService {
         UserSessionDto session = sessionService.getSession(request.getSessionId());
 
         Card card = cardService.getCardEntityByGuid(request.getCardUuid());
-        int newBalance = card.getAvailableTravelCount() + request.getTripsCount();
+        int newBalance = Math.min(card.getAvailableTravelCount(), request.getCurrentTripsCount()) + request.getTripsCount();
         card.setAvailableTravelCount(newBalance);
         Card updatedCard = cardService.save(card);
 

@@ -13,30 +13,30 @@ import java.util.UUID;
 public interface TripApi {
 
     @Operation(summary = "Получить все рейсы")
-    @GetMapping("/api/v1/trips")
+    @GetMapping("/v1/trips")
     ResponseEntity<List<TripDto>> getAll();
 
     @Operation(summary = "Получить рейс по ID")
-    @GetMapping("/api/v1/trips/{id}")
+    @GetMapping("/v1/trips/{id}")
     ResponseEntity<TripDto> getById(@PathVariable Long id);
 
     @Operation(summary = "Получить все рейсы по ID маршрута")
-    @GetMapping("/api/v1/trips/route/{routeId}")
+    @GetMapping("/v1/trips/route/{routeId}")
     ResponseEntity<List<TripDto>> getByRouteId(@PathVariable Long routeId);
 
     @Operation(summary = "Получить все рейсы по ID сессии")
-    @GetMapping("/api/v1/trips/session/{sessionId}")
+    @GetMapping("/v1/trips/session/{sessionId}")
     ResponseEntity<List<TripDto>> getBySessionId(@PathVariable UUID sessionId);
 
     @Operation(summary = "Создать новый рейс")
-    @PostMapping("/api/v1/trips")
+    @PostMapping("/v1/trips")
     ResponseEntity<TripDto> create(@RequestBody TripDto dto);
 
     @Operation(summary = "Обновить рейс")
-    @PutMapping("/api/v1/trips/{id}")
+    @PutMapping("/v1/trips/{id}")
     ResponseEntity<TripDto> update(@PathVariable Long id, @RequestBody TripDto dto);
 
     @Operation(summary = "Удалить рейс")
-    @DeleteMapping("/api/v1/trips/{id}")
+    @DeleteMapping("/v1/trips/{id}")
     ResponseEntity<Void> delete(@PathVariable Long id);
 }

@@ -12,30 +12,30 @@ import java.util.List;
 public interface CarrierRouteMapApi {
 
     @Operation(summary = "Получить все привязки маршрутов к перевозчикам")
-    @GetMapping("/api/v1/carrier-route-maps")
+    @GetMapping("/v1/carrier-route-maps")
     ResponseEntity<List<CarrierRouteMapDto>> getAll();
 
     @Operation(summary = "Получить привязку по ID")
-    @GetMapping("/api/v1/carrier-route-maps/{id}")
+    @GetMapping("/v1/carrier-route-maps/{id}")
     ResponseEntity<CarrierRouteMapDto> getById(@PathVariable Long id);
 
     @Operation(summary = "Получить все привязки по ID перевозчика")
-    @GetMapping("/api/v1/carrier-route-maps/carrier/{carrierId}")
+    @GetMapping("/v1/carrier-route-maps/carrier/{carrierId}")
     ResponseEntity<List<CarrierRouteMapDto>> getByCarrierId(@PathVariable Long carrierId);
 
     @Operation(summary = "Получить все привязки по ID маршрута")
-    @GetMapping("/api/v1/carrier-route-maps/route/{routeId}")
+    @GetMapping("/v1/carrier-route-maps/route/{routeId}")
     ResponseEntity<List<CarrierRouteMapDto>> getByRouteId(@PathVariable Long routeId);
 
     @Operation(summary = "Создать новую привязку")
-    @PostMapping("/api/v1/carrier-route-maps")
+    @PostMapping("/v1/carrier-route-maps")
     ResponseEntity<CarrierRouteMapDto> create(@RequestBody CarrierRouteMapDto dto);
 
     @Operation(summary = "Обновить привязку")
-    @PutMapping("/api/v1/carrier-route-maps/{id}")
+    @PutMapping("/v1/carrier-route-maps/{id}")
     ResponseEntity<CarrierRouteMapDto> update(@PathVariable Long id, @RequestBody CarrierRouteMapDto dto);
 
     @Operation(summary = "Удалить привязку")
-    @DeleteMapping("/api/v1/carrier-route-maps/{id}")
+    @DeleteMapping("/v1/carrier-route-maps/{id}")
     ResponseEntity<Void> delete(@PathVariable Long id);
 }

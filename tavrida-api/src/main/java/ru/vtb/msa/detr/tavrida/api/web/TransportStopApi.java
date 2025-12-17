@@ -12,34 +12,34 @@ import java.util.List;
 public interface TransportStopApi {
 
     @Operation(summary = "Получить все остановки")
-    @GetMapping("/api/v1/transport-stops")
+    @GetMapping("/v1/transport-stops")
     ResponseEntity<List<TransportStopDto>> getAll();
 
     @Operation(summary = "Получить остановку по ID")
-    @GetMapping("/api/v1/transport-stops/{id}")
+    @GetMapping("/v1/transport-stops/{id}")
     ResponseEntity<TransportStopDto> getById(@PathVariable Long id);
 
     @Operation(summary = "Получить остановку по коду")
-    @GetMapping("/api/v1/transport-stops/code/{stopCode}")
+    @GetMapping("/v1/transport-stops/code/{stopCode}")
     ResponseEntity<TransportStopDto> getByStopCode(@PathVariable String stopCode);
 
     @Operation(summary = "Получить все остановки по ID тарифной зоны")
-    @GetMapping("/api/v1/transport-stops/zone/{zoneId}")
+    @GetMapping("/v1/transport-stops/zone/{zoneId}")
     ResponseEntity<List<TransportStopDto>> getByZoneId(@PathVariable Long zoneId);
 
     @Operation(summary = "Получить все активные остановки")
-    @GetMapping("/api/v1/transport-stops/active")
+    @GetMapping("/v1/transport-stops/active")
     ResponseEntity<List<TransportStopDto>> getActiveStops();
 
     @Operation(summary = "Создать новую остановку")
-    @PostMapping("/api/v1/transport-stops")
+    @PostMapping("/v1/transport-stops")
     ResponseEntity<TransportStopDto> create(@RequestBody TransportStopDto dto);
 
     @Operation(summary = "Обновить остановку")
-    @PutMapping("/api/v1/transport-stops/{id}")
+    @PutMapping("/v1/transport-stops/{id}")
     ResponseEntity<TransportStopDto> update(@PathVariable Long id, @RequestBody TransportStopDto dto);
 
     @Operation(summary = "Удалить остановку")
-    @DeleteMapping("/api/v1/transport-stops/{id}")
+    @DeleteMapping("/v1/transport-stops/{id}")
     ResponseEntity<Void> delete(@PathVariable Long id);
 }

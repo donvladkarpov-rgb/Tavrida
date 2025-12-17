@@ -12,30 +12,30 @@ import java.util.List;
 public interface FareZoneApi {
 
     @Operation(summary = "Получить все тарифные зоны")
-    @GetMapping("/api/v1/fare-zones")
+    @GetMapping("/v1/fare-zones")
     ResponseEntity<List<FareZoneDto>> getAll();
 
     @Operation(summary = "Получить тарифную зону по ID")
-    @GetMapping("/api/v1/fare-zones/{id}")
+    @GetMapping("/v1/fare-zones/{id}")
     ResponseEntity<FareZoneDto> getById(@PathVariable Long id);
 
     @Operation(summary = "Получить тарифную зону по коду")
-    @GetMapping("/api/v1/fare-zones/code/{zoneCode}")
+    @GetMapping("/v1/fare-zones/code/{zoneCode}")
     ResponseEntity<FareZoneDto> getByZoneCode(@PathVariable String zoneCode);
 
     @Operation(summary = "Получить тарифную зону по названию")
-    @GetMapping("/api/v1/fare-zones/name/{zoneName}")
+    @GetMapping("/v1/fare-zones/name/{zoneName}")
     ResponseEntity<FareZoneDto> getByZoneName(@PathVariable String zoneName);
 
     @Operation(summary = "Создать новую тарифную зону")
-    @PostMapping("/api/v1/fare-zones")
+    @PostMapping("/v1/fare-zones")
     ResponseEntity<FareZoneDto> create(@RequestBody FareZoneDto dto);
 
     @Operation(summary = "Обновить тарифную зону")
-    @PutMapping("/api/v1/fare-zones/{id}")
+    @PutMapping("/v1/fare-zones/{id}")
     ResponseEntity<FareZoneDto> update(@PathVariable Long id, @RequestBody FareZoneDto dto);
 
     @Operation(summary = "Удалить тарифную зону")
-    @DeleteMapping("/api/v1/fare-zones/{id}")
+    @DeleteMapping("/v1/fare-zones/{id}")
     ResponseEntity<Void> delete(@PathVariable Long id);
 }

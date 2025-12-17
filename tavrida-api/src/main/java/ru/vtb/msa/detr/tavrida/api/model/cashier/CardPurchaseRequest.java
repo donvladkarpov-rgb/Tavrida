@@ -6,14 +6,16 @@ public class CardPurchaseRequest {
     private UUID sessionId;
     private UUID cardUuid;
     private Integer tripsCount;
+    private Integer currentTripsCount;
 
     public CardPurchaseRequest() {
     }
 
-    public CardPurchaseRequest(Integer tripsCount, UUID cardUuid, UUID sessionId) {
+    public CardPurchaseRequest(Integer currentTripsCount, Integer tripsCount, UUID cardUuid, UUID sessionId) {
         this.tripsCount = tripsCount;
         this.cardUuid = cardUuid;
         this.sessionId = sessionId;
+        this.currentTripsCount = currentTripsCount;
     }
 
     public UUID getSessionId() {
@@ -38,5 +40,13 @@ public class CardPurchaseRequest {
 
     public void setTripsCount(Integer tripsCount) {
         this.tripsCount = tripsCount;
+    }
+
+    public Integer getCurrentTripsCount() {
+        return currentTripsCount;
+    }
+
+    public void setCurrentTripsCount(Integer currentTripsCount) {
+        this.currentTripsCount = currentTripsCount;
     }
 }
