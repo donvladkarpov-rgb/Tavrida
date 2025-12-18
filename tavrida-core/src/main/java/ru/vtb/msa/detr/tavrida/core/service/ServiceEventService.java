@@ -34,7 +34,7 @@ public class ServiceEventService {
     }
 
     public List<ServiceEventDto> getEventsByUser(Long userId) {
-        return serviceEventRepository.findByUserId(userId).stream()
+        return serviceEventRepository.findByUser_UserId(userId).stream()
                 .map(TavridaMapper::toServiceEventDto)
                 .toList();
     }

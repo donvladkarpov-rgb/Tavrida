@@ -5,6 +5,6 @@ import ru.vtb.msa.detr.tavrida.core.model.ServiceEvent;
 import java.util.List;
 
 public interface ServiceEventRepository extends JpaRepository<ServiceEvent, Long> {
-    List<ServiceEvent> findByUserId(Long userId);
+    List<ServiceEvent> findByUser_UserId(Long userId);
     List<ServiceEvent> findByReferenceId(Long referenceId);
 }
