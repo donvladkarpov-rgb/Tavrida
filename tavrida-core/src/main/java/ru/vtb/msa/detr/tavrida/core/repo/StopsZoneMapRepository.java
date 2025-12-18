@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface StopsZoneMapRepository extends JpaRepository<StopsZoneMap, Long> {
 
-    List<StopsZoneMap> findByStopId(Long stopId);
+    List<StopsZoneMap> findByStop_StopId(Long stopId);
     List<StopsZoneMap> findByZone_ZoneId(Long zoneId);
     Optional<StopsZoneMap> findByStop_StopIdAndZone_ZoneId(Long stopId, Long zoneId);
     boolean existsByStop_StopIdAndZone_ZoneId(Long stopId, Long zoneId);
