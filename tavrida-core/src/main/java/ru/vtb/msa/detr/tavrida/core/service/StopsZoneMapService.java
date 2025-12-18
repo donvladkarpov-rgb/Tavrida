@@ -43,7 +43,7 @@ public class StopsZoneMapService {
         Long stopId = dto.getStop().getStopId();
         Long zoneId = dto.getZone().getZoneId();
 
-        if (repository.existsByStopIdAndZoneId(stopId, zoneId)) {
+        if (repository.existsByStop_StopIdAndZone_ZoneId(stopId, zoneId)) {
             throw new EntityAlreadyExistsException(
                     "Связь остановки (ID=" + stopId + ") и тарифной зоны (ID=" + zoneId + ") уже существует"
             );
@@ -87,7 +87,7 @@ public class StopsZoneMapService {
     }
 
     public boolean existsByStopAndZone(Long stopId, Long zoneId) {
-        return repository.existsByStopIdAndZoneId(stopId, zoneId);
+        return repository.existsByStop_StopIdAndZone_ZoneId(stopId, zoneId);
     }
 
 }
