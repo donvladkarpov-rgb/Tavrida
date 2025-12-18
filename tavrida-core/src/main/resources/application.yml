@@ -123,6 +123,8 @@ tavrida:
         driver-route-stop: ${EVENT_TYPE_DRIVER_ROUTE_STOP:CR}
         payment-transit: ${EVENT_TYPE_PAYMENT_TRANSIT:PT}
         other-event: ${EVENT_TYPE_OTHER:OE}
+        cashier-session-start: ${CASHIER_SESSION_START:CO}
+        cashier-session-stop: ${CASHIER_SESSION_STOP:CE}
 
       # Типы платежей
       payment-types:

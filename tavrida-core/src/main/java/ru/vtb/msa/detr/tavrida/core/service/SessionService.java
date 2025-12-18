@@ -34,17 +34,23 @@ public class SessionService {
     }
 
     public UserSessionDto createSession(UserSessionDto dto) {
-        Terminal terminal = terminalRepository.findById(dto.getTerminalId()).orElse(null);
-        User user = userRepository.findById(dto.getUserId()).orElse(null);
+        Terminal terminal = terminalRepository.findById(dto.getTerminal().getTerminalId()).orElse(null);
+        User user = userRepository.findById(dto.getUser().getUserId()).orElse(null);
         UserSession session = TavridaMapper.toUserSessionEntity(dto, user, terminal);
         UserSession saved = sessionRepository.save(session);
-        return TavridaMapper.toUserSessionDto(saved, null);
+        return TavridaMapper.toUserSessionDto(saved);
     }
 
     public UserSessionDto getSession(UUID sessionId) {
         UserSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found: " + sessionId));
-        return TavridaMapper.toUserSessionDto(session, null);
+        return TavridaMapper.toUserSessionDto(session);
+    }
+
+    public UserSession getSessionEntity(UUID sessionId) {
+        UserSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found: " + sessionId));
+        return session;
     }
 
     public void deleteExpiredSessions() {

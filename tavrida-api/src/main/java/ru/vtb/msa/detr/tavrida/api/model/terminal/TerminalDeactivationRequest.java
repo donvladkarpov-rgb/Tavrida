@@ -47,7 +47,7 @@ public class TerminalDeactivationRequest {
             example = "2007-12-03T10:15:3",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private LocalDateTime terminalActivationStartTime;
+    private LocalDateTime terminalDeactivationStartTime;
     @Schema(
             description = "Часовой пояс местного времени",
             example = "Z - UTC, +h, +hh, +hh:mm, -h, -hh, -hh:mm",
@@ -94,12 +94,12 @@ public class TerminalDeactivationRequest {
         this.carrierId = carrierId;
     }
 
-    public LocalDateTime getTerminalActivationStartTime() {
-        return terminalActivationStartTime;
+    public LocalDateTime getTerminalDeactivationStartTime() {
+        return terminalDeactivationStartTime;
     }
 
-    public void setTerminalActivationStartTime(LocalDateTime terminalActivationStartTime) {
-        this.terminalActivationStartTime = terminalActivationStartTime;
+    public void setTerminalDeactivationStartTime(LocalDateTime terminalDeactivationStartTime) {
+        this.terminalDeactivationStartTime = terminalDeactivationStartTime;
     }
 
     public String getTimeZoneOffset() {

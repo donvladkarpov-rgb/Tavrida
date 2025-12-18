@@ -44,6 +44,8 @@ public class TavridaConstants {
     private final String serviceEventTypeDriverRouteStop;
     private final String serviceEventTypePaymentTransit;
     private final String serviceEventTypeOther;
+    private final String serviceEventTypeCashierSessionStart;
+    private final String serviceEventTypeCashierSessionStop;
 
     // Payment Types Constants
     private final Integer paymentTypeReplenishment;
@@ -95,6 +97,8 @@ public class TavridaConstants {
             @Value("${tavrida.common.constant.service-event-types.driver-route-stop}") String serviceEventTypeDriverRouteStop,
             @Value("${tavrida.common.constant.service-event-types.payment-transit}") String serviceEventTypePaymentTransit,
             @Value("${tavrida.common.constant.service-event-types.other-event}") String serviceEventTypeOther,
+            @Value("${tavrida.common.constant.service-event-types.cashier-session-start}") String serviceEventTypeCashierSessionStart,
+            @Value("${tavrida.common.constant.service-event-types.cashier-session-stop}") String serviceEventTypeCashierSessionStop,
 
             // Payment Types Constants
             @Value("${tavrida.common.constant.payment-types.replenishment}") Integer paymentTypeReplenishment,
@@ -144,6 +148,8 @@ public class TavridaConstants {
         this.serviceEventTypeDriverRouteStart = serviceEventTypeDriverRouteStart;
         this.serviceEventTypeDriverRouteStop = serviceEventTypeDriverRouteStop;
         this.serviceEventTypePaymentTransit = serviceEventTypePaymentTransit;
+        this.serviceEventTypeCashierSessionStart = serviceEventTypeCashierSessionStart;
+        this.serviceEventTypeCashierSessionStop = serviceEventTypeCashierSessionStop;
 
         // Инициализация Payment Types Constants
         this.paymentTypeReplenishment = paymentTypeReplenishment;
@@ -295,5 +301,17 @@ public class TavridaConstants {
 
     public Integer getPaymentResultErrorCardBlocked() {
         return paymentResultErrorCardBlocked;
+    }
+
+    public String getServerTimeZone() {
+        return serverTimeZone;
+    }
+
+    public String getServiceEventTypeCashierSessionStart() {
+        return serviceEventTypeCashierSessionStart;
+    }
+
+    public String getServiceEventTypeCashierSessionStop() {
+        return serviceEventTypeCashierSessionStop;
     }
 }

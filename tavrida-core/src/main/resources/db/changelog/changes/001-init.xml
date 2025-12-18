@@ -507,6 +507,14 @@
             <column name="EVENT_TYPE_NAME" value="Оплата проезда"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
+            <column name="EVENT_TYPE" value="CO"/>
+            <column name="EVENT_TYPE_NAME" value="Открыть смену кассира"/>
+        </insert>
+        <insert tableName="SERVICE_EVENT_TYPES">
+            <column name="EVENT_TYPE" value="CE"/>
+            <column name="EVENT_TYPE_NAME" value="Закрыть смену кассира"/>
+        </insert>
+        <insert tableName="SERVICE_EVENT_TYPES">
             <column name="EVENT_TYPE" value="OE"/>
             <column name="EVENT_TYPE_NAME" value="Другое событие"/>
         </insert>

@@ -1,11 +1,11 @@
 package ru.vtb.msa.detr.tavrida.core.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.detr.tavrida.api.model.PaymentDto;
 import ru.vtb.msa.detr.tavrida.api.model.PaymentResultDto;
 import ru.vtb.msa.detr.tavrida.api.model.PaymentTypeDto;
-import ru.vtb.msa.detr.tavrida.api.model.UserSessionDto;
 import ru.vtb.msa.detr.tavrida.api.model.cashier.*;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.*;
 import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
@@ -19,7 +19,7 @@ import ru.vtb.msa.detr.tavrida.core.util.TavridaUtils;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
@@ -41,6 +41,10 @@ public class CashierService {
     private final CarrierRepository carrierRepository;
     private final UserSessionRepository userSessionRepository;
     private final TavridaUtils util;
+    private final ServiceEventRepository serviceEventRepository;
+    private final ServiceEventTypeRepository serviceEventTypeRepository;
+    private final ObjectMapper objectMapper;
+
 
     public CashierService(
             SessionService sessionService,
@@ -56,7 +60,11 @@ public class CashierService {
             UserRepository userRepository,
             CarrierRepository carrierRepository,
             UserSessionRepository userSessionRepository,
-            TavridaUtils util) {
+            TavridaUtils util,
+            ServiceEventRepository serviceEventRepository,
+            ServiceEventTypeRepository serviceEventTypeRepository,
+            ObjectMapper objectMapper
+            ) {
         this.sessionService = sessionService;
         this.cardService = cardService;
         this.userService = userService;
@@ -71,10 +79,18 @@ public class CashierService {
         this.carrierRepository = carrierRepository;
         this.userSessionRepository = userSessionRepository;
         this.util = util;
+        this.serviceEventRepository = serviceEventRepository;
+        this.serviceEventTypeRepository = serviceEventTypeRepository;
+        this.objectMapper = objectMapper;
+
     }
 
     @Transactional
     public TerminalActivationResponse activateTerminal(CashierTerminalActivationRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getActivationLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         if (request.getTerminalGuid() == null) {
             request.setTerminalGuid(UUID.randomUUID());
             request.setTerminalNumber(util.generateCode());
@@ -82,30 +98,35 @@ public class CashierService {
         if (request.getCardGuid() == null) {
             return new TerminalActivationResponse(false, "cardGuid не может быть null");
         }
-        if (request.getCarrierId() == null) {
-            return new TerminalActivationResponse(false, "carrierId не может быть null");
-        }
+//        if (request.getCarrierId() == null) {
+//            return new TerminalActivationResponse(false, "carrierId не может быть null");
+//        }
 
-        Carrier carrier = carrierRepository.findById(request.getCarrierId()).orElse(null);
+        Carrier carrier = null;
+        if (request.getCarrierId() != null) {
+            carrier = carrierRepository.findById(request.getCarrierId()).orElse(null);
+        }
 
         // 2. Проверка терминала
         Terminal terminal = terminalRepository.findByTerminalGuid(request.getTerminalGuid())
                 .orElse(null);
         if (terminal != null) {
             if (terminal.getTransport() != null) {
-                if (!Objects.equals(terminal.getCarrier().getCarrierId(), carrier.getCarrierId())) {
-                    return new TerminalActivationResponse(false, "Терминал с таким GUID уже привязан к другому перевозчику!");
-                } else {
-                    // 6. Если уже привязан к тому же — ничего не делаем (идемпотентность)
-                    return new TerminalActivationResponse(true,
-                            "Терминал уже привязан к перевозчику ID " + carrier.getCarrierId(), TavridaMapper.toTerminalDto(terminal));
+                if (carrier != null) {
+                    if (!Objects.equals(terminal.getCarrier().getCarrierId(), carrier.getCarrierId())) {
+                        return new TerminalActivationResponse(false, "Терминал с таким GUID уже привязан к другому перевозчику!");
+                    } else {
+                        // 6. Если уже привязан к тому же — ничего не делаем (идемпотентность)
+                        return new TerminalActivationResponse(true,
+                                "Терминал уже привязан к перевозчику ID " + carrier.getCarrierId(), TavridaMapper.toTerminalDto(terminal));
+                    }
                 }
             }
         } else {
             terminal = new Terminal();
             terminal.setTerminalGuid(request.getTerminalGuid());
             terminal.setTerminalNumber(request.getTerminalNumber());
-            terminal.setTerminalSerialNumber(request.getTerminalNumber());
+            terminal.setTerminalSerialNumber(request.getTerminalSerialNumber());
         }
         terminal.setTransport(null);
         terminal.setCarrier(carrier);
@@ -148,14 +169,35 @@ public class CashierService {
         // 7. Привязываем
         terminalRepository.save(terminal);
 
-        return new TerminalActivationResponse(true,
-                "Терминал успешно привязан к перевозчику ID " + carrier.getCarrierId(),
+
+        TerminalActivationResponse terminalActivationResponse = new TerminalActivationResponse(true,
+                "Терминал успешно активирован",
                 TavridaMapper.toTerminalDto(terminal));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeTerminalActivation()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(user);
+        serviceEvent.setSession(null);
+        serviceEvent.setEventDetails("Активация терминала кассиром '" + user.getUserFio() + "' на время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(terminalActivationResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return terminalActivationResponse;
+
     }
 
 
     @Transactional
     public CashierLoginResponse cashierLogin(CashierLoginRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getLoginLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         // 1. Находим карту кассира
         Card cashierCard = cardService.getCardEntityByGuid(request.getCardUuid());
 
@@ -177,21 +219,43 @@ public class CashierService {
         Terminal terminal = terminalService.getTerminalEntityByTerminalGuid(request.getTerminalGuid())
                 .orElseThrow(() -> new EntityNotFoundException("Terminal not found: " + request.getTerminalGuid()));
 
-        // 5. Создаём сессию
+        // 8. Создаём сессию — только терминал и пользователь
+        UUID sessionId = UUID.randomUUID();
         UserSession session = new UserSession();
-        session.setSessionId(UUID.randomUUID());
-        session.setUser(user);
+        session.setSessionId(sessionId);
         session.setTerminal(terminal);
-        session.setStartedAt(Instant.now());
+        session.setUser(user);
+        session.setStartedAt(now1);
+        session.setStartedAtLocal(request.getLoginLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset())));
         session.setClosedAt(null);
-        session.setExpirationTime(Instant.now().plus(31, ChronoUnit.DAYS));
-        UserSession savedSession = sessionService.save(session);
-        return new CashierLoginResponse(savedSession.getSessionId());
+        session.setExpirationTime(now1.plus(31, ChronoUnit.DAYS));
+        UserSession savedSession = userSessionRepository.save(session);
+
+        CashierLoginResponse cashierLoginResponse = new CashierLoginResponse(TavridaMapper.toUserSessionDto(savedSession));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeCashierSessionStart()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(user);
+        serviceEvent.setSession(savedSession);
+        serviceEvent.setEventDetails("Активация сессии кассира '" + user.getUserFio() + "' на время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(cashierLoginResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return cashierLoginResponse;
     }
 
     @Transactional
     public CardInitResponse initCard(CardInitRequest request) {
-        sessionService.getSession(request.getSessionId()); // валидация
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
+        UserSession session = sessionService.getSessionEntity(request.getSessionId()); // валидация
 
         Card newCard = new Card();
         newCard.setCardGuid(UUID.randomUUID());
@@ -199,28 +263,69 @@ public class CashierService {
         newCard.setMaximumUniqueCount(0);
         newCard.setUniqueTravelCount(0);
         newCard.setAvailableTravelCount(0);
-        newCard.setExpirationDate(Instant.now().plus(365 * 5, ChronoUnit.DAYS));
-
+        newCard.setExpirationRidesPackage(now1.plus(31, ChronoUnit.DAYS));
+        newCard.setUnlimitedUntilDate(now1.plus(31, ChronoUnit.DAYS));
+        newCard.setIssueDate(now1);
+        newCard.setExpirationDate(now1.plus(365 * 5, ChronoUnit.DAYS));
         Card savedCard = cardService.save(newCard);
-        return new CardInitResponse(
+
+        CardInitResponse cardInitResponse = new CardInitResponse(
                 savedCard.getCardGuid(),
-                LocalDateTime.ofInstant(savedCard.getExpirationDate(), ZoneId.systemDefault())
+                LocalDateTime.ofInstant(savedCard.getExpirationDate(), ZoneOffset.of(request.getTimeZoneOffset())));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeCardCreate()).orElse(null)
         );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(session.getUser());
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails("Активация сессии кассира '" + session.getUser().getUserFio() + "' на время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(cardInitResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return cardInitResponse;
     }
 
     @Transactional
     public CardBalanceResponse getCardBalance(CardBalanceRequest request) {
-        sessionService.getSession(request.getSessionId()); // валидация
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
+        UserSession session = sessionService.getSessionEntity(request.getSessionId()); // валидация
 
         Card card = cardService.getCardEntityByGuid(request.getCardUuid());
         card.setAvailableTravelCount(Math.min(card.getAvailableTravelCount(), request.getCurrentTripsCount()));
         cardService.save(card);
-        return new CardBalanceResponse(card.getAvailableTravelCount());
+
+        CardBalanceResponse cardBalanceResponse = new CardBalanceResponse(card.getAvailableTravelCount());
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeOther()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(session.getUser());
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails("Получен баланс карты '" + card.getCardGuid() + "' на время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(cardBalanceResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return cardBalanceResponse;
     }
 
     @Transactional
     public CardPurchaseResponse purchaseTrips(CardPurchaseRequest request) {
-        UserSessionDto session = sessionService.getSession(request.getSessionId());
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
+        UserSession session = sessionService.getSessionEntity(request.getSessionId()); // валидация
 
         Card card = cardService.getCardEntityByGuid(request.getCardUuid());
         int newBalance = Math.min(card.getAvailableTravelCount(), request.getCurrentTripsCount()) + request.getTripsCount();
@@ -234,17 +339,37 @@ public class CashierService {
         payment.setBalanceAfter(BigDecimal.valueOf(newBalance));
         payment.setPaymentType(new PaymentTypeDto(tavridaConstants.getPaymentTypeReplenishment())); // Пополнение
         payment.setPaymentResult(new PaymentResultDto(tavridaConstants.getPaymentResultSuccess())); // Успех
-        payment.setTerminalId(session.getTerminalId());
-
+        payment.setTerminalId(session.getTerminal().getTerminalId());
         PaymentDto savedPayment = paymentService.createPayment(payment);
-        return new CardPurchaseResponse(
+
+        CardPurchaseResponse cardPurchaseResponse = new CardPurchaseResponse(
                 updatedCard.getCardGuid(),
                 updatedCard.getAvailableTravelCount(),
                 savedPayment.getPaymentId()
         );
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeCardRecharge()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(session.getUser());
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails("Пополнен баланс карты '" + card.getCardGuid() + "' на время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(cardPurchaseResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return cardPurchaseResponse;
     }
 
+    @Transactional
     public TerminalActivationResponse deactivateTerminal(TerminalDeactivationRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getTerminalDeactivationStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         // Валидация входных данных
         if (request.getTerminalGuid() == null) {
             return new TerminalActivationResponse(false, "terminalGuid не может быть null");
@@ -298,18 +423,38 @@ public class CashierService {
         terminal.setTransport(null);
         terminalRepository.save(terminal);
 
-        return new TerminalActivationResponse(true,
+        TerminalActivationResponse terminalActivationResponse = new TerminalActivationResponse(true,
                 "Терминал успешно отвязан от перевозчика", TavridaMapper.toTerminalDto(terminal));
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeTerminalDeactivation()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(user);
+        serviceEvent.setSession(null);
+        serviceEvent.setEventDetails("Получен баланс карты '" + card.getCardGuid() + "' на время " + serviceEvent.getEventTime());
+        serviceEvent.setEventObject(objectMapper.valueToTree(terminalActivationResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return terminalActivationResponse;
     }
 
+    @Transactional
     public CashierLogoutResponse cashierLogout(CashierLogoutRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getLogoutStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
         session.setClosedAt(Instant.now());
         userSessionRepository.save(session);
 
         // 9. Возвращаем ответ — транспорт берём из терминала (или из request, они совпадают)
-        LocalDateTime now = LocalDateTime.now();
-        return new CashierLogoutResponse(
+        LocalDateTime now = LocalDateTime.ofInstant(now1, ZoneOffset.of(request.getTimeZoneOffset()));
+        CashierLogoutResponse cashierLogoutResponse = new CashierLogoutResponse(
                 true,
                 "Сессия кассира успешно закрыта",
                 request.getSessionId(),
@@ -317,6 +462,21 @@ public class CashierService {
                 now,
                 TavridaMapper.toUserDto(session.getUser())
         );
+
+        // 9. serviceEventService
+        ServiceEvent serviceEvent = new ServiceEvent();
+        serviceEvent.setServiceEventType(
+                serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeCardCreate()).orElse(null)
+        );
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
+        serviceEvent.setUser(session.getUser());
+        serviceEvent.setSession(session);
+        serviceEvent.setEventDetails(cashierLogoutResponse.getMessage());
+        serviceEvent.setEventObject(objectMapper.valueToTree(cashierLogoutResponse));
+        serviceEventRepository.save(serviceEvent);
+
+        return cashierLogoutResponse;
     }
 
 }

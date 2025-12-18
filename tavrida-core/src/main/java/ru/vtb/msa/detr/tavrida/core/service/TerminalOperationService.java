@@ -3,7 +3,6 @@ package ru.vtb.msa.detr.tavrida.core.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.vtb.msa.detr.tavrida.api.model.ServiceEventDto;
 import ru.vtb.msa.detr.tavrida.api.model.terminal.*;
 import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
@@ -327,7 +326,7 @@ public class TerminalOperationService {
     public TerminalActivationResponse deactivateTerminal(TerminalDeactivationRequest request) {
 
         final Instant now1 = Instant.now();
-        final Instant localTime = request.getTerminalActivationStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+        final Instant localTime = request.getTerminalDeactivationStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
 
         // Валидация входных данных
         if (request.getTerminalGuid() == null) {
@@ -437,7 +436,7 @@ public class TerminalOperationService {
         terminalDeductResponse.setSuccess(true);
         terminalDeductResponse.setMessage("Проезд оплаен.");
         terminalDeductResponse.setTripDto(TripMapper.toDto(trip));
-        terminalDeductResponse.setSessionDto(TavridaMapper.toUserSessionDto(session, request.getTimeZoneOffset()));
+        terminalDeductResponse.setSessionDto(TavridaMapper.toUserSessionDto(session));
 
         // 9. serviceEventService
         ServiceEvent serviceEvent = new ServiceEvent();

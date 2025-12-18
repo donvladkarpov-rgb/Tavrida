@@ -27,7 +27,7 @@ public class ServiceEventService {
     }
 
     public ServiceEventDto logEvent(ServiceEventDto dto) {
-        Terminal terminal = terminalRepository.findById(dto.getSession().getTerminalId()).orElse(null);
+        Terminal terminal = terminalRepository.findById(dto.getSession().getTerminal().getTerminalId()).orElse(null);
         ServiceEvent event = TavridaMapper.toServiceEventEntity(dto, terminal);
         ServiceEvent saved = serviceEventRepository.save(event);
         return TavridaMapper.toServiceEventDto(saved);

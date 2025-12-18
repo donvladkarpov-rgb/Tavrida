@@ -1,9 +1,9 @@
 package ru.vtb.msa.detr.tavrida.core.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
-import ru.vtb.msa.detr.tavrida.core.util.JsonUtils;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -43,7 +43,8 @@ public class ServiceEvent {
     private String eventDetails;
 
     @Column(name = "event_object", columnDefinition = "JSONB")
-    private String eventObject;
+    @JdbcTypeCode(SqlTypes.JSON)
+    private JsonNode eventObject;
 
     // --- getters / setters ---
 
@@ -119,21 +120,13 @@ public class ServiceEvent {
         this.eventDetails = eventDetails;
     }
 
-    public JsonNode getEventObject()  {
-        try {
-            return eventObject == null ? null : JsonUtils.readTree(eventObject);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public JsonNode getEventObject() {
+        return eventObject;
     }
 
     // сеттер
-    public void setEventObject(JsonNode node)  {
-        try {
-            this.eventObject = node == null ? null : JsonUtils.writeValue(node);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public void setEventObject(JsonNode node) {
+        this.eventObject = node;
     }
 
 }

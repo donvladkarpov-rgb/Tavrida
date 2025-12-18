@@ -134,6 +134,7 @@ public class TavridaMapper {
         terminal.setTransport(toTransportEntity(dto.getTransport()));
         terminal.setTerminalGuid(dto.getTerminalGuid());
         terminal.setTerminalNumber(dto.getTerminalNumber());
+        terminal.setTerminalSerialNumber(dto.getSerialNumber());
         return terminal;
     }
 
@@ -238,19 +239,19 @@ public class TavridaMapper {
         return blackList;
     }
     // UserSession
-    public static UserSessionDto toUserSessionDto(UserSession s, String timeZoneOffset) {
+    public static UserSessionDto toUserSessionDto(UserSession s) {
         if (s == null) return null;
-        LocalDateTime localDateTime;
-        if (timeZoneOffset != null) {
-            localDateTime = s.getExpirationTime().atZone(ZoneOffset.of(timeZoneOffset)).toLocalDateTime();
-        } else {
-            localDateTime = s.getExpirationTime().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        }
-        return new UserSessionDto(
-                s.getSessionId(),
-                s.getUserId(),
-                s.getTerminalId(),
-                localDateTime);
+        UserSessionDto userSessionDto = new UserSessionDto();
+        userSessionDto.setSessionId(s.getSessionId());
+        userSessionDto.setUser(toUserDto(s.getUser()));
+        userSessionDto.setTerminal(toTerminalDto(s.getTerminal()));
+        userSessionDto.setCard(toCardDto(s.getCard()));
+        userSessionDto.setStartedAt(s.getStartedAt());
+        userSessionDto.setClosedAt(s.getClosedAt());
+        userSessionDto.setStartedAtLocal(s.getStartedAtLocal());
+        userSessionDto.setClosedAtLocal(s.getClosedAtLocal());
+        userSessionDto.setExpirationTime(s.getExpirationTime());
+        return userSessionDto;
     }
     public static UserSession toUserSessionEntity(
             UserSessionDto dto,
@@ -261,7 +262,12 @@ public class TavridaMapper {
         s.setSessionId(dto.getSessionId());
         s.setUser(user);
         s.setTerminal(terminal);
-        s.setExpirationTime(dto.getExpirationTime().atZone(ZoneId.systemDefault()).toInstant());
+        s.setCard(toCardEntity(dto.getCard()));
+        s.setStartedAt(dto.getStartedAt());
+        s.setClosedAt(dto.getClosedAt());
+        s.setStartedAtLocal(dto.getStartedAtLocal());
+        s.setClosedAtLocal(dto.getClosedAtLocal());
+        s.setExpirationTime(dto.getExpirationTime());
         return s;
     }
 
@@ -328,7 +334,7 @@ public class TavridaMapper {
         dto.setEventTime(e.getEventTime());
         dto.setServiceEventType(toServiceEventTypeDto(e.getServiceEventType()));
         dto.setUser(toUserDto(e.getUser()));
-        dto.setSession(toUserSessionDto(e.getSession(), null));
+        dto.setSession(toUserSessionDto(e.getSession()));
         dto.setReferenceTypeId(e.getReferenceTypeId());
         dto.setReferenceId(e.getReferenceId());
         dto.setEventDetails(e.getEventDetails());

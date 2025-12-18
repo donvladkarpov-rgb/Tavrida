@@ -1,22 +1,23 @@
 package ru.vtb.msa.detr.tavrida.api.model.cashier;
 
-import java.util.UUID;
+import ru.vtb.msa.detr.tavrida.api.model.UserSessionDto;
 
 public class CashierLoginResponse {
-    private UUID sessionId;
+
+    private UserSessionDto session;
 
     public CashierLoginResponse() {
     }
 
-    public CashierLoginResponse(UUID sessionId) {
-        this.sessionId = sessionId;
+    public CashierLoginResponse(UserSessionDto session) {
+        this.session = session;
     }
 
-    public UUID getSessionId() {
-        return sessionId;
+    public UserSessionDto getSession() {
+        return session;
     }
 
-    public void setSessionId(UUID sessionId) {
-        this.sessionId = sessionId;
+    public void setSession(UserSessionDto session) {
+        this.session = session;
     }
 }
