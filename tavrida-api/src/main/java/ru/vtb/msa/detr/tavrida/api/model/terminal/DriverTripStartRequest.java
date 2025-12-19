@@ -24,7 +24,7 @@ public class DriverTripStartRequest {
             example = "2007-12-03T10:15:3",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private LocalDateTime terminalDeductStartTime;
+    private LocalDateTime terminalLocalStartTime;
     @Schema(
             description = "Часовой пояс местного времени",
             example = "Z - UTC, +h, +hh, +hh:mm, -h, -hh, -hh:mm",
@@ -48,12 +48,12 @@ public class DriverTripStartRequest {
         this.routeGuid = routeGuid;
     }
 
-    public LocalDateTime getTerminalDeductStartTime() {
-        return terminalDeductStartTime;
+    public LocalDateTime getTerminalLocalStartTime() {
+        return terminalLocalStartTime;
     }
 
-    public void setTerminalDeductStartTime(LocalDateTime terminalDeductStartTime) {
-        this.terminalDeductStartTime = terminalDeductStartTime;
+    public void setTerminalLocalStartTime(LocalDateTime terminalLocalStartTime) {
+        this.terminalLocalStartTime = terminalLocalStartTime;
     }
 
     public String getTimeZoneOffset() {

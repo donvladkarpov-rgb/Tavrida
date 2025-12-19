@@ -77,6 +77,10 @@ public class TerminalOperationService {
 
     @Transactional
     public DriverSessionResponse startDriverSession(DriverSessionStartRequest request) {
+
+        final Instant now1 = Instant.now();
+        final Instant localTime = request.getSessionStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+
         // Валидация
         if (request.getTerminalGuid() == null) {
             return new DriverSessionResponse(false, "terminalGuid не может быть null");
@@ -168,7 +172,8 @@ public class TerminalOperationService {
         serviceEvent.setServiceEventType(
                 serviceEventTypeRepository.findById(tavridaConstants.getServiceEventTypeDriverSessionStart()).orElse(null)
         );
-        serviceEvent.setEventTime(Instant.now());
+        serviceEvent.setEventTime(now1);
+        serviceEvent.setEventLocalTime(localTime);
         serviceEvent.setUser(driver);
         serviceEvent.setSession(session);
         serviceEvent.setEventDetails("Старт смены водителя '" + driver.getUserFio() + "' на '" + terminal.getTransport().getTransportNumber() + "' время " + serviceEvent.getEventTime());
@@ -434,9 +439,10 @@ public class TerminalOperationService {
 
         TerminalDeductResponse terminalDeductResponse = new TerminalDeductResponse();
         terminalDeductResponse.setSuccess(true);
-        terminalDeductResponse.setMessage("Проезд оплаен.");
+        terminalDeductResponse.setMessage("Проезд оплачен.");
         terminalDeductResponse.setTripDto(TripMapper.toDto(trip));
         terminalDeductResponse.setSessionDto(TavridaMapper.toUserSessionDto(session));
+        terminalDeductResponse.setCardDto(TavridaMapper.toCardDto(serverCard));
 
         // 9. serviceEventService
         ServiceEvent serviceEvent = new ServiceEvent();
@@ -486,7 +492,7 @@ public class TerminalOperationService {
     public DriverTripResponse startDriverTrip(DriverTripStartRequest request) {
 
         final Instant now1 = Instant.now();
-        final Instant localTime = request.getTerminalDeductStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
+        final Instant localTime = request.getTerminalLocalStartTime().toInstant(ZoneOffset.of(request.getTimeZoneOffset()));
 
         // 1. Валидация входных данных
         if (request.getSessionId() == null) {
@@ -526,8 +532,10 @@ public class TerminalOperationService {
         Trip trip = new Trip();
         trip.setRoute(route);
         trip.setSession(session);
-        trip.setStartedAt(Instant.now());
+        trip.setStartedAt(now1);
         trip.setClosedAt(null); // будет закрыт позже
+        trip.setStartedAtLocal(localTime);
+        trip.setClosedAtLocal(null); // будет закрыт позже
 
         Trip savedTrip = tripRepository.save(trip);
 

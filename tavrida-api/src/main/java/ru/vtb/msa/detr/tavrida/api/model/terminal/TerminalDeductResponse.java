@@ -1,5 +1,6 @@
 package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
+import ru.vtb.msa.detr.tavrida.api.model.CardDto;
 import ru.vtb.msa.detr.tavrida.api.model.UserSessionDto;
 import ru.vtb.msa.detr.tavrida.api.model.trip.TripDto;
 
@@ -8,6 +9,7 @@ public class TerminalDeductResponse {
     private String message;
     private TripDto tripDto;
     private UserSessionDto sessionDto;
+    private CardDto cardDto;
 
     public boolean isSuccess() {
         return success;
@@ -39,5 +41,13 @@ public class TerminalDeductResponse {
 
     public void setSessionDto(UserSessionDto sessionDto) {
         this.sessionDto = sessionDto;
+    }
+
+    public CardDto getCardDto() {
+        return cardDto;
+    }
+
+    public void setCardDto(CardDto cardDto) {
+        this.cardDto = cardDto;
     }
 }

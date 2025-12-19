@@ -22,10 +22,10 @@ public class Trip {
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
-    @Column(name = "started_at_local")
+    @Column(name = "started_at_local", nullable = false)
     private Instant startedAtLocal;
 
-    @Column(name = "closed_at", nullable = false)
+    @Column(name = "closed_at")
     private Instant closedAt;
     @Column(name = "closed_at_local")
     private Instant closedAtLocal;

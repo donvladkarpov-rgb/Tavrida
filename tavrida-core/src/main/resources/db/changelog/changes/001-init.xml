@@ -1069,13 +1069,13 @@
                 <constraints nullable="false"/>
             </column>
             <column name="CLOSED_AT" type="TIMESTAMP">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="STARTED_AT_LOCAL" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
             <column name="CLOSED_AT_LOCAL" type="TIMESTAMP">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </createTable>
 
