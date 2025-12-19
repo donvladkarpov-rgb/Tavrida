@@ -2,7 +2,9 @@ package ru.vtb.msa.detr.tavrida.core.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vtb.msa.detr.tavrida.core.exception.EntityAlreadyExistsException;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
+import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.RouteTypeMapper;
 import ru.vtb.msa.detr.tavrida.core.model.RouteType;
 import ru.vtb.msa.detr.tavrida.core.repo.RouteTypeRepository;
@@ -47,6 +49,14 @@ public class RouteTypeServiceImpl implements RouteTypeService {
     @Override
     @Transactional
     public RouteTypeDto create(RouteTypeDto dto) {
+        // Проверяем, что id не меньше 0
+        if (dto.getRouteTypesId() < 0) {
+            throw new ValidationTavridaException("Значение routeTypesId не может быть меньше 0.");
+        }
+        // Проверяем, существует ли уже тип маршрута с таким id
+        if (dto.getRouteTypesId() != null && repository.existsById(dto.getRouteTypesId())) {
+            throw new EntityAlreadyExistsException("Тип маршрута с id '" + dto.getRouteTypesId() + "' уже существует.");
+        }
         RouteType entity = RouteTypeMapper.toEntity(dto);
         RouteType saved = repository.save(entity);
         return RouteTypeMapper.toDto(saved);
