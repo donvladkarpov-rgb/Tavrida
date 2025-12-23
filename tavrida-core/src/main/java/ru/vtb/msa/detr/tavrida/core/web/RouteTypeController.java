@@ -3,9 +3,9 @@ package ru.vtb.msa.detr.tavrida.core.web;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import ru.vtb.msa.detr.tavrida.api.model.route.RouteTypeDto;
 import ru.vtb.msa.detr.tavrida.api.web.RouteTypeApi;
 import ru.vtb.msa.detr.tavrida.core.service.RouteTypeService;
-import ru.vtb.msa.detr.tavrida.api.model.route.RouteTypeDto;
 
 import java.util.List;
 

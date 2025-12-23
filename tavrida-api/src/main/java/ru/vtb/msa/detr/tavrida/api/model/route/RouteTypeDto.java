@@ -1,9 +1,15 @@
 package ru.vtb.msa.detr.tavrida.api.model.route;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.io.Serializable;
 
 public class RouteTypeDto implements Serializable {
+
+    @NotNull(message = "routeTypesId cannot be null")
     private Long routeTypesId;
+
+    @NotNull(message = "routeTypesName cannot be null")
     private String routeTypesName;
 
     public RouteTypeDto() {}
