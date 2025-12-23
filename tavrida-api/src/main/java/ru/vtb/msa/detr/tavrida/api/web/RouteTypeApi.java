@@ -3,8 +3,14 @@ package ru.vtb.msa.detr.tavrida.api.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import ru.vtb.msa.detr.tavrida.api.model.route.RouteTypeDto;
 
 import java.util.List;
@@ -30,7 +36,7 @@ public interface RouteTypeApi {
 
     @Operation(summary = "Создать новый тип маршрута")
     @PostMapping("/v1/route-types")
-    ResponseEntity<RouteTypeDto> create(@RequestBody RouteTypeDto dto);
+    ResponseEntity<RouteTypeDto> create( @Valid @RequestBody RouteTypeDto dto);
 
     @Operation(summary = "Обновить тип маршрута")
     @PutMapping("/v1/route-types/{id}")

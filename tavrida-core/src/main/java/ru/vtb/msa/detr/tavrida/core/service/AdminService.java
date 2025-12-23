@@ -274,6 +274,8 @@ public class AdminService {
         session.setSessionId(UUID.randomUUID());
         session.setUser(user);
         session.setTerminal(terminal);
+        session.setStartedAt(Instant.now());
+        session.setStartedAtLocal(Instant.now());
         session.setExpirationTime(Instant.now().plus(31, ChronoUnit.DAYS));
         UserSession savedSession = sessionService.save(session);
         return new AdminLoginResponse(savedSession.getSessionId());
