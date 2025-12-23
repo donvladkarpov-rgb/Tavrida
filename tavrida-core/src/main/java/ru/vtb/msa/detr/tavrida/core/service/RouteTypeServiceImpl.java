@@ -49,12 +49,16 @@ public class RouteTypeServiceImpl implements RouteTypeService {
     @Override
     @Transactional
     public RouteTypeDto create(RouteTypeDto dto) {
+        // Проверяем, что id не null
+        if (dto.getRouteTypesId() == null) {
+            throw new ValidationTavridaException("Значение routeTypesId не может быть null.");
+        }
         // Проверяем, что id не меньше 0
         if (dto.getRouteTypesId() < 0) {
             throw new ValidationTavridaException("Значение routeTypesId не может быть меньше 0.");
         }
         // Проверяем, существует ли уже тип маршрута с таким id
-        if (dto.getRouteTypesId() != null && repository.existsById(dto.getRouteTypesId())) {
+        if (repository.existsById(dto.getRouteTypesId())) {
             throw new EntityAlreadyExistsException("Тип маршрута с id '" + dto.getRouteTypesId() + "' уже существует.");
         }
         RouteType entity = RouteTypeMapper.toEntity(dto);
