@@ -3,9 +3,6 @@ package ru.vtb.msa.detr.tavrida.core.model.mapper;
 import ru.vtb.msa.detr.tavrida.api.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.*;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -246,10 +243,10 @@ public class TavridaMapper {
         userSessionDto.setUser(toUserDto(s.getUser()));
         userSessionDto.setTerminal(toTerminalDto(s.getTerminal()));
         userSessionDto.setCard(toCardDto(s.getCard()));
-        userSessionDto.setStartedAt(s.getStartedAt());
-        userSessionDto.setClosedAt(s.getClosedAt());
-        userSessionDto.setStartedAtLocal(s.getStartedAtLocal());
-        userSessionDto.setClosedAtLocal(s.getClosedAtLocal());
+        userSessionDto.setStartedAtServer(s.getStartedAt());
+        userSessionDto.setClosedAtServer(s.getClosedAt());
+        userSessionDto.setStartedAtTerminal(s.getStartedAtLocal());
+        userSessionDto.setClosedAtTerminal(s.getClosedAtLocal());
         userSessionDto.setExpirationTime(s.getExpirationTime());
         return userSessionDto;
     }
@@ -263,10 +260,10 @@ public class TavridaMapper {
         s.setUser(user);
         s.setTerminal(terminal);
         s.setCard(toCardEntity(dto.getCard()));
-        s.setStartedAt(dto.getStartedAt());
-        s.setClosedAt(dto.getClosedAt());
-        s.setStartedAtLocal(dto.getStartedAtLocal());
-        s.setClosedAtLocal(dto.getClosedAtLocal());
+        s.setStartedAt(dto.getStartedAtServer());
+        s.setClosedAt(dto.getClosedAtServer());
+        s.setStartedAtLocal(dto.getStartedAtTerminal());
+        s.setClosedAtLocal(dto.getClosedAtTerminal());
         s.setExpirationTime(dto.getExpirationTime());
         return s;
     }

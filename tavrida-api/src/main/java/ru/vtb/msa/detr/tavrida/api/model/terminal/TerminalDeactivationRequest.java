@@ -2,65 +2,69 @@ package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class TerminalDeactivationRequest {
     @Schema(
-            description = "UUID терминала",
-            example = "123e4567-e89b-42d3-a456-556642440000",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        description = "UUID терминала",
+        example = "123e4567-e89b-42d3-a456-556642440000",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     private UUID terminalGuid;
     @Schema(
-            description = "UUID транспорта",
-            example = "123e4567-e89b-42d3-a456-556642440000",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "UUID транспорта",
+        example = "123e4567-e89b-42d3-a456-556642440000",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID transportGuid;
     @Schema(
-            description = "UUID карты",
-            example = "123e4567-e89b-42d3-a456-556642440000",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "UUID карты",
+        example = "123e4567-e89b-42d3-a456-556642440000",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID cardGuid; // Новая карта активации
     @Schema(
-            description = "Номер терминала",
-            example = "A1234",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        description = "Номер терминала",
+        example = "A1234",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     private String terminalNumber;
     @Schema(
-            description = "Заводская серия терминала",
-            example = "Любая строка",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "Заводская серия терминала",
+        example = "Любая строка",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String terminalSerialNumber;
     @Schema(
-            description = "ID Перевозчика",
-            example = "12345",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "ID Перевозчика",
+        example = "12345",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private Long carrierId;
+
     @Schema(
-            description = "Местное время",
-            example = "2007-12-03T10:15:3",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "Временная метка с терминала",
+        example = "2025-12-23T21:52:08.754+0300",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private LocalDateTime terminalDeactivationStartTime;
-    @Schema(
-            description = "Часовой пояс местного времени",
-            example = "Z - UTC, +h, +hh, +hh:mm, -h, -hh, -hh:mm",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    private String timeZoneOffset;
+    private String terminalDeactivationStartTime;
 
     // getters/setters
-    public UUID getTerminalGuid() { return terminalGuid; }
-    public void setTerminalGuid(UUID terminalGuid) { this.terminalGuid = terminalGuid; }
+    public UUID getTerminalGuid() {
+        return terminalGuid;
+    }
 
-    public UUID getCardGuid() { return cardGuid; }
-    public void setCardGuid(UUID cardGuid) { this.cardGuid = cardGuid; }
+    public void setTerminalGuid(UUID terminalGuid) {
+        this.terminalGuid = terminalGuid;
+    }
+
+    public UUID getCardGuid() {
+        return cardGuid;
+    }
+
+    public void setCardGuid(UUID cardGuid) {
+        this.cardGuid = cardGuid;
+    }
 
     public UUID getTransportGuid() {
         return transportGuid;
@@ -94,19 +98,11 @@ public class TerminalDeactivationRequest {
         this.carrierId = carrierId;
     }
 
-    public LocalDateTime getTerminalDeactivationStartTime() {
+    public String getTerminalDeactivationStartTime() {
         return terminalDeactivationStartTime;
     }
 
-    public void setTerminalDeactivationStartTime(LocalDateTime terminalDeactivationStartTime) {
+    public void setTerminalDeactivationStartTime(String terminalDeactivationStartTime) {
         this.terminalDeactivationStartTime = terminalDeactivationStartTime;
-    }
-
-    public String getTimeZoneOffset() {
-        return timeZoneOffset;
-    }
-
-    public void setTimeZoneOffset(String timeZoneOffset) {
-        this.timeZoneOffset = timeZoneOffset;
     }
 }

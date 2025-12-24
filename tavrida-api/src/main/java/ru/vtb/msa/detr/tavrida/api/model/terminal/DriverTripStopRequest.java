@@ -2,27 +2,20 @@ package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
-
 public class DriverTripStopRequest {
     @Schema(
-            description = "Номер рейса",
-            example = "1234",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "Номер рейса",
+        example = "1234",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private Long tripId;
+
     @Schema(
-            description = "Местное время",
-            example = "2007-12-03T10:15:3",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "Временная метка с терминала",
+        example = "2025-12-23T21:52:08.754+0300",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private LocalDateTime tripStopTime;
-    @Schema(
-            description = "Часовой пояс местного времени",
-            example = "Z - UTC, +h, +hh, +hh:mm, -h, -hh, -hh:mm",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    private String timeZoneOffset;
+    private String tripStopTime;
 
     public Long getTripId() {
         return tripId;
@@ -32,19 +25,11 @@ public class DriverTripStopRequest {
         this.tripId = tripId;
     }
 
-    public LocalDateTime getTripStopTime() {
+    public String getTripStopTime() {
         return tripStopTime;
     }
 
-    public void setTripStopTime(LocalDateTime tripStopTime) {
+    public void setTripStopTime(String tripStopTime) {
         this.tripStopTime = tripStopTime;
-    }
-
-    public String getTimeZoneOffset() {
-        return timeZoneOffset;
-    }
-
-    public void setTimeZoneOffset(String timeZoneOffset) {
-        this.timeZoneOffset = timeZoneOffset;
     }
 }

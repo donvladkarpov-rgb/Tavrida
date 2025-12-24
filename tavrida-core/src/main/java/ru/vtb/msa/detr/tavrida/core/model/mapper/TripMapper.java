@@ -13,10 +13,10 @@ public class TripMapper {
         dto.setTripId(entity.getTripId());
         dto.setRouteId(entity.getRoute() != null ? entity.getRoute().getRouteId() : null);
         dto.setSessionId(entity.getSession() != null ? entity.getSession().getSessionId() : null);
-        dto.setStartedAt(entity.getStartedAt());
-        dto.setClosedAt(entity.getClosedAt());
-        dto.setStartedAtLocal(entity.getStartedAtLocal());
-        dto.setClosedAtLocal(entity.getClosedAtLocal());
+        dto.setStartedAtServer(entity.getStartedAt());
+        dto.setClosedAtServer(entity.getClosedAt());
+        dto.setStartedAtTerminal(entity.getStartedAtLocal());
+        dto.setClosedAtTerminal(entity.getClosedAtLocal());
         return dto;
     }
 
@@ -26,10 +26,10 @@ public class TripMapper {
         }
         Trip entity = new Trip();
         entity.setTripId(dto.getTripId());
-        entity.setStartedAt(dto.getStartedAt());
-        entity.setClosedAt(dto.getClosedAt());
-        entity.setStartedAtLocal(dto.getStartedAtLocal());
-        entity.setClosedAtLocal(dto.getClosedAtLocal());
+        entity.setStartedAt(dto.getStartedAtServer());
+        entity.setClosedAt(dto.getClosedAtServer());
+        entity.setStartedAtLocal(dto.getStartedAtTerminal());
+        entity.setClosedAtLocal(dto.getClosedAtTerminal());
         // route и session устанавливаются отдельно в сервисе
         return entity;
     }

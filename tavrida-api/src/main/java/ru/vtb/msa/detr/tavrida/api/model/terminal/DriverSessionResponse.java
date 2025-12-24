@@ -2,7 +2,6 @@ package ru.vtb.msa.detr.tavrida.api.model.terminal;
 
 import ru.vtb.msa.detr.tavrida.api.model.UserDto;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class DriverSessionResponse {
@@ -11,7 +10,7 @@ public class DriverSessionResponse {
     private UUID sessionId;
     private UUID driverCardGuid;
     private UUID transportGuid;
-    private LocalDateTime startTime;
+    private String startTime;
     private UserDto driver;
 
     public DriverSessionResponse(boolean success, String message) {
@@ -20,12 +19,12 @@ public class DriverSessionResponse {
     }
 
     public DriverSessionResponse(
-            boolean success,
-            String message,
-            UUID sessionId,
-            UUID driverCardGuid,
-            UUID transportGuid,
-            LocalDateTime startTime) {
+        boolean success,
+        String message,
+        UUID sessionId,
+        UUID driverCardGuid,
+        UUID transportGuid,
+        String startTime) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
@@ -35,13 +34,13 @@ public class DriverSessionResponse {
     }
 
     public DriverSessionResponse(
-            boolean success,
-            String message,
-            UUID sessionId,
-            UUID driverCardGuid,
-            UUID transportGuid,
-            LocalDateTime startTime,
-            UserDto driver) {
+        boolean success,
+        String message,
+        UUID sessionId,
+        UUID driverCardGuid,
+        UUID transportGuid,
+        String startTime,
+        UserDto driver) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
@@ -52,21 +51,51 @@ public class DriverSessionResponse {
     }
 
     // Getters & Setters
-    public boolean isSuccess() { return success; }
-    public void setSuccess(boolean success) { this.success = success; }
+    public boolean isSuccess() {
+        return success;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
 
-    public UUID getSessionId() { return sessionId; }
-    public void setSessionId(UUID sessionId) { this.sessionId = sessionId; }
+    public String getMessage() {
+        return message;
+    }
 
-    public UUID getDriverCardGuid() { return driverCardGuid; }
-    public void setDriverCardGuid(UUID driverCardGuid) { this.driverCardGuid = driverCardGuid; }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-    public UUID getTransportGuid() { return transportGuid; }
-    public void setTransportGuid(UUID transportGuid) { this.transportGuid = transportGuid; }
+    public UUID getSessionId() {
+        return sessionId;
+    }
 
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public UUID getDriverCardGuid() {
+        return driverCardGuid;
+    }
+
+    public void setDriverCardGuid(UUID driverCardGuid) {
+        this.driverCardGuid = driverCardGuid;
+    }
+
+    public UUID getTransportGuid() {
+        return transportGuid;
+    }
+
+    public void setTransportGuid(UUID transportGuid) {
+        this.transportGuid = transportGuid;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
 }

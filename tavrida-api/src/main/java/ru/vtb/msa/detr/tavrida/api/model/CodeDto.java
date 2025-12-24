@@ -10,24 +10,55 @@ public class CodeDto {
     private LocalDateTime validFrom;
     private LocalDateTime validTo;
 
-    public CodeDto() {}
+    public CodeDto() {
+    }
 
     // Геттеры и сеттеры
-    public String getCodeUid() { return codeUid; }
-    public void setCodeUid(String codeUid) { this.codeUid = codeUid; }
+    public String getCodeUid() {
+        return codeUid;
+    }
 
-    public String getCodeType() { return codeType; }
-    public void setCodeType(String codeType) { this.codeType = codeType; }
+    public void setCodeUid(String codeUid) {
+        this.codeUid = codeUid;
+    }
 
-    public String getCodeContent() { return codeContent; }
-    public void setCodeContent(String codeContent) { this.codeContent = codeContent; }
+    public String getCodeType() {
+        return codeType;
+    }
 
-    public String getAllowedUsage() { return allowedUsage; }
-    public void setAllowedUsage(String allowedUsage) { this.allowedUsage = allowedUsage; }
+    public void setCodeType(String codeType) {
+        this.codeType = codeType;
+    }
 
-    public LocalDateTime getValidFrom() { return validFrom; }
-    public void setValidFrom(LocalDateTime validFrom) { this.validFrom = validFrom; }
+    public String getCodeContent() {
+        return codeContent;
+    }
 
-    public LocalDateTime getValidTo() { return validTo; }
-    public void setValidTo(LocalDateTime validTo) { this.validTo = validTo; }
+    public void setCodeContent(String codeContent) {
+        this.codeContent = codeContent;
+    }
+
+    public String getAllowedUsage() {
+        return allowedUsage;
+    }
+
+    public void setAllowedUsage(String allowedUsage) {
+        this.allowedUsage = allowedUsage;
+    }
+
+    public LocalDateTime getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(LocalDateTime validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public LocalDateTime getValidTo() {
+        return validTo;
+    }
+
+    public void setValidTo(LocalDateTime validTo) {
+        this.validTo = validTo;
+    }
 }

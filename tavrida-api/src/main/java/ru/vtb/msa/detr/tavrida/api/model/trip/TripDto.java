@@ -8,10 +8,10 @@ public class TripDto implements Serializable {
     private Long tripId;
     private Long routeId;
     private UUID sessionId;
-    private Instant startedAt;
-    private Instant closedAt;
-    private Instant startedAtLocal;
-    private Instant closedAtLocal;
+    private Instant startedAtServer;
+    private Instant closedAtServer;
+    private Instant startedAtTerminal;
+    private Instant closedAtTerminal;
 
     public TripDto() {}
 
@@ -39,35 +39,35 @@ public class TripDto implements Serializable {
         this.sessionId = sessionId;
     }
 
-    public Instant getStartedAt() {
-        return startedAt;
+    public Instant getStartedAtServer() {
+        return startedAtServer;
     }
 
-    public void setStartedAt(Instant startedAt) {
-        this.startedAt = startedAt;
+    public void setStartedAtServer(Instant startedAtServer) {
+        this.startedAtServer = startedAtServer;
     }
 
-    public Instant getClosedAt() {
-        return closedAt;
+    public Instant getClosedAtServer() {
+        return closedAtServer;
     }
 
-    public void setClosedAt(Instant closedAt) {
-        this.closedAt = closedAt;
+    public void setClosedAtServer(Instant closedAtServer) {
+        this.closedAtServer = closedAtServer;
     }
 
-    public Instant getStartedAtLocal() {
-        return startedAtLocal;
+    public Instant getStartedAtTerminal() {
+        return startedAtTerminal;
     }
 
-    public void setStartedAtLocal(Instant startedAtLocal) {
-        this.startedAtLocal = startedAtLocal;
+    public void setStartedAtTerminal(Instant startedAtTerminal) {
+        this.startedAtTerminal = startedAtTerminal;
     }
 
-    public Instant getClosedAtLocal() {
-        return closedAtLocal;
+    public Instant getClosedAtTerminal() {
+        return closedAtTerminal;
     }
 
-    public void setClosedAtLocal(Instant closedAtLocal) {
-        this.closedAtLocal = closedAtLocal;
+    public void setClosedAtTerminal(Instant closedAtTerminal) {
+        this.closedAtTerminal = closedAtTerminal;
     }
 }
