@@ -1,16 +1,15 @@
 package ru.vtb.msa.detr.tavrida.api.model.cashier;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class CardInitResponse {
     private UUID cardUuid;
-    private LocalDateTime expirationDate;
+    private String expirationDate;
 
     public CardInitResponse() {
     }
 
-    public CardInitResponse(UUID cardUuid, LocalDateTime expirationDate) {
+    public CardInitResponse(UUID cardUuid, String expirationDate) {
         this.cardUuid = cardUuid;
         this.expirationDate = expirationDate;
     }
@@ -23,11 +22,11 @@ public class CardInitResponse {
         this.cardUuid = cardUuid;
     }
 
-    public LocalDateTime getExpirationDate() {
+    public String getExpirationDate() {
         return expirationDate;
     }
 
-    public void setExpirationDate(LocalDateTime expirationDate) {
+    public void setExpirationDate(String expirationDate) {
         this.expirationDate = expirationDate;
     }
 }

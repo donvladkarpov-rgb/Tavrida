@@ -2,7 +2,6 @@ package ru.vtb.msa.detr.tavrida.api.model.cashier;
 
 import ru.vtb.msa.detr.tavrida.api.model.UserDto;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class CashierLogoutResponse {
@@ -11,7 +10,7 @@ public class CashierLogoutResponse {
     private String message;
     private UUID sessionId;
     private UUID cashierCardGuid;
-    private LocalDateTime startTime;
+    private String startTime;
     private UserDto cashier;
 
     public CashierLogoutResponse(boolean success, String message) {
@@ -20,12 +19,12 @@ public class CashierLogoutResponse {
     }
 
     public CashierLogoutResponse(
-            boolean success,
-            String message,
-            UUID sessionId,
-            UUID cashierCardGuid,
-            UUID transportGuid,
-            LocalDateTime startTime) {
+        boolean success,
+        String message,
+        UUID sessionId,
+        UUID cashierCardGuid,
+        UUID transportGuid,
+        String startTime) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
@@ -34,12 +33,12 @@ public class CashierLogoutResponse {
     }
 
     public CashierLogoutResponse(
-            boolean success,
-            String message,
-            UUID sessionId,
-            UUID cashierCardGuid,
-            LocalDateTime startTime,
-            UserDto cashier) {
+        boolean success,
+        String message,
+        UUID sessionId,
+        UUID cashierCardGuid,
+        String startTime,
+        UserDto cashier) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
@@ -49,14 +48,29 @@ public class CashierLogoutResponse {
     }
 
     // Getters & Setters
-    public boolean isSuccess() { return success; }
-    public void setSuccess(boolean success) { this.success = success; }
+    public boolean isSuccess() {
+        return success;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
 
-    public UUID getSessionId() { return sessionId; }
-    public void setSessionId(UUID sessionId) { this.sessionId = sessionId; }
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 
     public UUID getCashierCardGuid() {
         return cashierCardGuid;
@@ -74,7 +88,12 @@ public class CashierLogoutResponse {
         this.cashier = cashier;
     }
 
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
 
 }

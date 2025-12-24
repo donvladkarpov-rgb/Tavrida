@@ -13,30 +13,71 @@ public class PaymentDto {
     private PaymentResultDto paymentResult;
     private Long terminalId;
 
-    public PaymentDto() {}
+    public PaymentDto() {
+    }
 
     // Геттеры и сеттеры
-    public Long getPaymentId() { return paymentId; }
-    public void setPaymentId(Long paymentId) { this.paymentId = paymentId; }
+    public Long getPaymentId() {
+        return paymentId;
+    }
 
-    public LocalDateTime getPaymentTime() { return paymentTime; }
-    public void setPaymentTime(LocalDateTime paymentTime) { this.paymentTime = paymentTime; }
+    public void setPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
+    }
 
-    public Long getCardId() { return cardId; }
-    public void setCardId(Long cardId) { this.cardId = cardId; }
+    public LocalDateTime getPaymentTime() {
+        return paymentTime;
+    }
 
-    public BigDecimal getBalanceBefore() { return balanceBefore; }
-    public void setBalanceBefore(BigDecimal balanceBefore) { this.balanceBefore = balanceBefore; }
+    public void setPaymentTime(LocalDateTime paymentTime) {
+        this.paymentTime = paymentTime;
+    }
 
-    public BigDecimal getBalanceAfter() { return balanceAfter; }
-    public void setBalanceAfter(BigDecimal balanceAfter) { this.balanceAfter = balanceAfter; }
+    public Long getCardId() {
+        return cardId;
+    }
 
-    public PaymentTypeDto getPaymentType() { return paymentType; }
-    public void setPaymentType(PaymentTypeDto paymentType) { this.paymentType = paymentType; }
+    public void setCardId(Long cardId) {
+        this.cardId = cardId;
+    }
 
-    public PaymentResultDto getPaymentResult() { return paymentResult; }
-    public void setPaymentResult(PaymentResultDto paymentResult) { this.paymentResult = paymentResult; }
+    public BigDecimal getBalanceBefore() {
+        return balanceBefore;
+    }
 
-    public Long getTerminalId() { return terminalId; }
-    public void setTerminalId(Long terminalId) { this.terminalId = terminalId; }
+    public void setBalanceBefore(BigDecimal balanceBefore) {
+        this.balanceBefore = balanceBefore;
+    }
+
+    public BigDecimal getBalanceAfter() {
+        return balanceAfter;
+    }
+
+    public void setBalanceAfter(BigDecimal balanceAfter) {
+        this.balanceAfter = balanceAfter;
+    }
+
+    public PaymentTypeDto getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(PaymentTypeDto paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public PaymentResultDto getPaymentResult() {
+        return paymentResult;
+    }
+
+    public void setPaymentResult(PaymentResultDto paymentResult) {
+        this.paymentResult = paymentResult;
+    }
+
+    public Long getTerminalId() {
+        return terminalId;
+    }
+
+    public void setTerminalId(Long terminalId) {
+        this.terminalId = terminalId;
+    }
 }

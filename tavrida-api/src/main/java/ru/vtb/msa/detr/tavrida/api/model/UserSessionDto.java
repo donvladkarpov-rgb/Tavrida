@@ -9,10 +9,10 @@ public class UserSessionDto {
     private UserDto user;
     private TerminalDto terminal;
     private CardDto card;
-    private Instant startedAt;
-    private Instant startedAtLocal;
-    private Instant closedAt;
-    private Instant closedAtLocal;
+    private Instant startedAtServer;
+    private Instant startedAtTerminal;
+    private Instant closedAtServer;
+    private Instant closedAtTerminal;
     private Instant expirationTime;
 
     public UUID getSessionId() {
@@ -47,36 +47,36 @@ public class UserSessionDto {
         this.card = card;
     }
 
-    public Instant getStartedAt() {
-        return startedAt;
+    public Instant getStartedAtServer() {
+        return startedAtServer;
     }
 
-    public void setStartedAt(Instant startedAt) {
-        this.startedAt = startedAt;
+    public void setStartedAtServer(Instant startedAtServer) {
+        this.startedAtServer = startedAtServer;
     }
 
-    public Instant getStartedAtLocal() {
-        return startedAtLocal;
+    public Instant getStartedAtTerminal() {
+        return startedAtTerminal;
     }
 
-    public void setStartedAtLocal(Instant startedAtLocal) {
-        this.startedAtLocal = startedAtLocal;
+    public void setStartedAtTerminal(Instant startedAtTerminal) {
+        this.startedAtTerminal = startedAtTerminal;
     }
 
-    public Instant getClosedAt() {
-        return closedAt;
+    public Instant getClosedAtServer() {
+        return closedAtServer;
     }
 
-    public void setClosedAt(Instant closedAt) {
-        this.closedAt = closedAt;
+    public void setClosedAtServer(Instant closedAtServer) {
+        this.closedAtServer = closedAtServer;
     }
 
-    public Instant getClosedAtLocal() {
-        return closedAtLocal;
+    public Instant getClosedAtTerminal() {
+        return closedAtTerminal;
     }
 
-    public void setClosedAtLocal(Instant closedAtLocal) {
-        this.closedAtLocal = closedAtLocal;
+    public void setClosedAtTerminal(Instant closedAtTerminal) {
+        this.closedAtTerminal = closedAtTerminal;
     }
 
     public Instant getExpirationTime() {

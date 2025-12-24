@@ -2,6 +2,9 @@ package ru.vtb.msa.detr.tavrida.core.util;
 
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 @Component
@@ -16,6 +19,12 @@ public class TavridaUtils {
         int number = random.nextInt(10000);
         // Форматируем число с ведущими нулями
         return String.format("%c%04d", letter, number);
+    }
+
+
+    public Instant parseInstant(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        return OffsetDateTime.parse(dateString, formatter).toInstant();
     }
 
 }

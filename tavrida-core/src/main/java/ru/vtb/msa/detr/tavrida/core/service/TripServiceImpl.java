@@ -2,15 +2,16 @@ package ru.vtb.msa.detr.tavrida.core.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vtb.msa.detr.tavrida.api.model.trip.TripDto;
+import ru.vtb.msa.detr.tavrida.core.exception.EntityAlreadyExistsException;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
-import ru.vtb.msa.detr.tavrida.core.model.mapper.TripMapper;
 import ru.vtb.msa.detr.tavrida.core.model.Route;
 import ru.vtb.msa.detr.tavrida.core.model.Trip;
 import ru.vtb.msa.detr.tavrida.core.model.UserSession;
+import ru.vtb.msa.detr.tavrida.core.model.mapper.TripMapper;
 import ru.vtb.msa.detr.tavrida.core.repo.RouteRepository;
 import ru.vtb.msa.detr.tavrida.core.repo.TripRepository;
 import ru.vtb.msa.detr.tavrida.core.repo.UserSessionRepository;
-import ru.vtb.msa.detr.tavrida.api.model.trip.TripDto;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,9 +26,9 @@ public class TripServiceImpl implements TripService {
     private final UserSessionRepository sessionRepository;
 
     public TripServiceImpl(
-            TripRepository repository,
-            RouteRepository routeRepository,
-            UserSessionRepository sessionRepository
+        TripRepository repository,
+        RouteRepository routeRepository,
+        UserSessionRepository sessionRepository
     ) {
         this.repository = repository;
         this.routeRepository = routeRepository;
@@ -38,55 +39,60 @@ public class TripServiceImpl implements TripService {
     @Transactional(readOnly = true)
     public TripDto findById(Long id) {
         return repository.findById(id)
-                .map(TripMapper::toDto)
-                .orElseThrow(() -> new EntityNotFoundException("Trip", "id", id));
+            .map(TripMapper::toDto)
+            .orElseThrow(() -> new EntityNotFoundException("Trip", "id", id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TripDto> findByRouteId(Long routeId) {
         return repository.findByRoute_RouteId(routeId).stream()
-                .map(TripMapper::toDto)
-                .collect(Collectors.toList());
+            .map(TripMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TripDto> findBySessionId(UUID sessionId) {
         return repository.findBySession_SessionId(sessionId).stream()
-                .map(TripMapper::toDto)
-                .collect(Collectors.toList());
+            .map(TripMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TripDto> findAll() {
         return repository.findAll().stream()
-                .map(TripMapper::toDto)
-                .collect(Collectors.toList());
+            .map(TripMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public TripDto create(TripDto dto) {
+        // Проверяем нет ли уже такого маршрута
+        if (repository.findById(dto.getTripId()).isPresent()) {
+            throw new EntityAlreadyExistsException("Маршрут с id" + dto.getTripId() + " уже существует.");
+        }
+
         Trip entity = TripMapper.toEntity(dto);
 
         // Устанавливаем маршрут
         if (dto.getRouteId() != null) {
             Route route = routeRepository.findById(dto.getRouteId())
-                    .orElseThrow(() -> new EntityNotFoundException("Route", "id", dto.getRouteId()));
+                .orElseThrow(() -> new EntityNotFoundException("Route", "id", dto.getRouteId()));
             entity.setRoute(route);
         }
 
         // Устанавливаем сессию
         if (dto.getSessionId() != null) {
             UserSession session = sessionRepository.findById(dto.getSessionId())
-                    .orElseThrow(() -> new EntityNotFoundException("UserSession", "id", dto.getSessionId().toString()));
+                .orElseThrow(() -> new EntityNotFoundException("UserSession", "id", dto.getSessionId().toString()));
             entity.setSession(session);
         }
 
-        entity.setStartedAt(dto.getStartedAt() != null ? dto.getStartedAt() : Instant.now());
-        entity.setClosedAt(dto.getClosedAt() != null ? dto.getClosedAt() : Instant.now());
+        entity.setStartedAt(dto.getStartedAtServer() != null ? dto.getStartedAtServer() : Instant.now());
+        entity.setClosedAt(dto.getClosedAtServer() != null ? dto.getClosedAtServer() : Instant.now());
 
         Trip saved = repository.save(entity);
         return TripMapper.toDto(saved);
@@ -96,12 +102,12 @@ public class TripServiceImpl implements TripService {
     @Transactional
     public TripDto update(Long id, TripDto dto) {
         Trip entity = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Trip", "id", id));
+            .orElseThrow(() -> new EntityNotFoundException("Trip", "id", id));
 
         // Обновляем маршрут
         if (dto.getRouteId() != null) {
             Route route = routeRepository.findById(dto.getRouteId())
-                    .orElseThrow(() -> new EntityNotFoundException("Route", "id", dto.getRouteId()));
+                .orElseThrow(() -> new EntityNotFoundException("Route", "id", dto.getRouteId()));
             entity.setRoute(route);
         } else {
             entity.setRoute(null);
@@ -110,14 +116,14 @@ public class TripServiceImpl implements TripService {
         // Обновляем сессию
         if (dto.getSessionId() != null) {
             UserSession session = sessionRepository.findById(dto.getSessionId())
-                    .orElseThrow(() -> new EntityNotFoundException("UserSession", "id", dto.getSessionId().toString()));
+                .orElseThrow(() -> new EntityNotFoundException("UserSession", "id", dto.getSessionId().toString()));
             entity.setSession(session);
         } else {
             entity.setSession(null);
         }
 
-        entity.setStartedAt(dto.getStartedAt());
-        entity.setClosedAt(dto.getClosedAt());
+        entity.setStartedAt(dto.getStartedAtServer());
+        entity.setClosedAt(dto.getClosedAtServer());
 
         Trip updated = repository.save(entity);
         return TripMapper.toDto(updated);

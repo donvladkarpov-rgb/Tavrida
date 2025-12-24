@@ -2,45 +2,40 @@ package ru.vtb.msa.detr.tavrida.api.model.cashier;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class CardPurchaseRequest {
     @Schema(
-            description = "UUID идентификатор сессии",
-            example = "123e4567-e89b-42d3-a456-756642440001",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "UUID идентификатор сессии",
+        example = "123e4567-e89b-42d3-a456-756642440001",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID sessionId;
     @Schema(
-            description = "UUID идентификатор карты",
-            example = "123e4567-e89b-42d3-a456-756642440001",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "UUID идентификатор карты",
+        example = "123e4567-e89b-42d3-a456-756642440001",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID cardUuid;
     @Schema(
-            description = "Количество купленых поездок",
-            example = "100",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "Количество купленых поездок",
+        example = "100",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private Integer tripsCount;
     @Schema(
-            description = "Текущий баланс карты (со стороны терминала)",
-            example = "100",
-            requiredMode = Schema.RequiredMode.REQUIRED
+        description = "Текущий баланс карты (со стороны терминала)",
+        example = "100",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     private Integer currentTripsCount;
+
     @Schema(
-            description = "Местное время",
-            example = "2007-12-03T10:15:3"
+        description = "Временная метка с терминала",
+        example = "2025-12-23T21:52:08.754+0300",
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
-    private LocalDateTime localStartTime;
-    @Schema(
-            description = "Часовой пояс местного времени",
-            example = "Z - UTC, +h, +hh, +hh:mm, -h, -hh, -hh:mm",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    private String timeZoneOffset;
+    private String terminalStartTime;
 
     public CardPurchaseRequest() {
     }
@@ -84,19 +79,11 @@ public class CardPurchaseRequest {
         this.currentTripsCount = currentTripsCount;
     }
 
-    public LocalDateTime getLocalStartTime() {
-        return localStartTime;
+    public String getTerminalStartTime() {
+        return terminalStartTime;
     }
 
-    public void setLocalStartTime(LocalDateTime localStartTime) {
-        this.localStartTime = localStartTime;
-    }
-
-    public String getTimeZoneOffset() {
-        return timeZoneOffset;
-    }
-
-    public void setTimeZoneOffset(String timeZoneOffset) {
-        this.timeZoneOffset = timeZoneOffset;
+    public void setTerminalStartTime(String terminalStartTime) {
+        this.terminalStartTime = terminalStartTime;
     }
 }

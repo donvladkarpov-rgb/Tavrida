@@ -1,6 +1,9 @@
 package ru.vtb.msa.detr.tavrida.core.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.type.descriptor.jdbc.CharJdbcType;
 
@@ -31,24 +34,55 @@ public class Code {
     private LocalDateTime validTo;
 
     // Constructors
-    public Code() {}
+    public Code() {
+    }
 
     // Getters and Setters
-    public String getCodeUid() { return codeUid; }
-    public void setCodeUid(String codeUid) { this.codeUid = codeUid; }
+    public String getCodeUid() {
+        return codeUid;
+    }
 
-    public String getCodeType() { return codeType; }
-    public void setCodeType(String codeType) { this.codeType = codeType; }
+    public void setCodeUid(String codeUid) {
+        this.codeUid = codeUid;
+    }
 
-    public String getCodeContent() { return codeContent; }
-    public void setCodeContent(String codeContent) { this.codeContent = codeContent; }
+    public String getCodeType() {
+        return codeType;
+    }
 
-    public String getAllowedUsage() { return allowedUsage; }
-    public void setAllowedUsage(String allowedUsage) { this.allowedUsage = allowedUsage; }
+    public void setCodeType(String codeType) {
+        this.codeType = codeType;
+    }
 
-    public LocalDateTime getValidFrom() { return validFrom; }
-    public void setValidFrom(LocalDateTime validFrom) { this.validFrom = validFrom; }
+    public String getCodeContent() {
+        return codeContent;
+    }
 
-    public LocalDateTime getValidTo() { return validTo; }
-    public void setValidTo(LocalDateTime validTo) { this.validTo = validTo; }
+    public void setCodeContent(String codeContent) {
+        this.codeContent = codeContent;
+    }
+
+    public String getAllowedUsage() {
+        return allowedUsage;
+    }
+
+    public void setAllowedUsage(String allowedUsage) {
+        this.allowedUsage = allowedUsage;
+    }
+
+    public LocalDateTime getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(LocalDateTime validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public LocalDateTime getValidTo() {
+        return validTo;
+    }
+
+    public void setValidTo(LocalDateTime validTo) {
+        this.validTo = validTo;
+    }
 }
