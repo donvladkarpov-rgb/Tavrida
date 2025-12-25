@@ -137,3 +137,5 @@ tavrida:
         error-card-read: ${PAYMENT_RESULT_ERROR_CARD_READ:12}
         error-insufficient-funds: ${PAYMENT_RESULT_ERROR_INSUFFICIENT_FUNDS:13}
         error-card-blocked: ${PAYMENT_RESULT_ERROR_CARD_BLOCKED:14}
+      tariff-type:
+        default: ${TARIFF_TYPE_DEFAULT:1}

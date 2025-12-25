@@ -17,29 +17,10 @@ import ru.vtb.msa.detr.tavrida.api.model.terminal.TerminalDeductResponse;
 import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
-import ru.vtb.msa.detr.tavrida.core.model.BlackList;
-import ru.vtb.msa.detr.tavrida.core.model.Card;
-import ru.vtb.msa.detr.tavrida.core.model.Route;
-import ru.vtb.msa.detr.tavrida.core.model.ServiceEvent;
-import ru.vtb.msa.detr.tavrida.core.model.Terminal;
-import ru.vtb.msa.detr.tavrida.core.model.Transport;
-import ru.vtb.msa.detr.tavrida.core.model.Trip;
-import ru.vtb.msa.detr.tavrida.core.model.User;
-import ru.vtb.msa.detr.tavrida.core.model.UserSession;
+import ru.vtb.msa.detr.tavrida.core.model.*;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TripMapper;
-import ru.vtb.msa.detr.tavrida.core.repo.BlackListRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.CardRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.CarrierRouteMapRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.PaymentRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.RouteRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.ServiceEventRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.ServiceEventTypeRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.TerminalRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.TransportRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.TripRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.UserRepository;
-import ru.vtb.msa.detr.tavrida.core.repo.UserSessionRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.*;
 import ru.vtb.msa.detr.tavrida.core.util.TavridaUtils;
 
 import java.time.Instant;
@@ -71,6 +52,9 @@ public class TerminalOperationService {
     private final ServiceEventRepository serviceEventRepository;
     private final ServiceEventTypeRepository serviceEventTypeRepository;
     private final ObjectMapper objectMapper;
+    private final CardPanHashRepository cardPanHashRepository;
+    private final CardService cardService;
+
 
     public TerminalOperationService(
         SessionService sessionService,
@@ -88,7 +72,10 @@ public class TerminalOperationService {
         TripRepository tripRepository,
         ServiceEventRepository serviceEventRepository,
         ServiceEventTypeRepository serviceEventTypeRepository,
-        ObjectMapper objectMapper) {
+        ObjectMapper objectMapper,
+        CardPanHashRepository cardPanHashRepository,
+        CardService cardService
+    ) {
         this.cardRepository = cardRepository;
         this.blackListRepository = blackListRepository;
         this.paymentRepository = paymentRepository;
@@ -105,6 +92,8 @@ public class TerminalOperationService {
         this.serviceEventRepository = serviceEventRepository;
         this.serviceEventTypeRepository = serviceEventTypeRepository;
         this.objectMapper = objectMapper;
+        this.cardPanHashRepository = cardPanHashRepository;
+        this.cardService = cardService;
     }
 
     @Transactional
@@ -447,6 +436,28 @@ public class TerminalOperationService {
         UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
 
         UUID cardGuid = request.getCardGuid();
+
+        if (cardGuid == null) {
+            CardPanHash cardPanHash = null;
+            if (request.getCardNumber() != null) {
+                String hash = util.getHash(request.getCardNumber());
+                cardPanHash = cardPanHashRepository.findByPanHash(hash).orElse(null);
+                if (cardPanHash != null) {
+                    Card cardByHash = cardService.getCardEntityByPanHash(hash);
+                    if (cardByHash != null) {
+                        throw new ValidationTavridaException("К банковской карте уже привязана виртуальная транспортная карта с тарифом " + cardByHash.getTariffType());
+                    } else {
+                        cardGuid = cardByHash.getCardGuid();
+                    }
+                } else {
+                    throw new ValidationTavridaException("Указанная банковская карта не зарегестрирована в системе!");
+                }
+            } else {
+                throw new ValidationTavridaException("Должна быть указана либо транспортная карта либо банковская!");
+            }
+        }
+
+
         UUID terminalGuid = request.getTerminalGuid();
         int terminalBalance = request.getTerminalBalance();
 
@@ -456,11 +467,17 @@ public class TerminalOperationService {
         }
 
         // 3. Находим карту на сервере
+        UUID finalCardGuid = cardGuid;
         Card serverCard = cardRepository.findByCardGuid(cardGuid)
-            .orElseThrow(() -> new EntityNotFoundException("Карта не найдена: " + cardGuid));
+            .orElseThrow(() -> new EntityNotFoundException("Карта не найдена: " + finalCardGuid));
 
         // 4. Определяем актуальный баланс — минимальный из двух
-        int actualBalance = Math.min(serverCard.getAvailableTravelCount(), terminalBalance);
+        int actualBalance = serverCard.getAvailableTravelCount();
+        if (terminalBalance > 0) {
+            actualBalance = Math.min(serverCard.getAvailableTravelCount(), terminalBalance);
+        } else {
+            actualBalance = serverCard.getAvailableTravelCount() + terminalBalance;
+        }
         if (actualBalance <= 0) {
             throw new ValidationTavridaException("Недостаточно поездок на карте: " + cardGuid);
         }

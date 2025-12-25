@@ -2,10 +2,13 @@ package ru.vtb.msa.detr.tavrida.core.util;
 
 import org.springframework.stereotype.Component;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+import org.apache.hc.client5.http.utils.Hex;
 
 @Component
 public class TavridaUtils {
@@ -25,6 +28,18 @@ public class TavridaUtils {
     public Instant parseInstant(String dateString) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         return OffsetDateTime.parse(dateString, formatter).toInstant();
+    }
+
+    public String getHash(String someString){
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] someStringBytes = someString.getBytes();
+        String hexString = Hex.encodeHexString(messageDigest.digest(someStringBytes));
+        return hexString.toUpperCase();
     }
 
 }

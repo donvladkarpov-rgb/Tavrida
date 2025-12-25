@@ -33,6 +33,10 @@ public class Card {
     @JoinColumn(name = "tariff_type_id") // ← НОВОЕ ПОЛЕ
     private TariffType tariffType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pan_id")
+    private CardPanHash cardPanHash;
+
     @Column(name = "unique_travel_count", nullable = false)
     private Integer uniqueTravelCount;
 
@@ -103,6 +107,14 @@ public class Card {
 
     public Long getUserId() {
         return user != null ? user.getUserId() : null;
+    }
+
+    public CardPanHash getCardPanHash() {
+        return cardPanHash;
+    }
+
+    public void setCardPanHash(CardPanHash cardPanHash) {
+        this.cardPanHash = cardPanHash;
     }
 
 }

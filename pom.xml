@@ -14,7 +14,7 @@
     </modules>
 
     <properties>
-        <revision>0.0.51</revision>
+        <revision>0.0.52</revision>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,6 +24,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.2.0</spring-boot.version>
         <jackson.version>2.17.1</jackson.version>
+        <httpclient5.version>5.3</httpclient5.version>
+        <openapi.version>2.3.0</openapi.version>
     </properties>
 
     <build>

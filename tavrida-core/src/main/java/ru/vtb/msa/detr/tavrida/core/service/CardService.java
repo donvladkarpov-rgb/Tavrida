@@ -44,6 +44,9 @@ public class CardService {
         return cardRepository.findByCardGuid(guid)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found: " + guid));
     }
+    public Card getCardEntityByPanHash(String panHash) {
+        return cardRepository.findByCardPanHash_panHash(panHash).orElse(null);
+    }
 
     public CardDto createCard(CardDto dto) {
         Card card = TavridaMapper.toCardEntity(dto);

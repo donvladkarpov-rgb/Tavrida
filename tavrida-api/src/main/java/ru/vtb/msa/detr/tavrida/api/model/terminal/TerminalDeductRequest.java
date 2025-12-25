@@ -20,7 +20,7 @@ public class TerminalDeductRequest {
     @Schema(
         description = "UUID идентификатор карты",
         example = "123e4567-e89b-42d3-a456-556642440000",
-        requiredMode = Schema.RequiredMode.REQUIRED
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     private UUID cardGuid;
     @Schema(
@@ -43,6 +43,12 @@ public class TerminalDeductRequest {
     )
     private String terminalDeductStartTime;
 
+    @Schema(
+            description = "Номер банковской карты",
+            example = "1234 5678 9012 3456",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    private String cardNumber;
 
     // Конструктор по умолчанию (обязателен для Jackson)
     public TerminalDeductRequest() {
@@ -97,5 +103,13 @@ public class TerminalDeductRequest {
 
     public void setTripId(Long tripId) {
         this.tripId = tripId;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
     }
 }
