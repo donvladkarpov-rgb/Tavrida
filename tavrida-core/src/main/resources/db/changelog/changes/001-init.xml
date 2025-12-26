@@ -3,19 +3,18 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <!-- 1. Справочник ролей пользователей -->
     <changeSet id="1" author="Vlad">
         <createTable tableName="USER_ROLES">
-            <column name="USER_ROLE_ID" type="INT" autoIncrement="false">
+            <column name="USER_ROLE_ID" type="INT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="USER_ROLE_NAME" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <insert tableName="USER_ROLES">
             <column name="USER_ROLE_ID" valueNumeric="1"/>
             <column name="USER_ROLE_NAME" value="Администратор"/>
@@ -37,14 +36,13 @@
     <!-- 2. Справочник типов карт -->
     <changeSet id="2" author="Vlad">
         <createTable tableName="CARD_TYPES">
-            <column name="CARD_TYPE_ID" type="INT" autoIncrement="false">
+            <column name="CARD_TYPE_ID" type="INT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="CARD_TYPE_NAME" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <insert tableName="CARD_TYPES">
             <column name="CARD_TYPE_ID" valueNumeric="1"/>
             <column name="CARD_TYPE_NAME" value="Карта администратора"/>
@@ -74,7 +72,7 @@
     <!-- 3. Перевозчики -->
     <changeSet id="3" author="Vlad">
         <createTable tableName="CARRIERS">
-            <column name="CARRIER_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="CARRIER_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="CARRIER_NAME" type="VARCHAR(255)">
@@ -83,7 +81,7 @@
         </createTable>
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE CARRIERS_CARRIER_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE CARRIERS_CARRIER_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
     </changeSet>
@@ -91,7 +89,7 @@
     <!-- 4. Пользователи -->
     <changeSet id="4" author="Vlad">
         <createTable tableName="USERS">
-            <column name="USER_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="USER_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="USER_ROLE_ID" type="INT">
@@ -101,31 +99,27 @@
             <column name="CARRIER_ID" type="BIGINT"/>
             <column name="USER_PASSWORD_HASH" type="VARCHAR(255)"/>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE USERS_USER_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE USERS_USER_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="USERS"
                                  baseColumnNames="USER_ROLE_ID"
                                  constraintName="fk_users_user_role_id"
                                  referencedTableName="USER_ROLES"
                                  referencedColumnNames="USER_ROLE_ID"/>
-
         <addForeignKeyConstraint baseTableName="USERS"
                                  baseColumnNames="CARRIER_ID"
                                  constraintName="fk_users_carrier_id"
                                  referencedTableName="CARRIERS"
                                  referencedColumnNames="CARRIER_ID"/>
-
     </changeSet>
 
     <!-- 5. Транспорт -->
     <changeSet id="5" author="Vlad">
         <createTable tableName="TRANSPORTS">
-            <column name="TRANSPORT_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="TRANSPORT_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="TRANSPORT_GUID" type="UUID">
@@ -141,13 +135,11 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE TRANSPORTS_TRANSPORT_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE TRANSPORTS_TRANSPORT_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="TRANSPORTS"
                                  baseColumnNames="CARRIER_ID"
                                  constraintName="fk_transports_carrier_id"
@@ -158,15 +150,11 @@
     <!-- 6. Терминалы -->
     <changeSet id="6" author="Vlad">
         <createTable tableName="TERMINALS">
-            <column name="TERMINAL_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="TERMINAL_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="TRANSPORT_ID" type="BIGINT">
-                <constraints nullable="true"/>
-            </column>
-            <column name="CARRIER_ID" type="BIGINT">
-                <constraints nullable="true"/>
-            </column>
+            <column name="TRANSPORT_ID" type="BIGINT"/>
+            <column name="CARRIER_ID" type="BIGINT"/>
             <column name="TERMINAL_GUID" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
@@ -177,13 +165,11 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE TERMINALS_TERMINAL_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE TERMINALS_TERMINAL_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="TERMINALS"
                                  baseColumnNames="CARRIER_ID"
                                  constraintName="fk_terminals_carrier_id"
@@ -210,7 +196,6 @@
             </column>
             <column name="DESCRIPTION" type="TEXT"/>
         </createTable>
-
         <insert tableName="TARIFF_TYPES">
             <column name="TARIFF_TYPE_ID" valueNumeric="1"/>
             <column name="CODE" value="RIDES_PACKAGE"/>
@@ -231,10 +216,27 @@
         </insert>
     </changeSet>
 
-    <!-- 8. Обновлённая таблица Карт -->
+    <!-- 8. НОВАЯ ТАБЛИЦА: CARD_PAN_HASHES -->
     <changeSet id="8" author="Vlad">
+        <createTable tableName="CARD_PAN_HASHES">
+            <column name="PAN_ID" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="PAN_HASH" type="VARCHAR(512)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <sql dbms="postgresql">
+            <![CDATA[
+            ALTER SEQUENCE CARD_PAN_HASHES_PAN_ID_SEQ RESTART WITH 1000;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <!-- 9. Карты (CARDS) — обновлённая с PAN_ID -->
+    <changeSet id="9" author="Vlad">
         <createTable tableName="CARDS">
-            <column name="CARD_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="CARD_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="CARD_GUID" type="UUID">
@@ -246,6 +248,7 @@
             <column name="USER_ID" type="BIGINT"/>
             <column name="TRANSPORT_ID" type="BIGINT"/>
             <column name="TARIFF_TYPE_ID" type="INT"/>
+            <column name="PAN_ID" type="BIGINT"/>
             <column name="EXPIRATION_RIDES_PACKAGE" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
@@ -267,63 +270,77 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE CARDS_CARD_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE CARDS_CARD_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
-        <addForeignKeyConstraint baseTableName="CARDS"
-                                 baseColumnNames="TRANSPORT_ID"
-                                 constraintName="fk_cards_transport_id"
-                                 referencedTableName="TRANSPORTS"
-                                 referencedColumnNames="TRANSPORT_ID"/>
-
         <addForeignKeyConstraint baseTableName="CARDS"
                                  baseColumnNames="CARD_TYPE_ID"
                                  constraintName="fk_cards_card_type_id"
                                  referencedTableName="CARD_TYPES"
                                  referencedColumnNames="CARD_TYPE_ID"/>
-
         <addForeignKeyConstraint baseTableName="CARDS"
                                  baseColumnNames="USER_ID"
                                  constraintName="fk_cards_user_id"
                                  referencedTableName="USERS"
                                  referencedColumnNames="USER_ID"/>
-
+        <addForeignKeyConstraint baseTableName="CARDS"
+                                 baseColumnNames="TRANSPORT_ID"
+                                 constraintName="fk_cards_transport_id"
+                                 referencedTableName="TRANSPORTS"
+                                 referencedColumnNames="TRANSPORT_ID"/>
         <addForeignKeyConstraint baseTableName="CARDS"
                                  baseColumnNames="TARIFF_TYPE_ID"
                                  constraintName="fk_cards_tariff_type_id"
                                  referencedTableName="TARIFF_TYPES"
                                  referencedColumnNames="TARIFF_TYPE_ID"/>
-
+        <addForeignKeyConstraint baseTableName="CARDS"
+                                 baseColumnNames="PAN_ID"
+                                 constraintName="fk_cards_card_pan_id"
+                                 referencedTableName="CARD_PAN_HASHES"
+                                 referencedColumnNames="PAN_ID"/>
     </changeSet>
 
-    <!-- 9. CHECK-ограничение для таблицы CARDS -->
-    <changeSet id="9" author="Vlad">
+    <!-- 10. CHECK-ограничение для CARDS -->
+    <changeSet id="10" author="Vlad">
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER TABLE CARDS
-                ADD CONSTRAINT chk_cards_travel_count
-                CHECK (AVAILABLE_TRAVEL_COUNT >= 0);
+            ALTER TABLE CARDS
+            ADD CONSTRAINT chk_cards_travel_count
+            CHECK (AVAILABLE_TRAVEL_COUNT >= 0);
             ]]>
         </sql>
     </changeSet>
 
-    <!-- 10. Чёрный список -->
-    <changeSet id="10" author="Vlad">
+    <!-- 11. Чёрный список -->
+    <changeSet id="11" author="Vlad">
         <createTable tableName="BLACK_LIST">
             <column name="CARD_GUID" type="UUID">
-                <constraints nullable="false" unique="true"/>
+                <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <!-- 11. Индексы -->
-    <changeSet id="11" author="Vlad">
+    <!-- 12. Индексы -->
+    <changeSet id="12" author="Vlad">
         <createIndex tableName="CARDS" indexName="idx_cards_guid">
             <column name="CARD_GUID"/>
+        </createIndex>
+        <createIndex tableName="CARDS" indexName="idx_cards_card_type_id">
+            <column name="CARD_TYPE_ID"/>
+        </createIndex>
+        <createIndex tableName="CARDS" indexName="idx_cards_user_id">
+            <column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="CARDS" indexName="idx_cards_transport_id">
+            <column name="TRANSPORT_ID"/>
+        </createIndex>
+        <createIndex tableName="CARDS" indexName="idx_cards_tariff_type_id">
+            <column name="TARIFF_TYPE_ID"/>
+        </createIndex>
+        <createIndex tableName="CARDS" indexName="idx_cards_pan_id">
+            <column name="PAN_ID"/>
         </createIndex>
         <createIndex tableName="BLACK_LIST" indexName="idx_blacklist_guid">
             <column name="CARD_GUID"/>
@@ -333,8 +350,8 @@
         </createIndex>
     </changeSet>
 
-    <!-- 12. USER_SESSIONS (обновлённая) -->
-    <changeSet id="12" author="Vlad">
+    <!-- 13. USER_SESSIONS -->
+    <changeSet id="13" author="Vlad">
         <createTable tableName="USER_SESSIONS">
             <column name="SESSION_ID" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
@@ -358,53 +375,43 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
-        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS">
-            <column name="SESSION_ID"/>
-            <column name="USER_ID"/>
-        </createIndex>
-        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_USERS">
-            <column name="USER_ID"/>
-            <column name="SESSION_ID"/>
-        </createIndex>
-        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_STARTED">
-            <column name="STARTED_AT"/>
-            <column name="USER_ID"/>
-        </createIndex>
-        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_STARTED_LOCAL">
-            <column name="STARTED_AT_LOCAL"/>
-            <column name="USER_ID"/>
-        </createIndex>
-        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_TERMINAL">
-            <column name="TERMINAL_ID"/>
-            <column name="USER_ID"/>
-        </createIndex>
-        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_CARDS">
-            <column name="CARD_ID"/>
-            <column name="USER_ID"/>
-        </createIndex>
-
         <addForeignKeyConstraint baseTableName="USER_SESSIONS"
                                  baseColumnNames="TERMINAL_ID"
                                  constraintName="fk_sessions_terminal_id"
                                  referencedTableName="TERMINALS"
                                  referencedColumnNames="TERMINAL_ID"/>
-
         <addForeignKeyConstraint baseTableName="USER_SESSIONS"
                                  baseColumnNames="USER_ID"
                                  constraintName="fk_sessions_user_id"
                                  referencedTableName="USERS"
                                  referencedColumnNames="USER_ID"/>
-
         <addForeignKeyConstraint baseTableName="USER_SESSIONS"
                                  baseColumnNames="CARD_ID"
                                  constraintName="fk_sessions_card_id"
                                  referencedTableName="CARDS"
                                  referencedColumnNames="CARD_ID"/>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS">
+            <column name="SESSION_ID"/><column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_USERS">
+            <column name="USER_ID"/><column name="SESSION_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_STARTED">
+            <column name="STARTED_AT"/><column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_STARTED_LOCAL">
+            <column name="STARTED_AT_LOCAL"/><column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_TERMINAL">
+            <column name="TERMINAL_ID"/><column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="USER_SESSIONS" indexName="IX_SESSIONS_CARDS">
+            <column name="CARD_ID"/><column name="USER_ID"/>
+        </createIndex>
     </changeSet>
 
-    <!-- 13. CODES -->
-    <changeSet id="13" author="Vlad">
+    <!-- 14. CODES -->
+    <changeSet id="14" author="Vlad">
         <createTable tableName="CODES">
             <column name="CODE_UID" type="VARCHAR(16)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -425,20 +432,18 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER TABLE CODES
-                ADD CONSTRAINT chk_codes_type CHECK (CODE_TYPE IN ('A', 'S'));
-
-                ALTER TABLE CODES
-                ADD CONSTRAINT chk_codes_usage CHECK (ALLOWED_USAGE IN ('RW', 'R', '-'));
+            ALTER TABLE CODES
+            ADD CONSTRAINT chk_codes_type CHECK (CODE_TYPE IN ('A', 'S'));
+            ALTER TABLE CODES
+            ADD CONSTRAINT chk_codes_usage CHECK (ALLOWED_USAGE IN ('RW', 'R', '-'));
             ]]>
         </sql>
     </changeSet>
 
-    <!-- 14. MASTER_PASSWORD -->
-    <changeSet id="14" author="Vlad">
+    <!-- 15. MASTER_PASSWORD -->
+    <changeSet id="15" author="Vlad">
         <createTable tableName="MASTER_PASSWORD">
             <column name="ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
@@ -447,8 +452,8 @@
         </createTable>
     </changeSet>
 
-    <!-- 15. SERVICE_EVENT_TYPES -->
-    <changeSet id="15" author="Vlad">
+    <!-- 16. SERVICE_EVENT_TYPES -->
+    <changeSet id="16" author="Vlad">
         <createTable tableName="SERVICE_EVENT_TYPES">
             <column name="EVENT_TYPE" type="CHAR(2)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -457,71 +462,55 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="CU"/>
-            <column name="EVENT_TYPE_NAME" value="Создание пользователя"/>
+            <column name="EVENT_TYPE" value="CU"/><column name="EVENT_TYPE_NAME" value="Создание пользователя"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="CC"/>
-            <column name="EVENT_TYPE_NAME" value="Создание карты"/>
+            <column name="EVENT_TYPE" value="CC"/><column name="EVENT_TYPE_NAME" value="Создание карты"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="RC"/>
-            <column name="EVENT_TYPE_NAME" value="Пополнение карты"/>
+            <column name="EVENT_TYPE" value="RC"/><column name="EVENT_TYPE_NAME" value="Пополнение карты"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="DU"/>
-            <column name="EVENT_TYPE_NAME" value="Удаление пользователя"/>
+            <column name="EVENT_TYPE" value="DU"/><column name="EVENT_TYPE_NAME" value="Удаление пользователя"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="DC"/>
-            <column name="EVENT_TYPE_NAME" value="Удаление карты"/>
+            <column name="EVENT_TYPE" value="DC"/><column name="EVENT_TYPE_NAME" value="Удаление карты"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="TA"/>
-            <column name="EVENT_TYPE_NAME" value="Активация терминала"/>
+            <column name="EVENT_TYPE" value="TA"/><column name="EVENT_TYPE_NAME" value="Активация терминала"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="TD"/>
-            <column name="EVENT_TYPE_NAME" value="Деактивация терминала"/>
+            <column name="EVENT_TYPE" value="TD"/><column name="EVENT_TYPE_NAME" value="Деактивация терминала"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="DS"/>
-            <column name="EVENT_TYPE_NAME" value="Открытие смены водителя"/>
+            <column name="EVENT_TYPE" value="DS"/><column name="EVENT_TYPE_NAME" value="Открытие смены водителя"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="CS"/>
-            <column name="EVENT_TYPE_NAME" value="Закрытие смены водителя"/>
+            <column name="EVENT_TYPE" value="CS"/><column name="EVENT_TYPE_NAME" value="Закрытие смены водителя"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="OR"/>
-            <column name="EVENT_TYPE_NAME" value="Открыть маршрут водителем"/>
+            <column name="EVENT_TYPE" value="OR"/><column name="EVENT_TYPE_NAME" value="Открыть маршрут водителем"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="CR"/>
-            <column name="EVENT_TYPE_NAME" value="Закрыть маршрут водителем"/>
+            <column name="EVENT_TYPE" value="CR"/><column name="EVENT_TYPE_NAME" value="Закрыть маршрут водителем"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="PT"/>
-            <column name="EVENT_TYPE_NAME" value="Оплата проезда"/>
+            <column name="EVENT_TYPE" value="PT"/><column name="EVENT_TYPE_NAME" value="Оплата проезда"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="CO"/>
-            <column name="EVENT_TYPE_NAME" value="Открыть смену кассира"/>
+            <column name="EVENT_TYPE" value="CO"/><column name="EVENT_TYPE_NAME" value="Открыть смену кассира"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="CE"/>
-            <column name="EVENT_TYPE_NAME" value="Закрыть смену кассира"/>
+            <column name="EVENT_TYPE" value="CE"/><column name="EVENT_TYPE_NAME" value="Закрыть смену кассира"/>
         </insert>
         <insert tableName="SERVICE_EVENT_TYPES">
-            <column name="EVENT_TYPE" value="OE"/>
-            <column name="EVENT_TYPE_NAME" value="Другое событие"/>
+            <column name="EVENT_TYPE" value="OE"/><column name="EVENT_TYPE_NAME" value="Другое событие"/>
         </insert>
     </changeSet>
 
-    <!-- 16. SERVICE_EVENTS -->
-    <changeSet id="16" author="Vlad">
+    <!-- 17. SERVICE_EVENTS -->
+    <changeSet id="17" author="Vlad">
         <createTable tableName="SERVICE_EVENTS">
             <column name="SERVICE_EVENT_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
@@ -542,50 +531,42 @@
             <column name="EVENT_DETAILS" type="VARCHAR(256)"/>
             <column name="EVENT_OBJECT" type="JSONB"/>
         </createTable>
-
-        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_EVENT_TIME">
-            <column name="EVENT_TIME"/>
-            <column name="USER_ID"/>
-        </createIndex>
-        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_EVENT_LOCAL_TIME">
-            <column name="EVENT_LOCAL_TIME"/>
-            <column name="USER_ID"/>
-        </createIndex>
-        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_USER_ID">
-            <column name="USER_ID"/>
-            <column name="SESSION_ID"/>
-        </createIndex>
-        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_SESSION_ID">
-            <column name="SESSION_ID"/>
-        </createIndex>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE SERVICE_EVENTS_SERVICE_EVENT_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE SERVICE_EVENTS_SERVICE_EVENT_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="SERVICE_EVENTS"
                                  baseColumnNames="SERVICE_EVENT_TYPE"
                                  constraintName="fk_service_events_type"
                                  referencedTableName="SERVICE_EVENT_TYPES"
                                  referencedColumnNames="EVENT_TYPE"/>
-
         <addForeignKeyConstraint baseTableName="SERVICE_EVENTS"
                                  baseColumnNames="SESSION_ID"
                                  constraintName="fk_events_sessions_id"
                                  referencedTableName="USER_SESSIONS"
                                  referencedColumnNames="SESSION_ID"/>
-
         <addForeignKeyConstraint baseTableName="SERVICE_EVENTS"
                                  baseColumnNames="USER_ID"
                                  constraintName="fk_events_user_id"
                                  referencedTableName="USERS"
                                  referencedColumnNames="USER_ID"/>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_EVENT_TIME">
+            <column name="EVENT_TIME"/><column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_EVENT_LOCAL_TIME">
+            <column name="EVENT_LOCAL_TIME"/><column name="USER_ID"/>
+        </createIndex>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_USER_ID">
+            <column name="USER_ID"/><column name="SESSION_ID"/>
+        </createIndex>
+        <createIndex tableName="SERVICE_EVENTS" indexName="IX_SERVICE_EVENTS_SESSION_ID">
+            <column name="SESSION_ID"/>
+        </createIndex>
     </changeSet>
 
-    <!-- 17. PAYMENT_TYPES -->
-    <changeSet id="17" author="Vlad">
+    <!-- 18. PAYMENT_TYPES -->
+    <changeSet id="18" author="Vlad">
         <createTable tableName="PAYMENT_TYPES">
             <column name="PAYMENT_TYPE_ID" type="INT">
                 <constraints primaryKey="true" nullable="false"/>
@@ -594,19 +575,16 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <insert tableName="PAYMENT_TYPES">
-            <column name="PAYMENT_TYPE_ID" valueNumeric="1"/>
-            <column name="PAYMENT_TYPE_NAME" value="Пополнение"/>
+            <column name="PAYMENT_TYPE_ID" valueNumeric="1"/><column name="PAYMENT_TYPE_NAME" value="Пополнение"/>
         </insert>
         <insert tableName="PAYMENT_TYPES">
-            <column name="PAYMENT_TYPE_ID" valueNumeric="2"/>
-            <column name="PAYMENT_TYPE_NAME" value="Списание"/>
+            <column name="PAYMENT_TYPE_ID" valueNumeric="2"/><column name="PAYMENT_TYPE_NAME" value="Списание"/>
         </insert>
     </changeSet>
 
-    <!-- 18. PAYMENT_RESULTS -->
-    <changeSet id="18" author="Vlad">
+    <!-- 19. PAYMENT_RESULTS -->
+    <changeSet id="19" author="Vlad">
         <createTable tableName="PAYMENT_RESULTS">
             <column name="PAYMENT_RESULT_ID" type="INT">
                 <constraints primaryKey="true" nullable="false"/>
@@ -615,27 +593,22 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <insert tableName="PAYMENT_RESULTS">
-            <column name="PAYMENT_RESULT_ID" valueNumeric="11"/>
-            <column name="PAYMENT_RESULT_NAME" value="Успех"/>
+            <column name="PAYMENT_RESULT_ID" valueNumeric="11"/><column name="PAYMENT_RESULT_NAME" value="Успех"/>
         </insert>
         <insert tableName="PAYMENT_RESULTS">
-            <column name="PAYMENT_RESULT_ID" valueNumeric="12"/>
-            <column name="PAYMENT_RESULT_NAME" value="Ошибка - карта не читается"/>
+            <column name="PAYMENT_RESULT_ID" valueNumeric="12"/><column name="PAYMENT_RESULT_NAME" value="Ошибка - карта не читается"/>
         </insert>
         <insert tableName="PAYMENT_RESULTS">
-            <column name="PAYMENT_RESULT_ID" valueNumeric="13"/>
-            <column name="PAYMENT_RESULT_NAME" value="Ошибка - недостаточно средств"/>
+            <column name="PAYMENT_RESULT_ID" valueNumeric="13"/><column name="PAYMENT_RESULT_NAME" value="Ошибка - недостаточно средств"/>
         </insert>
         <insert tableName="PAYMENT_RESULTS">
-            <column name="PAYMENT_RESULT_ID" valueNumeric="14"/>
-            <column name="PAYMENT_RESULT_NAME" value="Ошибка - карта заблокирована"/>
+            <column name="PAYMENT_RESULT_ID" valueNumeric="14"/><column name="PAYMENT_RESULT_NAME" value="Ошибка - карта заблокирована"/>
         </insert>
     </changeSet>
 
-    <!-- 19. PAYMENTS -->
-    <changeSet id="19" author="Vlad">
+    <!-- 20. PAYMENTS -->
+    <changeSet id="20" author="Vlad">
         <createTable tableName="PAYMENTS">
             <column name="PAYMENT_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
@@ -662,37 +635,31 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE PAYMENTS_PAYMENT_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE PAYMENTS_PAYMENT_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="PAYMENTS"
                                  baseColumnNames="CARD_ID"
                                  constraintName="fk_payments_card"
                                  referencedTableName="CARDS"
                                  referencedColumnNames="CARD_ID"/>
-
         <addForeignKeyConstraint baseTableName="PAYMENTS"
                                  baseColumnNames="TERMINAL_ID"
                                  constraintName="fk_payments_terminal"
                                  referencedTableName="TERMINALS"
                                  referencedColumnNames="TERMINAL_ID"/>
-
         <addForeignKeyConstraint baseTableName="PAYMENTS"
                                  baseColumnNames="PAYMENT_TYPE_ID"
                                  constraintName="fk_payments_type"
                                  referencedTableName="PAYMENT_TYPES"
                                  referencedColumnNames="PAYMENT_TYPE_ID"/>
-
         <addForeignKeyConstraint baseTableName="PAYMENTS"
                                  baseColumnNames="PAYMENT_RESULT_ID"
                                  constraintName="fk_payments_result"
                                  referencedTableName="PAYMENT_RESULTS"
                                  referencedColumnNames="PAYMENT_RESULT_ID"/>
-
         <createIndex tableName="PAYMENTS" indexName="idx_payments_card_id">
             <column name="CARD_ID"/>
         </createIndex>
@@ -701,8 +668,8 @@
         </createIndex>
     </changeSet>
 
-    <!-- 20. Типы маршрутов -->
-    <changeSet id="20" author="Vlad">
+    <!-- 21. Типы маршрутов -->
+    <changeSet id="21" author="Vlad">
         <createTable tableName="ROUTE_TYPES">
             <column name="ROUTE_TYPES_ID" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
@@ -711,21 +678,18 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <insert tableName="ROUTE_TYPES">
-            <column name="ROUTE_TYPES_ID" valueNumeric="1"/>
-            <column name="ROUTE_TYPES_NAME" value="Маршрут"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="1"/><column name="ROUTE_TYPES_NAME" value="Маршрут"/>
         </insert>
         <insert tableName="ROUTE_TYPES">
-            <column name="ROUTE_TYPES_ID" valueNumeric="2"/>
-            <column name="ROUTE_TYPES_NAME" value="Путь"/>
+            <column name="ROUTE_TYPES_ID" valueNumeric="2"/><column name="ROUTE_TYPES_NAME" value="Путь"/>
         </insert>
     </changeSet>
 
-    <!-- 21. Маршруты -->
-    <changeSet id="21" author="Vlad">
+    <!-- 22. Маршруты -->
+    <changeSet id="22" author="Vlad">
         <createTable tableName="ROUTES">
-            <column name="ROUTE_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="ROUTE_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="ROUTE_GUID" type="UUID">
@@ -747,25 +711,21 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE ROUTES_ROUTE_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE ROUTES_ROUTE_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="ROUTES"
                                  baseColumnNames="ROUTE_TYPES_ID"
                                  constraintName="fk_routes_route_types_id"
                                  referencedTableName="ROUTE_TYPES"
                                  referencedColumnNames="ROUTE_TYPES_ID"/>
-
         <addForeignKeyConstraint baseTableName="ROUTES"
                                  baseColumnNames="PARENT_ROUTE_ID"
                                  constraintName="fk_routes_parent_route_id"
                                  referencedTableName="ROUTES"
                                  referencedColumnNames="ROUTE_ID"/>
-
         <createIndex tableName="ROUTES" indexName="IDX_ROUTES_ROUTE_GUID">
             <column name="ROUTE_GUID"/>
         </createIndex>
@@ -780,10 +740,10 @@
         </createIndex>
     </changeSet>
 
-    <!-- 22. Привязка маршрутов к перевозчикам -->
-    <changeSet id="22" author="Vlad">
+    <!-- 23. Привязка маршрутов к перевозчикам -->
+    <changeSet id="23" author="Vlad">
         <createTable tableName="CARRIER_ROUTE_MAP">
-            <column name="CARRIER_ROUTE_MAP_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="CARRIER_ROUTE_MAP_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="CARRIER_ID" type="BIGINT">
@@ -799,25 +759,21 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE CARRIER_ROUTE_MAP_CARRIER_ROUTE_MAP_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE CARRIER_ROUTE_MAP_CARRIER_ROUTE_MAP_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
-        <addForeignKeyConstraint baseTableName="CARRIER_ROUTE_MAP"
-                                 baseColumnNames="ROUTE_ID"
-                                 constraintName="fk_carrier_route_map_route_id"
-                                 referencedTableName="ROUTES"
-                                 referencedColumnNames="ROUTE_ID"/>
-
         <addForeignKeyConstraint baseTableName="CARRIER_ROUTE_MAP"
                                  baseColumnNames="CARRIER_ID"
                                  constraintName="fk_carrier_route_map_carrier_id"
                                  referencedTableName="CARRIERS"
                                  referencedColumnNames="CARRIER_ID"/>
-
+        <addForeignKeyConstraint baseTableName="CARRIER_ROUTE_MAP"
+                                 baseColumnNames="ROUTE_ID"
+                                 constraintName="fk_carrier_route_map_route_id"
+                                 referencedTableName="ROUTES"
+                                 referencedColumnNames="ROUTE_ID"/>
         <createIndex tableName="CARRIER_ROUTE_MAP" indexName="IDX_CARRIER_ROUTE_MAP_CARRIER_ID">
             <column name="CARRIER_ID"/>
         </createIndex>
@@ -830,18 +786,17 @@
         <createIndex tableName="CARRIER_ROUTE_MAP" indexName="IDX_CARRIER_ROUTE_MAP_UPDATED_AT">
             <column name="UPDATED_AT"/>
         </createIndex>
-
         <sql dbms="postgresql">
             <![CDATA[
-                CREATE UNIQUE INDEX UK_CARRIER_ROUTE_MAP_CARRIER_ROUTE ON CARRIER_ROUTE_MAP (CARRIER_ID, ROUTE_ID);
+            CREATE UNIQUE INDEX UK_CARRIER_ROUTE_MAP_CARRIER_ROUTE ON CARRIER_ROUTE_MAP (CARRIER_ID, ROUTE_ID);
             ]]>
         </sql>
     </changeSet>
 
-    <!-- 23. Тарифные зоны -->
-    <changeSet id="23" author="Vlad">
+    <!-- 24. Тарифные зоны -->
+    <changeSet id="24" author="Vlad">
         <createTable tableName="FARE_ZONES">
-            <column name="ZONE_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="ZONE_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="ZONE_CODE" type="VARCHAR(20)">
@@ -858,13 +813,11 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE FARE_ZONES_ZONE_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE FARE_ZONES_ZONE_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <createIndex tableName="FARE_ZONES" indexName="IDX_FARE_ZONES_CREATED_AT">
             <column name="CREATED_AT"/>
         </createIndex>
@@ -873,10 +826,10 @@
         </createIndex>
     </changeSet>
 
-    <!-- 24. Тарифы перевозчика по зонам -->
-    <changeSet id="24" author="Vlad">
+    <!-- 25. Тарифы перевозчика по зонам -->
+    <changeSet id="25" author="Vlad">
         <createTable tableName="CARRIER_ZONE_MAP">
-            <column name="CARRIER_ZONE_MAP_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="CARRIER_ZONE_MAP_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="CARRIER_ID" type="BIGINT">
@@ -895,25 +848,21 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE CARRIER_ZONE_MAP_CARRIER_ZONE_MAP_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE CARRIER_ZONE_MAP_CARRIER_ZONE_MAP_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
-        <addForeignKeyConstraint baseTableName="CARRIER_ZONE_MAP"
-                                 baseColumnNames="ZONE_ID"
-                                 constraintName="fk_carrier_zone_map_zone_id"
-                                 referencedTableName="FARE_ZONES"
-                                 referencedColumnNames="ZONE_ID"/>
-
         <addForeignKeyConstraint baseTableName="CARRIER_ZONE_MAP"
                                  baseColumnNames="CARRIER_ID"
                                  constraintName="fk_carrier_zone_map_carrier_id"
                                  referencedTableName="CARRIERS"
                                  referencedColumnNames="CARRIER_ID"/>
-
+        <addForeignKeyConstraint baseTableName="CARRIER_ZONE_MAP"
+                                 baseColumnNames="ZONE_ID"
+                                 constraintName="fk_carrier_zone_map_zone_id"
+                                 referencedTableName="FARE_ZONES"
+                                 referencedColumnNames="ZONE_ID"/>
         <createIndex tableName="CARRIER_ZONE_MAP" indexName="IDX_CARRIER_ZONE_MAP_CARRIER_ID">
             <column name="CARRIER_ID"/>
         </createIndex>
@@ -926,27 +875,17 @@
         <createIndex tableName="CARRIER_ZONE_MAP" indexName="IDX_CARRIER_ZONE_MAP_UPDATED_AT">
             <column name="UPDATED_AT"/>
         </createIndex>
-
         <sql dbms="postgresql">
             <![CDATA[
-                CREATE UNIQUE INDEX UK_CARRIER_ZONE_MAP_CARRIER_ZONE ON CARRIER_ZONE_MAP (CARRIER_ID, ZONE_ID);
+            CREATE UNIQUE INDEX UK_CARRIER_ZONE_MAP_CARRIER_ZONE ON CARRIER_ZONE_MAP (CARRIER_ID, ZONE_ID);
             ]]>
         </sql>
     </changeSet>
 
-<!--    &lt;!&ndash; 25. Остановки &ndash;&gt;-->
-<!--    <changeSet id="25" author="Vlad">-->
-<!--        <preConditions onFail="MARK_RAN">-->
-<!--            <dbms type="postgresql"/>-->
-<!--        </preConditions>-->
-<!--        <sql>-->
-<!--            CREATE EXTENSION IF NOT EXISTS postgis;-->
-<!--        </sql>-->
-<!--    </changeSet>-->
-
+    <!-- 26. Остановки транспорта -->
     <changeSet id="26" author="Vlad">
         <createTable tableName="TRANSPORT_STOPS">
-            <column name="STOP_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="STOP_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="FARE_ZONE_ID" type="BIGINT">
@@ -969,25 +908,22 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE TRANSPORT_STOPS_STOP_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE TRANSPORT_STOPS_STOP_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="TRANSPORT_STOPS"
                                  baseColumnNames="FARE_ZONE_ID"
                                  constraintName="fk_transport_stops_fare_zone_id"
                                  referencedTableName="FARE_ZONES"
                                  referencedColumnNames="ZONE_ID"/>
-
         <createIndex tableName="TRANSPORT_STOPS" indexName="IDX_TRANSPORT_STOPS_FARE_ZONE_ID">
             <column name="FARE_ZONE_ID"/>
         </createIndex>
         <sql dbms="postgresql">
             <![CDATA[
-                CREATE INDEX IDX_TRANSPORT_STOPS_GEO_LOCATION ON TRANSPORT_STOPS USING GIST (GEO_LOCATION);
+            CREATE INDEX IDX_TRANSPORT_STOPS_GEO_LOCATION ON TRANSPORT_STOPS USING GIST (GEO_LOCATION);
             ]]>
         </sql>
         <createIndex tableName="TRANSPORT_STOPS" indexName="IDX_TRANSPORT_STOPS_CREATED_AT">
@@ -1001,7 +937,7 @@
     <!-- 27. Привязка остановок к маршрутам -->
     <changeSet id="27" author="Vlad">
         <createTable tableName="STOPS_ROUTE_MAP">
-            <column name="STOPS_ROUTE_MAP_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="STOPS_ROUTE_MAP_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="STOP_ID" type="BIGINT">
@@ -1020,35 +956,30 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
-                ALTER SEQUENCE STOPS_ROUTE_MAP_STOPS_ROUTE_MAP_ID_SEQ RESTART WITH 1000;
+            ALTER SEQUENCE STOPS_ROUTE_MAP_STOPS_ROUTE_MAP_ID_SEQ RESTART WITH 1000;
             ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="STOPS_ROUTE_MAP"
                                  baseColumnNames="STOP_ID"
                                  constraintName="fk_stops_route_map_stop_id"
                                  referencedTableName="TRANSPORT_STOPS"
                                  referencedColumnNames="STOP_ID"/>
-
         <addForeignKeyConstraint baseTableName="STOPS_ROUTE_MAP"
                                  baseColumnNames="ROUTE_ID"
                                  constraintName="fk_stops_route_map_route_id"
                                  referencedTableName="ROUTES"
                                  referencedColumnNames="ROUTE_ID"/>
-
         <createIndex tableName="STOPS_ROUTE_MAP" indexName="IDX_STOPS_ROUTE_MAP_CREATED_AT">
             <column name="CREATED_AT"/>
         </createIndex>
         <createIndex tableName="STOPS_ROUTE_MAP" indexName="IDX_STOPS_ROUTE_MAP_UPDATED_AT">
             <column name="UPDATED_AT"/>
         </createIndex>
-
         <sql dbms="postgresql">
             <![CDATA[
-                CREATE UNIQUE INDEX UK_STOPS_ROUTE_MAP_ROUTE_STOP ON STOPS_ROUTE_MAP (ROUTE_ID, STOP_ID);
+            CREATE UNIQUE INDEX UK_STOPS_ROUTE_MAP_ROUTE_STOP ON STOPS_ROUTE_MAP (ROUTE_ID, STOP_ID);
             ]]>
         </sql>
     </changeSet>
@@ -1056,7 +987,7 @@
     <!-- 28. Рейсы -->
     <changeSet id="28" author="Vlad">
         <createTable tableName="trips">
-            <column name="TRIP_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="TRIP_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="ROUTE_ID" type="BIGINT">
@@ -1068,41 +999,34 @@
             <column name="STARTED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="CLOSED_AT" type="TIMESTAMP">
-                <constraints nullable="true"/>
-            </column>
+            <column name="CLOSED_AT" type="TIMESTAMP"/>
             <column name="STARTED_AT_LOCAL" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="CLOSED_AT_LOCAL" type="TIMESTAMP">
-                <constraints nullable="true"/>
-            </column>
+            <column name="CLOSED_AT_LOCAL" type="TIMESTAMP"/>
         </createTable>
-
+        <addForeignKeyConstraint baseTableName="trips"
+                                 baseColumnNames="ROUTE_ID"
+                                 constraintName="fk_trips_route_id"
+                                 referencedTableName="ROUTES"
+                                 referencedColumnNames="ROUTE_ID"/>
+        <addForeignKeyConstraint baseTableName="trips"
+                                 baseColumnNames="SESSION_ID"
+                                 constraintName="fk_trips_session_id"
+                                 referencedTableName="USER_SESSIONS"
+                                 referencedColumnNames="SESSION_ID"/>
         <createIndex tableName="trips" indexName="IDX_trips_STARTED_AT">
             <column name="STARTED_AT"/>
         </createIndex>
         <createIndex tableName="trips" indexName="IDX_trips_STARTED_AT_LOCAL">
             <column name="STARTED_AT_LOCAL"/>
         </createIndex>
-
-        <addForeignKeyConstraint baseTableName="trips"
-                                 baseColumnNames="ROUTE_ID"
-                                 constraintName="fk_trips_route_id"
-                                 referencedTableName="ROUTES"
-                                 referencedColumnNames="ROUTE_ID"/>
-
-        <addForeignKeyConstraint baseTableName="trips"
-                                 baseColumnNames="SESSION_ID"
-                                 constraintName="fk_trips_session_id"
-                                 referencedTableName="USER_SESSIONS"
-                                 referencedColumnNames="SESSION_ID"/>
     </changeSet>
 
     <!-- 29. Привязка остановок к тарифным зонам -->
     <changeSet id="29" author="Vlad">
         <createTable tableName="STOPS_ZONE_MAP">
-            <column name="STOPS_ZONE_MAP_ID" type="BIGSERIAL" autoIncrement="true">
+            <column name="STOPS_ZONE_MAP_ID" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="STOP_ID" type="BIGINT">
@@ -1118,25 +1042,21 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <sql dbms="postgresql">
             <![CDATA[
             ALTER SEQUENCE STOPS_ZONE_MAP_STOPS_ZONE_MAP_ID_SEQ RESTART WITH 1000;
-        ]]>
+            ]]>
         </sql>
-
         <addForeignKeyConstraint baseTableName="STOPS_ZONE_MAP"
                                  baseColumnNames="STOP_ID"
                                  constraintName="fk_stops_zone_map_stop_id"
                                  referencedTableName="TRANSPORT_STOPS"
                                  referencedColumnNames="STOP_ID"/>
-
         <addForeignKeyConstraint baseTableName="STOPS_ZONE_MAP"
                                  baseColumnNames="ZONE_ID"
                                  constraintName="fk_stops_zone_map_zone_id"
                                  referencedTableName="FARE_ZONES"
                                  referencedColumnNames="ZONE_ID"/>
-
         <createIndex tableName="STOPS_ZONE_MAP" indexName="IDX_STOPS_ZONE_MAP_CREATED_AT">
             <column name="CREATED_AT"/>
         </createIndex>

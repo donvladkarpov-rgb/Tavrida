@@ -19,6 +19,20 @@ public class CardInitRequest {
     )
     private String terminalStartTime;
 
+    @Schema(
+            description = "Ид тарифа",
+            example = "1",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    private Integer tariffTypeId;
+
+    @Schema(
+            description = "Номер банковской карты",
+            example = "1234 5678 9012 3456",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    private String cardNumber;
+
     public CardInitRequest() {
     }
 
@@ -40,5 +54,21 @@ public class CardInitRequest {
 
     public void setTerminalStartTime(String terminalStartTime) {
         this.terminalStartTime = terminalStartTime;
+    }
+
+    public Integer getTariffTypeId() {
+        return tariffTypeId;
+    }
+
+    public void setTariffTypeId(Integer tariffTypeId) {
+        this.tariffTypeId = tariffTypeId;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
     }
 }

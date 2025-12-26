@@ -8,6 +8,7 @@ public class CardDto {
     private UUID cardGuid;
     private CardTypeDto cardType;
     private UserDto user; // или только userId, если не нужен full user
+    private CardPanHashDto cardPanHash;
     private TransportDto transport; // или только transportId, если не нужен full transport
     private Integer uniqueTravelCount;
     private Integer maximumUniqueCount;
@@ -18,7 +19,7 @@ public class CardDto {
 
     public CardDto(Long cardId, UUID cardGuid, CardTypeDto cardType, UserDto user,
                    TransportDto transport, Integer uniqueTravelCount, Integer maximumUniqueCount,
-                   Integer availableTravelCount, Instant expirationDate) {
+                   Integer availableTravelCount, Instant expirationDate, CardPanHashDto cardPanHash) {
         this.cardId = cardId;
         this.cardGuid = cardGuid;
         this.cardType = cardType;
@@ -28,6 +29,7 @@ public class CardDto {
         this.maximumUniqueCount = maximumUniqueCount;
         this.availableTravelCount = availableTravelCount;
         this.expirationDate = expirationDate;
+        this.cardPanHash = cardPanHash;
     }
 
     // Getters and Setters
@@ -57,4 +59,12 @@ public class CardDto {
 
     public Instant getExpirationDate() { return expirationDate; }
     public void setExpirationDate(Instant expirationDate) { this.expirationDate = expirationDate; }
+
+    public CardPanHashDto getCardPanHash() {
+        return cardPanHash;
+    }
+
+    public void setCardPanHash(CardPanHashDto cardPanHash) {
+        this.cardPanHash = cardPanHash;
+    }
 }

@@ -169,7 +169,8 @@ public class TavridaMapper {
                 card.getUniqueTravelCount(),
                 card.getMaximumUniqueCount(),
                 card.getAvailableTravelCount(),
-                card.getExpirationDate()
+                card.getExpirationDate(),
+                null
         );
     }
 
@@ -180,6 +181,7 @@ public class TavridaMapper {
         if (card == null) return null;
         Long userId = (card.getUser() != null) ? card.getUser().getUserId() : null;
         Long transportId = (card.getTransport() != null) ? card.getTransport().getTransportId() : null;
+        Long panId = (card.getCardPanHash() != null) ? card.getCardPanHash().getPanId() : null;
         return new CardDto(
                 card.getCardId(),
                 card.getCardGuid(),
@@ -189,8 +191,18 @@ public class TavridaMapper {
                 card.getUniqueTravelCount(),
                 card.getMaximumUniqueCount(),
                 card.getAvailableTravelCount(),
-                card.getExpirationDate()
+                card.getExpirationDate(),
+                panId != null ? new CardPanHashDto(panId, card.getCardPanHash().getPanHash(), null) : null
         );
+    }
+
+    public static List<CardDto> toCardDtoWithUserIdList(List<Card> entities) {
+        if (entities == null) {
+            return List.of();
+        }
+        return entities.stream()
+                .map(TavridaMapper::toCardDtoWithUserId)
+                .collect(Collectors.toList());
     }
 
     public static CardDto toCardDto(Card card) {
@@ -204,7 +216,8 @@ public class TavridaMapper {
                 card.getUniqueTravelCount(),
                 card.getMaximumUniqueCount(),
                 card.getAvailableTravelCount(),
-                card.getExpirationDate()
+                card.getExpirationDate(),
+                CardPanHashMapper.toDto(card.getCardPanHash())
         );
     }
 

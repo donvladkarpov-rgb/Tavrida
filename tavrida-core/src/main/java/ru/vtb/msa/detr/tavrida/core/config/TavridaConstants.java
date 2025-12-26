@@ -56,6 +56,7 @@ public class TavridaConstants {
     private final Integer paymentResultErrorCardRead;
     private final Integer paymentResultErrorInsufficientFunds;
     private final Integer paymentResultErrorCardBlocked;
+    private final Integer tariffTypeDefault;
 
     public TavridaConstants(
 
@@ -108,7 +109,9 @@ public class TavridaConstants {
             @Value("${tavrida.common.constant.payment-results.success}") Integer paymentResultSuccess,
             @Value("${tavrida.common.constant.payment-results.error-card-read}") Integer paymentResultErrorCardRead,
             @Value("${tavrida.common.constant.payment-results.error-insufficient-funds}") Integer paymentResultErrorInsufficientFunds,
-            @Value("${tavrida.common.constant.payment-results.error-card-blocked}") Integer paymentResultErrorCardBlocked) {
+            @Value("${tavrida.common.constant.payment-results.error-card-blocked}") Integer paymentResultErrorCardBlocked,
+            @Value("${tavrida.common.constant.tariff-type.default}") Integer tariffTypeDefault
+    ) {
 
         this.serverTimeZone = serverTimeZone;
 
@@ -160,6 +163,7 @@ public class TavridaConstants {
         this.paymentResultErrorCardRead = paymentResultErrorCardRead;
         this.paymentResultErrorInsufficientFunds = paymentResultErrorInsufficientFunds;
         this.paymentResultErrorCardBlocked = paymentResultErrorCardBlocked;
+        this.tariffTypeDefault = tariffTypeDefault;
     }
 
     // Геттеры (не изменяются)
@@ -313,5 +317,9 @@ public class TavridaConstants {
 
     public String getServiceEventTypeCashierSessionStop() {
         return serviceEventTypeCashierSessionStop;
+    }
+
+    public Integer getTariffTypeDefault() {
+        return tariffTypeDefault;
     }
 }
