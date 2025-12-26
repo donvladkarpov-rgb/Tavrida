@@ -1,5 +1,6 @@
 package ru.vtb.msa.detr.tavrida.core.util;
 
+import org.apache.hc.client5.http.utils.Hex;
 import org.springframework.stereotype.Component;
 
 import java.security.MessageDigest;
@@ -8,7 +9,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
-import org.apache.hc.client5.http.utils.Hex;
 
 @Component
 public class TavridaUtils {
@@ -26,11 +26,13 @@ public class TavridaUtils {
 
 
     public Instant parseInstant(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        return OffsetDateTime.parse(dateString, formatter).toInstant();
+        if (dateString != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            return OffsetDateTime.parse(dateString, formatter).toInstant();
+        } else return null;
     }
 
-    public String getHash(String someString){
+    public String getHash(String someString) {
         MessageDigest messageDigest = null;
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
