@@ -10,7 +10,7 @@ public class CashierLogoutResponse {
     private String message;
     private UUID sessionId;
     private UUID cashierCardGuid;
-    private String startTime;
+    private String serverLogoutTime;
     private UserDto cashier;
 
     public CashierLogoutResponse(boolean success, String message) {
@@ -24,12 +24,12 @@ public class CashierLogoutResponse {
         UUID sessionId,
         UUID cashierCardGuid,
         UUID transportGuid,
-        String startTime) {
+        String serverLogoutTime) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
         this.cashierCardGuid = cashierCardGuid;
-        this.startTime = startTime;
+        this.serverLogoutTime = serverLogoutTime;
     }
 
     public CashierLogoutResponse(
@@ -37,13 +37,13 @@ public class CashierLogoutResponse {
         String message,
         UUID sessionId,
         UUID cashierCardGuid,
-        String startTime,
+        String serverLogoutTime,
         UserDto cashier) {
         this.success = success;
         this.message = message;
         this.sessionId = sessionId;
         this.cashierCardGuid = cashierCardGuid;
-        this.startTime = startTime;
+        this.serverLogoutTime = serverLogoutTime;
         this.cashier = cashier;
     }
 
@@ -88,12 +88,12 @@ public class CashierLogoutResponse {
         this.cashier = cashier;
     }
 
-    public String getStartTime() {
-        return startTime;
+    public String getServerLogoutTime() {
+        return serverLogoutTime;
     }
 
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
+    public void setServerLogoutTime(String serverLogoutTime) {
+        this.serverLogoutTime = serverLogoutTime;
     }
 
 }

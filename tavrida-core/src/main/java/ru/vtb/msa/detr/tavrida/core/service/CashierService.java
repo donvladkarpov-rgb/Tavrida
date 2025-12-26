@@ -23,9 +23,24 @@ import ru.vtb.msa.detr.tavrida.core.config.TavridaConstants;
 import ru.vtb.msa.detr.tavrida.core.exception.AuthenticationTavridaException;
 import ru.vtb.msa.detr.tavrida.core.exception.EntityNotFoundException;
 import ru.vtb.msa.detr.tavrida.core.exception.ValidationTavridaException;
-import ru.vtb.msa.detr.tavrida.core.model.*;
+import ru.vtb.msa.detr.tavrida.core.model.Card;
+import ru.vtb.msa.detr.tavrida.core.model.CardPanHash;
+import ru.vtb.msa.detr.tavrida.core.model.Carrier;
+import ru.vtb.msa.detr.tavrida.core.model.ServiceEvent;
+import ru.vtb.msa.detr.tavrida.core.model.Terminal;
+import ru.vtb.msa.detr.tavrida.core.model.User;
+import ru.vtb.msa.detr.tavrida.core.model.UserSession;
 import ru.vtb.msa.detr.tavrida.core.model.mapper.TavridaMapper;
-import ru.vtb.msa.detr.tavrida.core.repo.*;
+import ru.vtb.msa.detr.tavrida.core.repo.CardPanHashRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.CardRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.CarrierRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.ServiceEventRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.ServiceEventTypeRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.TariffTypeRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.TerminalRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.TransportRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.UserRepository;
+import ru.vtb.msa.detr.tavrida.core.repo.UserSessionRepository;
 import ru.vtb.msa.detr.tavrida.core.util.TavridaUtils;
 
 import java.math.BigDecimal;
@@ -295,7 +310,7 @@ public class CashierService {
         Card newCard = new Card();
         newCard.setCardGuid(UUID.randomUUID());
         newCard.setCardType(cardTypeService.getCardTypeEntityById(tavridaConstants.getCardTypePassenger())); // Пассажирская
-        newCard.setTariffType(tariffTypeRepository.findById(tariffId).orElseThrow(()-> new EntityNotFoundException("Не найден тарифный план с Id = " + tariffId)));
+        newCard.setTariffType(tariffTypeRepository.findById(tariffId).orElseThrow(() -> new EntityNotFoundException("Не найден тарифный план с Id = " + tariffId)));
         newCard.setCardPanHash(cardPanHash);
         newCard.setMaximumUniqueCount(0);
         newCard.setUniqueTravelCount(0);
@@ -485,7 +500,7 @@ public class CashierService {
         final Instant now1 = Instant.now();
         final Instant terminalTime = util.parseInstant(request.getLogoutTerminalStartTime());
 
-        UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена водителя не найдена: " + request.getSessionId()));
+        UserSession session = userSessionRepository.findById(request.getSessionId()).orElseThrow(() -> new EntityNotFoundException("Смена кассира не найдена: " + request.getSessionId()));
         session.setClosedAt(Instant.now());
         userSessionRepository.save(session);
 

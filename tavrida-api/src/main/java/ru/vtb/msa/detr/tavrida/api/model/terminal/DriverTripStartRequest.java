@@ -20,6 +20,13 @@ public class DriverTripStartRequest {
     private UUID routeGuid;
 
     @Schema(
+        description = "UUID рейса",
+        example = "123e4567-e89b-42d3-a456-556642440000",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private UUID tripId;
+
+    @Schema(
         description = "Временная метка с терминала",
         example = "2025-12-23T21:52:08.754+0300",
         requiredMode = Schema.RequiredMode.REQUIRED

@@ -18,6 +18,12 @@ public class DriverSessionStartRequest {
     )
     private UUID transportGuid;
     @Schema(
+        description = "UUID сессии водителя",
+        example = "123e4567-e89b-42d3-a456-556642440000",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private UUID sessionId;
+    @Schema(
         description = "UUID карты водителя",
         example = "123e4567-e89b-42d3-a456-556642440000",
         requiredMode = Schema.RequiredMode.REQUIRED
