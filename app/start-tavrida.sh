@@ -21,6 +21,7 @@ JAVA_OPTS="
   -XX:+UseG1GC
   -XX:MaxGCPauseMillis=200
   -server
+  -Dfile.encoding=UTF-8
 "
 
 # Дополнительно: отключаем dev-тулы и включаем прод
