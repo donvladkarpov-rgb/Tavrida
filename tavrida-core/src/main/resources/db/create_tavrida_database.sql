@@ -2,9 +2,9 @@
 -- FILE: asop_schema.sql
 -- DATABASE: TAVRIDA (PostgreSQL)
 -- ОПИСАНИЕ: Схема БД АСОП. Префикс ASOP_, единственное число, UPPER_CASE
---           Разделение карт (ядро/MIFARE/BANK), тарифы отделены,
---           PAN защищён через токен, сессии допускают анонимные/системные записи
---           Добавлена гибкая модель тарифов: базовые + кастомные по перевозчикам
+--           Сессии: OPENED_BY/CLOSED_BY nullable
+--           Тарифы: ASOP_TARIFF_RATE (base + carrier-specific)
+--           Гео: полигоны зон и остановок, поддержка больших контуров
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS postgis;
@@ -42,6 +42,41 @@ INSERT INTO ASOP_TARIFF_TYPE (TARIFF_TYPE_ID, CODE, NAME, DESCRIPTION) VALUES
                                                                            (1, 'RIDES_PACKAGE', 'Пакет поездок до даты', 'Фиксированное количество поездок...'),
                                                                            (2, 'UNLIMITED_TILL_DATE', 'Безлимит до даты', 'Безлимитное количество поездок...'),
                                                                            (3, 'WALLET', 'Пополняемый кошелёк', 'Деньги списываются с баланса...');
+
+CREATE TABLE ASOP_EVENT_TYPE (
+                                 EVENT_TYPE CHAR(4) NOT NULL,
+                                 EVENT_TYPE_NAME VARCHAR(128) NOT NULL,
+                                 CONSTRAINT pk_event_type PRIMARY KEY (EVENT_TYPE)
+);
+INSERT INTO ASOP_EVENT_TYPE (EVENT_TYPE, EVENT_TYPE_NAME) VALUES
+                                                              ('CUSR', 'Создание пользователя'), ('CCRD', 'Создание карты'), ('RPAY', 'Пополнение карты'),
+                                                              ('DUSR', 'Удаление пользователя'), ('DCRD', 'Удаление карты'), ('TACT', 'Активация терминала'),
+                                                              ('TDEC', 'Деактивация терминала'), ('DOPN', 'Открытие смены водителя'), ('DCLS', 'Закрытие смены водителя'),
+                                                              ('ROPN', 'Открыть маршрут водителем'), ('RCLS', 'Закрыть маршрут водителем'), ('TPAY', 'Оплата проезда'),
+                                                              ('COPN', 'Открыть смену кассира'), ('CCLS', 'Закрыть смену кассира'), ('OTHR', 'Другое событие'),
+                                                              ('SOPN', 'Открытие сессии'), ('SCLS', 'Закрытие сессии');
+
+CREATE TABLE ASOP_TRANSACTION_TYPE (
+                                       TRANSACTION_TYPE_ID INT NOT NULL,
+                                       TRANSACTION_TYPE_NAME VARCHAR(255) NOT NULL,
+                                       CONSTRAINT pk_transaction_type PRIMARY KEY (TRANSACTION_TYPE_ID)
+);
+INSERT INTO ASOP_TRANSACTION_TYPE (TRANSACTION_TYPE_ID, TRANSACTION_TYPE_NAME) VALUES (1, 'Пополнение'), (2, 'Списание');
+
+CREATE TABLE ASOP_TRANSACTION_RESULT (
+                                         TRANSACTION_RESULT_ID INT NOT NULL,
+                                         TRANSACTION_RESULT_NAME VARCHAR(255) NOT NULL,
+                                         CONSTRAINT pk_transaction_result PRIMARY KEY (TRANSACTION_RESULT_ID)
+);
+INSERT INTO ASOP_TRANSACTION_RESULT (TRANSACTION_RESULT_ID, TRANSACTION_RESULT_NAME) VALUES
+                                                                                         (11, 'Успех'), (12, 'Ошибка - карта не читается'), (13, 'Ошибка - недостаточно средств'), (14, 'Ошибка - карта заблокирована');
+
+CREATE TABLE ASOP_ROUTE_TYPE (
+                                 ROUTE_TYPE_ID BIGINT NOT NULL,
+                                 ROUTE_TYPE_NAME VARCHAR(16) NOT NULL,
+                                 CONSTRAINT pk_route_type PRIMARY KEY (ROUTE_TYPE_ID)
+);
+INSERT INTO ASOP_ROUTE_TYPE (ROUTE_TYPE_ID, ROUTE_TYPE_NAME) VALUES (1, 'Маршрут'), (2, 'Путь');
 
 -- ========================
 -- 1.1 МОДЕЛЬ ТАРИФОВ (БАЗОВЫЕ + КАСТОМНЫЕ ПЕРЕВОЗЧИКА)
@@ -214,7 +249,8 @@ CREATE TABLE ASOP_BLACKLIST (
 CREATE TABLE ASOP_USER_SESSION (
                                    SESSION_ID UUID NOT NULL,
                                    TERMINAL_ID BIGINT NOT NULL,
-                                   USER_ID BIGINT, -- ← NULLABLE: допускает анонимные/системные сессии
+                                   OPENED_BY_USER_ID BIGINT,  -- Кто открыл сессию
+                                   CLOSED_BY_USER_ID BIGINT,  -- Кто закрыл сессию (может отличаться)
                                    CARD_ID BIGINT,
                                    STARTED_AT TIMESTAMP NOT NULL,
                                    CLOSED_AT TIMESTAMP,
@@ -223,7 +259,8 @@ CREATE TABLE ASOP_USER_SESSION (
                                    EXPIRATION_TIME TIMESTAMP NOT NULL,
                                    CONSTRAINT pk_user_session PRIMARY KEY (SESSION_ID),
                                    CONSTRAINT fk_session_terminal_id FOREIGN KEY (TERMINAL_ID) REFERENCES ASOP_TERMINAL(TERMINAL_ID),
-                                   CONSTRAINT fk_session_user_id FOREIGN KEY (USER_ID) REFERENCES ASOP_USER(USER_ID) ON DELETE SET NULL,
+                                   CONSTRAINT fk_session_opened_by FOREIGN KEY (OPENED_BY_USER_ID) REFERENCES ASOP_USER(USER_ID) ON DELETE SET NULL,
+                                   CONSTRAINT fk_session_closed_by FOREIGN KEY (CLOSED_BY_USER_ID) REFERENCES ASOP_USER(USER_ID) ON DELETE SET NULL,
                                    CONSTRAINT fk_session_card_id FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARD(CARD_ID)
 );
 
@@ -232,7 +269,7 @@ CREATE TABLE ASOP_EVENT (
                             EVENT_TIME TIMESTAMP NOT NULL,
                             EVENT_LOCAL_TIME TIMESTAMP NOT NULL,
                             EVENT_TYPE CHAR(4) NOT NULL,
-                            USER_ID BIGINT,
+                            USER_ID BIGINT,            -- Кто выполнил конкретное действие
                             SESSION_ID UUID,
                             REFERENCE_TYPE_ID INT,
                             REFERENCE_ID BIGINT,
@@ -264,7 +301,6 @@ CREATE TABLE ASOP_TRANSACTION (
 );
 ALTER SEQUENCE asop_transaction_transaction_id_seq RESTART WITH 1000;
 
--- Развязка циклической FK между транзакциями и тарифами
 ALTER TABLE ASOP_CARD_TARIFF
     ADD CONSTRAINT fk_tariff_purchase FOREIGN KEY (PURCHASE_TRANSACTION_ID) REFERENCES ASOP_TRANSACTION(TRANSACTION_ID);
 
@@ -302,17 +338,22 @@ CREATE TABLE ASOP_CARRIER_ROUTE (
 ALTER SEQUENCE asop_carrier_route_carrier_route_id_seq RESTART WITH 1000;
 CREATE UNIQUE INDEX uk_carrier_route ON ASOP_CARRIER_ROUTE(CARRIER_ID, ROUTE_ID);
 
+-- ТАРИФНЫЕ ЗОНЫ (ОБНОВЛЕНО: добавлен полигон границы)
 CREATE TABLE ASOP_FARE_ZONE (
                                 ZONE_ID BIGSERIAL NOT NULL,
                                 ZONE_CODE VARCHAR(20) NOT NULL,
                                 ZONE_NAME VARCHAR(100) NOT NULL,
                                 DESCRIPTION VARCHAR(256),
+                                ZONE_POLYGON GEOGRAPHY(POLYGON, 4326),
                                 CREATED_AT TIMESTAMP NOT NULL,
                                 UPDATED_AT TIMESTAMP NOT NULL,
                                 CONSTRAINT pk_fare_zone PRIMARY KEY (ZONE_ID),
-                                CONSTRAINT uq_fare_zone_code UNIQUE (ZONE_CODE)
+                                CONSTRAINT uq_fare_zone_code UNIQUE (ZONE_CODE),
+                                CONSTRAINT chk_fare_zone_valid_polygon CHECK (ZONE_POLYGON IS NULL OR ST_IsValid(ZONE_POLYGON))
 );
 ALTER SEQUENCE asop_fare_zone_zone_id_seq RESTART WITH 1000;
+CREATE INDEX idx_fare_zone_geo ON ASOP_FARE_ZONE USING GIST (ZONE_POLYGON);
+COMMENT ON COLUMN ASOP_FARE_ZONE.ZONE_POLYGON IS 'Граница тарифной зоны (POLYGON). Поддерживает сотни/тысячи точек. Первая и последняя координаты должны совпадать.';
 
 CREATE TABLE ASOP_CARRIER_ZONE (
                                    CARRIER_ZONE_ID BIGSERIAL NOT NULL,
@@ -403,11 +444,11 @@ CREATE INDEX idx_blacklist_guid ON ASOP_BLACKLIST(CARD_GUID);
 CREATE INDEX idx_terminal_guid ON ASOP_TERMINAL(TERMINAL_GUID);
 CREATE INDEX idx_terminal_carrier_id ON ASOP_TERMINAL(CARRIER_ID);
 CREATE INDEX idx_terminal_vehicle_id ON ASOP_TERMINAL(VEHICLE_ID);
-CREATE INDEX idx_session_user_id ON ASOP_USER_SESSION(USER_ID, SESSION_ID);
-CREATE INDEX idx_session_started ON ASOP_USER_SESSION(STARTED_AT, USER_ID);
-CREATE INDEX idx_session_started_local ON ASOP_USER_SESSION(STARTED_AT_LOCAL, USER_ID);
-CREATE INDEX idx_session_terminal_id ON ASOP_USER_SESSION(TERMINAL_ID, USER_ID);
-CREATE INDEX idx_session_card_id ON ASOP_USER_SESSION(CARD_ID, USER_ID);
+CREATE INDEX idx_session_opened_by ON ASOP_USER_SESSION(OPENED_BY_USER_ID);
+CREATE INDEX idx_session_closed_by ON ASOP_USER_SESSION(CLOSED_BY_USER_ID);
+CREATE INDEX idx_session_terminal ON ASOP_USER_SESSION(TERMINAL_ID);
+CREATE INDEX idx_session_started ON ASOP_USER_SESSION(STARTED_AT);
+CREATE INDEX idx_session_card ON ASOP_USER_SESSION(CARD_ID);
 CREATE INDEX idx_event_time ON ASOP_EVENT(EVENT_TIME, USER_ID);
 CREATE INDEX idx_event_local_time ON ASOP_EVENT(EVENT_LOCAL_TIME, USER_ID);
 CREATE INDEX idx_event_user_id ON ASOP_EVENT(USER_ID, SESSION_ID);
@@ -441,5 +482,6 @@ COMMENT ON TABLE ASOP_EVENT IS 'Таблица для хранения серв�
 COMMENT ON TABLE ASOP_TRANSACTION IS 'Финансовые и тарифные проводки. Заменяет понятие Payment, покрывая пополнения, списания, холдирования и возвраты.';
 COMMENT ON TABLE ASOP_CARD_MIFARE IS 'Техническая спецификация NFC-карт (MIFARE DESFire/Classic). Содержит аппаратные метаданные чипа.';
 COMMENT ON TABLE ASOP_CARD_BANK IS 'Спецификация банковских/EMV карт. PAN хранится только в зашифрованном виде (токен/криптотекст).';
-COMMENT ON TABLE ASOP_USER_SESSION IS 'Сессии терминалов и пользователей. USER_ID nullable для поддержки анонимных прикладываний карт и системных сессий.';
+COMMENT ON TABLE ASOP_USER_SESSION IS 'Сессии терминалов. OPENED_BY/CLOSED_BY nullable. Позволяет разным пользователям открывать/закрывать одну сессию. События логируются в ASOP_EVENT.';
 COMMENT ON TABLE ASOP_TARIFF_RATE IS 'Ценовые правила тарифов. CARRIER_ID NULL = базовый тариф для всех. Приоритет поиска: 1) Carrier-specific, 2) Base (NULL).';
+COMMENT ON TABLE ASOP_FARE_ZONE IS 'Тарифные зоны. ZONE_POLYGON хранит географические границы (сотни точек допустимо). GIST-индекс ускоряет пространственные запросы.';
