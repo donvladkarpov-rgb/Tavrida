@@ -1,8 +1,9 @@
 -- ============================================================
 -- FILE: asop_schema.sql
 -- DATABASE: TAVRIDA (PostgreSQL)
--- ОПИСАНИЕ: Схема БД АСОП. Префикс ASOP_, множественное число, UPPER_CASE
---           Все PK: UUID (генерируются на app-уровне)
+-- ОПИСАНИЕ: Финальная схема БД АСОП.
+--           Включает: TID, Статусы рейсов, Мониторинг терминалов,
+--           Обновления ПО, Списки, Тарифные типы.
 -- ============================================================
 
 CREATE
@@ -98,6 +99,7 @@ INSERT INTO ASOP_ROUTE_TYPES
 VALUES (gen_random_uuid(), 'Маршрут'),
        (gen_random_uuid(), 'Путь');
 
+-- НОВОЕ: Справочник организаторов перевозок
 CREATE TABLE ASOP_ORGANIZERS
 (
     ORGANIZER_ID   UUID         NOT NULL,
@@ -109,6 +111,7 @@ CREATE TABLE ASOP_ORGANIZERS
 COMMENT
 ON TABLE ASOP_ORGANIZERS IS 'Организаторы перевозок.';
 
+-- НОВОЕ: Справочник территорий
 CREATE TABLE ASOP_TERRITORIES
 (
     TERRITORY_ID       UUID         NOT NULL,
@@ -123,6 +126,7 @@ CREATE TABLE ASOP_TERRITORIES
 COMMENT
 ON TABLE ASOP_TERRITORIES IS 'Административно-территориальные единицы.';
 
+-- НОВОЕ: Справочник услуг оплаты
 CREATE TABLE ASOP_SERVICES
 (
     SERVICE_ID      UUID         NOT NULL,
@@ -146,6 +150,7 @@ VALUES (gen_random_uuid(), 'RIDE', 'Проезд', true, NOW()),
        (gen_random_uuid(), 'CHILD', 'Детский', false, NOW()),
        (gen_random_uuid(), 'LUGGAGE', 'Багаж', false, NOW());
 
+-- НОВОЕ: Справочник тарифных зон
 CREATE TABLE ASOP_FARE_ZONES
 (
     ZONE_ID      UUID         NOT NULL,
@@ -159,6 +164,7 @@ CREATE TABLE ASOP_FARE_ZONES
 );
 CREATE INDEX idx_fare_zones_geo ON ASOP_FARE_ZONES USING GIST (ZONE_POLYGON);
 
+-- НОВОЕ: Справочник зон проезда
 CREATE TABLE ASOP_TRAVEL_ZONES
 (
     TRAVEL_ZONE_ID   UUID         NOT NULL,
@@ -172,6 +178,7 @@ CREATE TABLE ASOP_TRAVEL_ZONES
 COMMENT
 ON TABLE ASOP_TRAVEL_ZONES IS 'Зоны проезда внутри тарифных зон.';
 
+-- НОВОЕ: Диспетчерские пункты
 CREATE TABLE ASOP_DISPATCH_POINTS
 (
     DISPATCH_POINT_ID UUID         NOT NULL,
@@ -186,62 +193,6 @@ CREATE TABLE ASOP_DISPATCH_POINTS
 COMMENT
 ON TABLE ASOP_DISPATCH_POINTS IS 'Физические пункты диспетчерского управления.';
 CREATE INDEX idx_dispatch_geo ON ASOP_DISPATCH_POINTS USING GIST (GEO_LOCATION);
-
--- НОВОЕ: Справочник договоров/контрактов
-CREATE TABLE ASOP_CONTRACTS
-(
-    CONTRACT_ID     UUID         NOT NULL,
-    CONTRACT_NUMBER VARCHAR(100) NOT NULL,
-    ORGANIZER_ID    UUID         NOT NULL,
-    CARRIER_ID      UUID         NOT NULL,
-    CONTRACT_DATE   DATE,
-    VALID_FROM      DATE,
-    VALID_UNTIL     DATE,
-    DESCRIPTION     TEXT,
-    CREATED_AT      TIMESTAMP    NOT NULL,
-    UPDATED_AT      TIMESTAMP    NOT NULL,
-    CONSTRAINT pk_contracts PRIMARY KEY (CONTRACT_ID),
-    CONSTRAINT fk_contract_organizer FOREIGN KEY (ORGANIZER_ID) REFERENCES ASOP_ORGANIZERS (ORGANIZER_ID),
-    CONSTRAINT fk_contract_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID)
-);
-COMMENT
-ON TABLE ASOP_CONTRACTS IS 'Договоры с перевозчиками.';
-CREATE INDEX idx_contracts_organizer ON ASOP_CONTRACTS (ORGANIZER_ID);
-CREATE INDEX idx_contracts_carrier ON ASOP_CONTRACTS (CARRIER_ID);
-
--- НОВОЕ: Справочник платежных операторов
-CREATE TABLE ASOP_PAYMENT_OPERATORS
-(
-    OPERATOR_ID       UUID         NOT NULL,
-    OPERATOR_NAME     VARCHAR(255) NOT NULL,
-    DESCRIPTION       TEXT,
-    SEND_URI          VARCHAR(500),
-    CHECK_URI         VARCHAR(500),
-    RECEIPT_CHECK_URI VARCHAR(500),
-    COUNTERPARTY_NAME VARCHAR(255),
-    IS_ACTIVE         BOOLEAN DEFAULT true,
-    CREATED_AT        TIMESTAMP    NOT NULL,
-    UPDATED_AT        TIMESTAMP    NOT NULL,
-    CONSTRAINT pk_payment_operators PRIMARY KEY (OPERATOR_ID)
-);
-COMMENT
-ON TABLE ASOP_PAYMENT_OPERATORS IS 'Платежные операторы и сервисы.';
-
--- НОВОЕ: Корпоративные клиенты
-CREATE TABLE ASOP_CORPORATE_CLIENTS
-(
-    CORPORATE_CLIENT_ID UUID         NOT NULL,
-    CLIENT_NAME         VARCHAR(255) NOT NULL,
-    CARD_ID             UUID,
-    CARRIER_ID          UUID,
-    CREATED_AT          TIMESTAMP    NOT NULL,
-    UPDATED_AT          TIMESTAMP    NOT NULL,
-    CONSTRAINT pk_corporate_clients PRIMARY KEY (CORPORATE_CLIENT_ID),
-    CONSTRAINT fk_corp_client_card FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARDS (CARD_ID),
-    CONSTRAINT fk_corp_client_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID)
-);
-COMMENT
-ON TABLE ASOP_CORPORATE_CLIENTS IS 'Корпоративные клиенты.';
 
 -- ========================
 -- 2. БАЗОВЫЕ СУЩНОСТИ
@@ -282,6 +233,7 @@ CREATE TABLE ASOP_VEHICLES
 COMMENT
 ON COLUMN ASOP_VEHICLES.VEHICLE_MODEL IS 'Модель ТС.';
 
+-- ДОБАВЛЕНО: Поля для мониторинга терминалов
 CREATE TABLE ASOP_TERMINALS
 (
     TERMINAL_ID           UUID        NOT NULL,
@@ -292,12 +244,39 @@ CREATE TABLE ASOP_TERMINALS
     DISPATCH_POINT_ID     UUID,
     BENEFITS_SYNC_TOKEN   VARCHAR(64),
     LAST_BENEFITS_SYNC_AT TIMESTAMP,
+    LAST_HEARTBEAT_AT     TIMESTAMP,   -- Для статуса Онлайн/Оффлайн
+    CONNECTION_STATUS     VARCHAR(20) DEFAULT 'OFFLINE',
+    VALIDATOR_TYPE        VARCHAR(50), -- Тип валидатора (Irma, Vendotek)
+    FIRMWARE_VERSION      VARCHAR(50), -- Версия ПО
+    WHITELIST_UPDATED_AT  TIMESTAMP,   -- Время обновления белого списка
+    BLACKLIST_UPDATED_AT  TIMESTAMP,   -- Время обновления стоп-листа
     CONSTRAINT pk_terminals PRIMARY KEY (TERMINAL_ID),
     CONSTRAINT fk_terminals_carrier_id FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID),
     CONSTRAINT fk_terminals_vehicle_id FOREIGN KEY (VEHICLE_ID) REFERENCES ASOP_VEHICLES (VEHICLE_ID),
-    CONSTRAINT fk_terminals_dispatch FOREIGN KEY (DISPATCH_POINT_ID) REFERENCES ASOP_DISPATCH_POINTS (DISPATCH_POINT_ID)
+    CONSTRAINT fk_terminals_dispatch FOREIGN KEY (DISPATCH_POINT_ID) REFERENCES ASOP_DISPATCH_POINTS (DISPATCH_POINT_ID),
+    CONSTRAINT chk_terminal_status CHECK (CONNECTION_STATUS IN ('ONLINE', 'OFFLINE', 'ERROR'))
 );
+CREATE INDEX idx_terminals_status ON ASOP_TERMINALS (CONNECTION_STATUS);
 
+-- НОВОЕ: Проблемы с терминалами/валидаторами
+CREATE TABLE ASOP_TERMINAL_ISSUES
+(
+    ISSUE_ID          UUID        NOT NULL,
+    TERMINAL_ID       UUID        NOT NULL,
+    ISSUE_TYPE        VARCHAR(50) NOT NULL,
+    ISSUE_DESCRIPTION TEXT,
+    DETECTED_AT       TIMESTAMP   NOT NULL,
+    RESOLVED_AT       TIMESTAMP,
+    IS_RESOLVED       BOOLEAN DEFAULT false,
+    CONSTRAINT pk_terminal_issues PRIMARY KEY (ISSUE_ID),
+    CONSTRAINT fk_issue_terminal FOREIGN KEY (TERMINAL_ID) REFERENCES ASOP_TERMINALS (TERMINAL_ID)
+);
+COMMENT
+ON TABLE ASOP_TERMINAL_ISSUES IS 'Проблемы с валидаторами и терминалами.';
+CREATE INDEX idx_terminal_issues_terminal ON ASOP_TERMINAL_ISSUES (TERMINAL_ID);
+CREATE INDEX idx_terminal_issues_resolved ON ASOP_TERMINAL_ISSUES (IS_RESOLVED);
+
+-- НОВОЕ: Эквайринговые TID (1:N к перевозчику, 1:1 к терминалу)
 CREATE TABLE ASOP_TIDS
 (
     TID_ID        UUID        NOT NULL,
@@ -338,6 +317,8 @@ CREATE TABLE ASOP_ROUTES
     BENEFIT_POLICY       VARCHAR(20)  NOT NULL DEFAULT 'ALL' CHECK (BENEFIT_POLICY IN ('ALL', 'ALLOWLIST', 'NONE')),
     ROUTE_OBJECT         JSONB,
     DESCRIPTION          VARCHAR(512),
+    SORT_ORDER           INT          NOT NULL DEFAULT 0,
+    TECH_INFO_VEHICLE    VARCHAR(255),
     CREATED_AT           TIMESTAMP    NOT NULL,
     UPDATED_AT           TIMESTAMP    NOT NULL,
     CONSTRAINT pk_routes PRIMARY KEY (ROUTE_ID),
@@ -352,10 +333,12 @@ CREATE INDEX idx_routes_validity ON ASOP_ROUTES (ROUTE_START_DATE, ROUTE_END_DAT
 CREATE INDEX idx_routes_policy ON ASOP_ROUTES (BENEFIT_POLICY);
 CREATE INDEX idx_routes_category ON ASOP_ROUTES (ROUTE_CATEGORY);
 
+-- ДОБАВЛЕНО: Поле TERRITORY_ID для связи с территориями
 CREATE TABLE ASOP_TRANSPORT_STOPS
 (
     STOP_ID      UUID         NOT NULL,
     FARE_ZONE_ID UUID,
+    TERRITORY_ID UUID,
     STOP_CODE    VARCHAR(20)  NOT NULL,
     STOP_NAME    VARCHAR(200) NOT NULL,
     STOP_ADDRESS VARCHAR(500),
@@ -366,9 +349,11 @@ CREATE TABLE ASOP_TRANSPORT_STOPS
     UPDATED_AT   TIMESTAMP    NOT NULL,
     CONSTRAINT pk_transport_stops PRIMARY KEY (STOP_ID),
     CONSTRAINT uq_stop_code UNIQUE (STOP_CODE),
-    CONSTRAINT fk_transport_stops_zone_id FOREIGN KEY (FARE_ZONE_ID) REFERENCES ASOP_FARE_ZONES (ZONE_ID)
+    CONSTRAINT fk_transport_stops_zone_id FOREIGN KEY (FARE_ZONE_ID) REFERENCES ASOP_FARE_ZONES (ZONE_ID),
+    CONSTRAINT fk_transport_stops_territory FOREIGN KEY (TERRITORY_ID) REFERENCES ASOP_TERRITORIES (TERRITORY_ID)
 );
 CREATE INDEX idx_transport_stops_geo ON ASOP_TRANSPORT_STOPS USING GIST (ZONE_POLYGON);
+CREATE INDEX idx_transport_stops_territory ON ASOP_TRANSPORT_STOPS (TERRITORY_ID);
 
 CREATE TABLE ASOP_ROUTE_TRANSPORT_STOPS
 (
@@ -565,6 +550,7 @@ CREATE TABLE ASOP_ROUTE_BENEFITS
     CONSTRAINT uq_route_benefit UNIQUE (ROUTE_ID, BENEFIT_ID)
 );
 
+-- ДОБАВЛЕНО: PRICE_TYPE
 CREATE TABLE ASOP_TARIFF_RATES
 (
     TARIFF_RATE_ID UUID           NOT NULL,
@@ -573,15 +559,17 @@ CREATE TABLE ASOP_TARIFF_RATES
     ZONE_ID        UUID,
     ROUTE_ID       UUID,
     PRICE          NUMERIC(10, 2) NOT NULL,
+    PRICE_TYPE     VARCHAR(20) DEFAULT 'STANDARD', -- Обычный/Минимальный
     DESCRIPTION    TEXT,
-    IS_ACTIVE      BOOLEAN DEFAULT true,
+    IS_ACTIVE      BOOLEAN     DEFAULT true,
     CREATED_AT     TIMESTAMP      NOT NULL,
     UPDATED_AT     TIMESTAMP      NOT NULL,
     CONSTRAINT pk_tariff_rates PRIMARY KEY (TARIFF_RATE_ID),
     CONSTRAINT fk_tariff_rates_type FOREIGN KEY (TARIFF_TYPE_ID) REFERENCES ASOP_TARIFF_TYPES (TARIFF_TYPE_ID),
     CONSTRAINT fk_tariff_rates_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID),
     CONSTRAINT fk_tariff_rates_zone FOREIGN KEY (ZONE_ID) REFERENCES ASOP_FARE_ZONES (ZONE_ID),
-    CONSTRAINT fk_tariff_rates_route FOREIGN KEY (ROUTE_ID) REFERENCES ASOP_ROUTES (ROUTE_ID)
+    CONSTRAINT fk_tariff_rates_route FOREIGN KEY (ROUTE_ID) REFERENCES ASOP_ROUTES (ROUTE_ID),
+    CONSTRAINT chk_price_type CHECK (PRICE_TYPE IN ('STANDARD', 'MINIMAL', 'PROMO'))
 );
 
 CREATE TABLE ASOP_CARRIER_ZONES
@@ -622,6 +610,7 @@ CREATE TABLE ASOP_USER_SESSIONS
     CONSTRAINT fk_sessions_card_id FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARDS (CARD_ID)
 );
 
+-- ДОБАВЛЕНО: Статусы рейсов для отчетов
 CREATE TABLE ASOP_TRIPS
 (
     TRIP_ID              UUID      NOT NULL,
@@ -642,6 +631,7 @@ CREATE TABLE ASOP_TRIPS
 CREATE INDEX idx_trips_route_id ON ASOP_TRIPS (ROUTE_ID);
 CREATE INDEX idx_trips_status_route ON ASOP_TRIPS (ROUTE_ID, TRIP_STATUS);
 
+-- ДОБАВЛЕНО: Поле RRN
 CREATE TABLE ASOP_TRANSACTIONS
 (
     TRANSACTION_ID        UUID           NOT NULL,
@@ -655,6 +645,7 @@ CREATE TABLE ASOP_TRANSACTIONS
     AMOUNT                NUMERIC(10, 2) NOT NULL DEFAULT 0,
     CURRENCY              CHAR(3)                 DEFAULT 'RUB',
     ACQUIRER_REFERENCE    VARCHAR(128),
+    RRN                   VARCHAR(12), -- Retrieval Reference Number
     ERROR_CODE            VARCHAR(50),
     ERROR_MESSAGE         VARCHAR(512),
     METADATA              JSONB,
@@ -665,6 +656,7 @@ CREATE TABLE ASOP_TRANSACTIONS
     CONSTRAINT fk_transactions_type FOREIGN KEY (TRANSACTION_TYPE_ID) REFERENCES ASOP_TRANSACTION_TYPES (TRANSACTION_TYPE_ID),
     CONSTRAINT fk_transactions_result FOREIGN KEY (TRANSACTION_RESULT_ID) REFERENCES ASOP_TRANSACTION_RESULTS (TRANSACTION_RESULT_ID)
 );
+CREATE INDEX idx_transactions_rrn ON ASOP_TRANSACTIONS (RRN);
 
 CREATE TABLE ASOP_TRANSACTION_CARDS
 (
@@ -717,6 +709,21 @@ CREATE TABLE ASOP_CARRIER_ROUTES
 );
 CREATE UNIQUE INDEX uk_carrier_routes ON ASOP_CARRIER_ROUTES (CARRIER_ID, ROUTE_ID);
 
+-- НОВОЕ: Справочник версий ПО
+CREATE TABLE ASOP_FIRMWARE_VERSIONS
+(
+    VERSION_ID     UUID        NOT NULL,
+    TERMINAL_TYPE  VARCHAR(50) NOT NULL,
+    VERSION_NUMBER VARCHAR(50) NOT NULL,
+    RELEASE_DATE   TIMESTAMP   NOT NULL,
+    IS_ACTIVE      BOOLEAN DEFAULT true,
+    FILE_PATH      VARCHAR(500),
+    CONSTRAINT pk_firmware_versions PRIMARY KEY (VERSION_ID),
+    CONSTRAINT uq_firmware_version UNIQUE (TERMINAL_TYPE, VERSION_NUMBER)
+);
+COMMENT
+ON TABLE ASOP_FIRMWARE_VERSIONS IS 'Справочник версий программного обеспечения.';
+
 CREATE TABLE ASOP_EVENTS
 (
     EVENT_ID          UUID      NOT NULL,
@@ -764,10 +771,8 @@ ON TABLE ASOP_SERVICES IS 'Платные услуги.';
 COMMENT
 ON TABLE ASOP_TIDS IS 'Пул TID.';
 COMMENT
-ON TABLE ASOP_TRIPS IS 'Рейсы. TRIP_STATUS управляет статусом отработки маршрута.';
+ON TABLE ASOP_TRIPS IS 'Рейсы. TRIP_STATUS управляет статусом отработки.';
 COMMENT
-ON TABLE ASOP_CONTRACTS IS 'Договоры с перевозчиками.';
+ON TABLE ASOP_TERMINAL_ISSUES IS 'Проблемы с валидаторами.';
 COMMENT
-ON TABLE ASOP_PAYMENT_OPERATORS IS 'Платежные операторы.';
-COMMENT
-ON TABLE ASOP_CORPORATE_CLIENTS IS 'Корпоративные клиенты.';
+ON TABLE ASOP_FIRMWARE_VERSIONS IS 'Версии ПО.';
