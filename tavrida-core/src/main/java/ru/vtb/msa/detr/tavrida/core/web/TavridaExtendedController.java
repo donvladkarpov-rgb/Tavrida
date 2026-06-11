@@ -79,12 +79,10 @@ public class TavridaExtendedController implements TavridaApiExtended {
     }
 
     // ========== MASTER PASSWORD ==========
-    @Override
     public ResponseEntity<MasterPasswordDto> setMasterPassword(MasterPasswordDto dto) {
         return ResponseEntity.ok(masterPasswordService.setMasterPassword(dto));
     }
 
-    @Override
     public ResponseEntity<MasterPasswordDto> getMasterPassword() {
         MasterPasswordDto mp = masterPasswordService.getMasterPassword();
         return mp != null ? ResponseEntity.ok(mp) : ResponseEntity.notFound().build();

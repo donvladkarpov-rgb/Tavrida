@@ -55,15 +55,6 @@ public interface TavridaApiExtended {
             @Parameter(description = "Code UID", example = "A1B2C3D4E5F6G7H8")
             @PathVariable("codeUid") String codeUid);
 
-    // ========== MASTER PASSWORD ==========
-    @Operation(summary = "Set master password")
-    @PostMapping("/master-password")
-    ResponseEntity<MasterPasswordDto> setMasterPassword(@RequestBody MasterPasswordDto dto);
-
-    @Operation(summary = "Get master password")
-    @GetMapping("/master-password")
-    ResponseEntity<MasterPasswordDto> getMasterPassword();
-
     // ========== AUDIT ==========
     @Operation(summary = "Log service event")
     @PostMapping("/audit/events")

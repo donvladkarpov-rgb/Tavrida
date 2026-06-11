@@ -12,6 +12,12 @@ public class CardPurchaseRequest {
     )
     private UUID sessionId;
     @Schema(
+        description = "UUID идентификатор транзакции",
+        example = "123e4567-e89b-42d3-a456-756642440001",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private UUID transactionId;
+    @Schema(
         description = "UUID идентификатор карты",
         example = "123e4567-e89b-42d3-a456-756642440001",
         requiredMode = Schema.RequiredMode.REQUIRED
