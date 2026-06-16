@@ -7,6 +7,10 @@
 --           - Справочники ФИАС/ГАР для регионов и территорий.
 --           - Гибкие правила скидок и услуг (с необязательной привязкой к перевозчику, ТС, тарифу).
 --           - Расширенная модель управления терминалами (профили, ПО, МОЛ, иерархия).
+--           - ДОБАВЛЕНО: IS_PRIMARY в ASOP_CARDS (одна основная карта на пользователя для льгот).
+--           - ПЕРЕИМЕНОВАНО: ASOP_DISPATCH_POSITIONS -> ASOP_GPS_TRACKING.
+--           - ДОБАВЛЕНО: ASOP_PAYMENTS (таблица поступлений/пополнений на карту) с поддержкой Offline Top-Up.
+--           - ДОБАВЛЕНО: LAST_SYNC_RECEIPT_TIME (INT) в ASOP_CARDS для синхронизации с 32-битной памятью чипа MIFARE.
 -- ============================================================
 
 CREATE
@@ -420,22 +424,29 @@ CREATE TABLE ASOP_USER_REGIONS
 );
 
 -- ========================
--- 5. КАРТЫ, ЛЬГОТЫ, ТАРИФЫ
+-- 5. КАРТЫ, ЛЬГОТЫ, ТАРИФЫ И ПЛАТЕЖИ
 -- ========================
 
 CREATE TABLE ASOP_CARDS
 (
-    CARD_ID               UUID      NOT NULL,
-    CARD_TYPE_ID          UUID      NOT NULL,
-    USER_ID               UUID,
-    REGISTERED_AT         TIMESTAMP,
-    REGISTERED_BY_USER_ID UUID,
-    CREATED_AT            TIMESTAMP NOT NULL,
-    UPDATED_AT            TIMESTAMP NOT NULL,
+    CARD_ID                UUID      NOT NULL,
+    CARD_TYPE_ID           UUID      NOT NULL,
+    USER_ID                UUID,
+    IS_PRIMARY             BOOLEAN DEFAULT false,
+    LAST_SYNC_RECEIPT_TIME INT     DEFAULT 0,
+    REGISTERED_AT          TIMESTAMP,
+    REGISTERED_BY_USER_ID  UUID,
+    CREATED_AT             TIMESTAMP NOT NULL,
+    UPDATED_AT             TIMESTAMP NOT NULL,
     CONSTRAINT pk_cards PRIMARY KEY (CARD_ID),
     CONSTRAINT fk_cards_type_id FOREIGN KEY (CARD_TYPE_ID) REFERENCES ASOP_CARD_TYPES (CARD_TYPE_ID),
     CONSTRAINT fk_cards_user_id FOREIGN KEY (USER_ID) REFERENCES ASOP_USERS (USER_ID)
 );
+COMMENT
+ON COLUMN ASOP_CARDS.IS_PRIMARY IS 'У одного пользователя может быть только одна карта с этим флагом = true (обеспечивается частичным уникальным индексом).';
+COMMENT
+ON COLUMN ASOP_CARDS.LAST_SYNC_RECEIPT_TIME IS 'Значение RECEIPT_UNIX_TIME (INT) последнего платежа, успешно записанного на физическую карту. Тип INT выбран для соответствия 32-битной структуре данных чипа MIFARE.';
+CREATE UNIQUE INDEX uk_user_primary_card ON ASOP_CARDS (USER_ID) WHERE IS_PRIMARY = true AND USER_ID IS NOT NULL;
 
 CREATE TABLE ASOP_CARD_MIFARES
 (
@@ -553,6 +564,32 @@ CREATE TABLE ASOP_TARIFF_RATES
     CONSTRAINT fk_tariff_rates_path FOREIGN KEY (PATH_ID) REFERENCES ASOP_PATHS (PATH_ID)
 );
 
+-- НОВАЯ ТАБЛИЦА: Поступления (пополнения) на карту с поддержкой Offline Top-Up
+CREATE TABLE ASOP_PAYMENTS
+(
+    PAYMENT_ID        UUID        NOT NULL,
+    CARD_ID           UUID        NOT NULL,
+    RECEIPT_UNIX_TIME INT         NOT NULL,           -- INT для соответствия 32-битному формату хранения на чипе MIFARE
+    SESSION_ID        UUID,                           -- Нужна, если пополнение произошло в терминале (сессия водителя/кассира)
+    EVENT_ID          UUID,                           -- Нужна для аудита (связь с системным событием создания платежа)
+    USER_ID           UUID,                           -- Необязательно: кто инициировал (если известно, например, через приложение)
+    AMOUNT            NUMERIC(10, 2)       DEFAULT 0, -- Сумма деньгами
+    TRIPS_ADDED       INT                  DEFAULT 0, -- Количество добавленных поездок (если тарификация в поездках)
+    PAYMENT_METHOD    VARCHAR(50),                    -- Способ оплаты (CASH, CARD, ONLINE, AUTO_TOPUP)
+    STATUS            VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (STATUS IN ('PENDING', 'APPLIED', 'FAILED', 'REFUNDED')),
+    EXTERNAL_REF      VARCHAR(128),                   -- Ссылка на внешний чек, ID банковской транзакции или фискального чека
+    CREATED_AT        TIMESTAMP   NOT NULL,
+    CONSTRAINT pk_payments PRIMARY KEY (PAYMENT_ID),
+    CONSTRAINT fk_payments_card FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARDS (CARD_ID),
+    CONSTRAINT fk_payments_session FOREIGN KEY (SESSION_ID) REFERENCES ASOP_SESSIONS (SESSION_ID),
+    CONSTRAINT fk_payments_event FOREIGN KEY (EVENT_ID) REFERENCES ASOP_EVENTS (EVENT_ID),
+    CONSTRAINT fk_payments_user FOREIGN KEY (USER_ID) REFERENCES ASOP_USERS (USER_ID)
+);
+COMMENT
+ON TABLE ASOP_PAYMENTS IS 'Поступления (пополнения) на карту: деньги или поездки. Связана с картой, опционально с сессией, событием и пользователем.';
+CREATE INDEX idx_payments_card_sync ON ASOP_PAYMENTS (CARD_ID, RECEIPT_UNIX_TIME); -- Для молниеносного поиска непроведенных платежей
+CREATE INDEX idx_payments_status ON ASOP_PAYMENTS (STATUS);
+
 -- ========================
 -- 6. ОБОРУДОВАНИЕ: ТЕРМИНАЛЫ, TID, ПРОФИЛИ, ПО
 -- ========================
@@ -571,9 +608,9 @@ ON TABLE ASOP_TERMINAL_PROFILES IS 'Справочник профилей нас
 CREATE TABLE ASOP_TERMINAL_SOFTWARE
 (
     SOFTWARE_VERSION_ID UUID         NOT NULL,
-    TERMINAL_TYPE       VARCHAR(100) NOT NULL, -- Например: 'Azur', 'Feithen'
-    VERSION             VARCHAR(100) NOT NULL, -- Например: '2.1.2.bc1a6f5e'
-    FILE_PATH           VARCHAR(500),          -- Путь к файлу прошивки/ПО
+    TERMINAL_TYPE       VARCHAR(100) NOT NULL,
+    VERSION             VARCHAR(100) NOT NULL,
+    FILE_PATH           VARCHAR(500),
     UPDATE_DATE         TIMESTAMP    NOT NULL,
     CONSTRAINT pk_terminal_software PRIMARY KEY (SOFTWARE_VERSION_ID)
 );
@@ -600,21 +637,20 @@ CREATE TABLE ASOP_TIDS
 COMMENT
 ON TABLE ASOP_TIDS IS 'Пул TID. 1:N к перевозчику. Привязка к терминалу происходит в рейсе (сессии) или напрямую.';
 
--- ОБНОВЛЕНО: Убран REGION_ID. Добавлены поля модели, статуса, МОЛ, родителя, TID, ТС, профиля и ПО.
 CREATE TABLE ASOP_TERMINALS
 (
     TERMINAL_ID           UUID        NOT NULL,
     CARRIER_ID            UUID,
     TERMINAL_NUMBER       VARCHAR(16) NOT NULL,
     TERMINAL_SERIAL       VARCHAR(64) NOT NULL,
-    TERMINAL_MODEL        VARCHAR(100),                    -- Модель терминала (AZUR, Feithen и т.п.)
-    STATUS                VARCHAR(50) DEFAULT 'WAREHOUSE', -- Статус (WAREHOUSE, ISSUED_TO_ENGINEER, IN_OPERATION, REPAIR)
-    MOL_USER_ID           UUID,                            -- Материально-ответственное лицо
-    PARENT_TERMINAL_ID    UUID,                            -- Ссылка на родителя (для валидаторов, т.к. храним всех в одной таблице)
-    TID_ID                UUID,                            -- Ссылка на TID (для валидатора всегда NULL)
-    VEHICLE_ID            UUID,                            -- Ссылка на ТС. Меняется при начале водительской смены, при завершении не очищается (история)
-    PROFILE_ID            UUID,                            -- Ссылка на профиль настроек (для валидатора всегда NULL)
-    SOFTWARE_VERSION_ID   UUID,                            -- Ссылка на версию ПО
+    TERMINAL_MODEL        VARCHAR(100),
+    STATUS                VARCHAR(50) DEFAULT 'WAREHOUSE',
+    MOL_USER_ID           UUID,
+    PARENT_TERMINAL_ID    UUID,
+    TID_ID                UUID,
+    VEHICLE_ID            UUID,
+    PROFILE_ID            UUID,
+    SOFTWARE_VERSION_ID   UUID,
     BENEFITS_SYNC_TOKEN   VARCHAR(64),
     LAST_BENEFITS_SYNC_AT TIMESTAMP,
     CONSTRAINT pk_terminals PRIMARY KEY (TERMINAL_ID),
@@ -814,7 +850,7 @@ CREATE TABLE ASOP_TRANSACTIONS
     CONSTRAINT fk_transactions_result FOREIGN KEY (TRANSACTION_RESULT_ID) REFERENCES ASOP_TRANSACTION_RESULTS (TRANSACTION_RESULT_ID)
 );
 COMMENT
-ON TABLE ASOP_TRANSACTIONS IS 'Финансовые проводки. METADATA хранит детали расчета (зоны, скидки, льготы).';
+ON TABLE ASOP_TRANSACTIONS IS 'Финансовые проводки (списания). METADATA хранит детали расчета (зоны, скидки, льготы).';
 CREATE INDEX idx_transactions_session ON ASOP_TRANSACTIONS (SESSION_ID);
 CREATE INDEX idx_transactions_completed_at ON ASOP_TRANSACTIONS (COMPLETED_AT) WHERE COMPLETED_AT IS NULL;
 
@@ -836,7 +872,8 @@ ALTER TABLE ASOP_CARD_TARIFFS
     ADD CONSTRAINT fk_tariff_purchase FOREIGN KEY (PURCHASE_TRANSACTION_ID) REFERENCES ASOP_TRANSACTIONS (TRANSACTION_ID);
 CREATE UNIQUE INDEX uk_transaction_cards_main ON ASOP_TRANSACTION_CARDS (TRANSACTION_ID, CARD_ID);
 
-CREATE TABLE ASOP_DISPATCH_POSITIONS
+-- ПЕРЕИМЕНОВАНО: ASOP_DISPATCH_POSITIONS -> ASOP_GPS_TRACKING
+CREATE TABLE ASOP_GPS_TRACKING
 (
     POSITION_ID UUID      NOT NULL,
     VEHICLE_ID  UUID      NOT NULL,
@@ -846,13 +883,15 @@ CREATE TABLE ASOP_DISPATCH_POSITIONS
     RECORDED_AT TIMESTAMP NOT NULL,
     SPEED_KMH   NUMERIC(5, 2),
     STATUS      VARCHAR(30) DEFAULT 'MOVING',
-    CONSTRAINT pk_dispatch_positions PRIMARY KEY (POSITION_ID),
-    CONSTRAINT fk_dp_vehicle FOREIGN KEY (VEHICLE_ID) REFERENCES ASOP_VEHICLES (VEHICLE_ID) ON DELETE CASCADE,
-    CONSTRAINT fk_dp_path FOREIGN KEY (PATH_ID) REFERENCES ASOP_PATHS (PATH_ID),
-    CONSTRAINT fk_dp_session FOREIGN KEY (SESSION_ID) REFERENCES ASOP_SESSIONS (SESSION_ID)
+    CONSTRAINT pk_gps_tracking PRIMARY KEY (POSITION_ID),
+    CONSTRAINT fk_gps_vehicle FOREIGN KEY (VEHICLE_ID) REFERENCES ASOP_VEHICLES (VEHICLE_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_gps_path FOREIGN KEY (PATH_ID) REFERENCES ASOP_PATHS (PATH_ID),
+    CONSTRAINT fk_gps_session FOREIGN KEY (SESSION_ID) REFERENCES ASOP_SESSIONS (SESSION_ID)
 );
-CREATE INDEX idx_dp_vehicle_time ON ASOP_DISPATCH_POSITIONS (VEHICLE_ID, RECORDED_AT DESC);
-CREATE INDEX idx_dp_geo ON ASOP_DISPATCH_POSITIONS USING GIST (GPS_COORD);
+COMMENT
+ON TABLE ASOP_GPS_TRACKING IS 'GPS-трекинг транспорта (поток координат).';
+CREATE INDEX idx_gps_vehicle_time ON ASOP_GPS_TRACKING (VEHICLE_ID, RECORDED_AT DESC);
+CREATE INDEX idx_gps_geo ON ASOP_GPS_TRACKING USING GIST (GPS_COORD);
 
 CREATE TABLE ASOP_EVENTS
 (
