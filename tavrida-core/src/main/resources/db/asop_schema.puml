@@ -93,9 +93,66 @@ package "1. Справочники" {
         PRIORITY : INT
         # REGION_ID : UUID
     }
+    class ASOP_BENEFITS {
+        * BENEFIT_ID : UUID
+        BENEFIT_CODE : VARCHAR
+        BENEFIT_NAME : VARCHAR
+        REGION_CODE : VARCHAR
+        DESCRIPTION : TEXT
+        IS_ACTIVE : BOOLEAN
+        CREATED_AT : TIMESTAMP
+        UPDATED_AT : TIMESTAMP
+    }
+    class ASOP_BENEFIT_STEPS {
+        * STEP_ID : UUID
+        # BENEFIT_ID : UUID
+        STEP_ORDER : INT
+        TRIP_THRESHOLD_FROM : INT
+        TRIP_THRESHOLD_TO : INT
+        DISCOUNT_SHARE : NUMERIC
+        PERIOD_TYPE : VARCHAR
+    }
 }
 
-package "2. Маршруты и Пути" {
+package "2. Перевозчики, Дистрибьюторы и Договоры" {
+    class ASOP_CARRIERS {
+        * CARRIER_ID : UUID
+        CARRIER_NAME : VARCHAR
+        INN : VARCHAR
+        # REGION_ID : UUID
+    }
+    class ASOP_CARDS_DISTRIBUTORS {
+        * CARDS_DISTRIBUTOR_ID : UUID
+        DISTRIBUTOR_NAME : VARCHAR
+        INN : VARCHAR
+        KPP : VARCHAR
+        LEGAL_ADDRESS : VARCHAR
+        CONTACT_PHONE : VARCHAR
+        CONTACT_EMAIL : VARCHAR
+        IS_ACTIVE : BOOLEAN
+        CREATED_AT : TIMESTAMP
+        UPDATED_AT : TIMESTAMP
+    }
+    class ASOP_CONTRACTS {
+        * CONTRACT_ID : UUID
+        CONTRACTOR_TYPE : VARCHAR
+        # CARRIER_ID : UUID
+        # CARDS_DISTRIBUTOR_ID : UUID
+        CONTRACT_NUMBER : VARCHAR
+        START_DATE : DATE
+        END_DATE : DATE
+        STATUS : VARCHAR
+        COMMISSION_PERCENT : NUMERIC
+        CREATED_AT : TIMESTAMP
+        UPDATED_AT : TIMESTAMP
+    }
+    class ASOP_CONTRACT_ROUTES {
+        * # CONTRACT_ID : UUID
+        * # ROUTE_ID : UUID
+    }
+}
+
+package "3. Маршруты и Пути" {
     class ASOP_ROUTES {
         * ROUTE_ID : UUID
         ROUTE_NUMBER : VARCHAR
@@ -155,27 +212,37 @@ package "2. Маршруты и Пути" {
         DWELL_TIME_SEC : INT
         IS_ACTIVE : BOOLEAN
     }
+    class ASOP_PATH_SERVICES {
+        * PATH_SERVICE_ID : UUID
+        # PATH_ID : UUID
+        # SERVICE_ID : UUID
+        # CARRIER_ID : UUID
+        # VEHICLE_ID : UUID
+        # TARIFF_TYPE_ID : UUID
+        PRICE : NUMERIC
+        IS_ACTIVE : BOOLEAN
+    }
+    class ASOP_PATH_DISCOUNTS {
+        * PATH_DISCOUNT_ID : UUID
+        # PATH_ID : UUID
+        # CARRIER_ID : UUID
+        # VEHICLE_ID : UUID
+        # TARIFF_TYPE_ID : UUID
+        DISCOUNT_NAME : VARCHAR
+        DISCOUNT_TYPE : VARCHAR
+        DISCOUNT_VALUE : NUMERIC
+        VALID_FROM : TIMESTAMP
+        VALID_UNTIL : TIMESTAMP
+        IS_ACTIVE : BOOLEAN
+    }
+    class ASOP_PATH_BENEFITS {
+        * PATH_BENEFIT_ID : UUID
+        # PATH_ID : UUID
+        # BENEFIT_ID : UUID
+    }
 }
 
-package "3. Перевозчики, Договоры и ТС" {
-    class ASOP_CARRIERS {
-        * CARRIER_ID : UUID
-        CARRIER_NAME : VARCHAR
-        INN : VARCHAR
-        # REGION_ID : UUID
-    }
-    class ASOP_CARRIER_CONTRACTS {
-        * CONTRACT_ID : UUID
-        # CARRIER_ID : UUID
-        CONTRACT_NUMBER : VARCHAR
-        START_DATE : DATE
-        END_DATE : DATE
-        # REGION_ID : UUID
-    }
-    class ASOP_CONTRACT_ROUTES {
-        * # CONTRACT_ID : UUID
-        * # ROUTE_ID : UUID
-    }
+package "4. Транспортные средства" {
     class ASOP_VEHICLE_TYPES {
         * VEHICLE_TYPE_ID : UUID
         TYPE_NAME : VARCHAR
@@ -194,7 +261,7 @@ package "3. Перевозчики, Договоры и ТС" {
     }
 }
 
-package "4. Пользователи и Безопасность" {
+package "5. Пользователи и Безопасность" {
     class ASOP_USERS {
         * USER_ID : UUID
         FIRST_NAME : VARCHAR
@@ -219,7 +286,7 @@ package "4. Пользователи и Безопасность" {
     }
 }
 
-package "5. Оборудование: Терминалы, TID, Профили, ПО" {
+package "6. Оборудование: Терминалы, TID, Профили, ПО" {
     class ASOP_TERMINAL_PROFILES {
         * PROFILE_ID : UUID
         PROFILE_NAME : VARCHAR
@@ -231,6 +298,21 @@ package "5. Оборудование: Терминалы, TID, Профили, �
         VERSION : VARCHAR
         FILE_PATH : VARCHAR
         UPDATE_DATE : TIMESTAMP
+    }
+    class ASOP_DISTRIBUTOR_TERMINALS {
+        * DISTRIBUTOR_TERMINAL_ID : UUID
+        # CARDS_DISTRIBUTOR_ID : UUID
+        # CONTRACT_ID : UUID
+        TERMINAL_NUMBER : VARCHAR
+        TERMINAL_SERIAL : VARCHAR
+        TERMINAL_MODEL : VARCHAR
+        PAYMENT_PROVIDER_ID : VARCHAR
+        STATUS : VARCHAR
+        # MOL_USER_ID : UUID
+        # PROFILE_ID : UUID
+        # SOFTWARE_VERSION_ID : UUID
+        CREATED_AT : TIMESTAMP
+        UPDATED_AT : TIMESTAMP
     }
     class ASOP_TIDS {
         * TID_ID : UUID
@@ -261,7 +343,7 @@ package "5. Оборудование: Терминалы, TID, Профили, �
     }
 }
 
-package "6. Карты, Льготы, Тарифы и Платежи" {
+package "7. Карты, Льготы, Тарифы и Платежи" {
     class ASOP_CARDS {
         * CARD_ID : UUID
         # CARD_TYPE_ID : UUID
@@ -307,25 +389,6 @@ package "6. Карты, Льготы, Тарифы и Платежи" {
         BLOCK_TYPE : VARCHAR
         BLOCKED_AT : TIMESTAMP
     }
-    class ASOP_BENEFITS {
-        * BENEFIT_ID : UUID
-        BENEFIT_CODE : VARCHAR
-        BENEFIT_NAME : VARCHAR
-        REGION_CODE : VARCHAR
-        DESCRIPTION : TEXT
-        IS_ACTIVE : BOOLEAN
-        CREATED_AT : TIMESTAMP
-        UPDATED_AT : TIMESTAMP
-    }
-    class ASOP_BENEFIT_STEPS {
-        * STEP_ID : UUID
-        # BENEFIT_ID : UUID
-        STEP_ORDER : INT
-        TRIP_THRESHOLD_FROM : INT
-        TRIP_THRESHOLD_TO : INT
-        DISCOUNT_SHARE : NUMERIC
-        PERIOD_TYPE : VARCHAR
-    }
     class ASOP_USER_BENEFITS {
         * ASSIGNMENT_ID : UUID
         # USER_ID : UUID
@@ -355,6 +418,7 @@ package "6. Карты, Льготы, Тарифы и Платежи" {
         # SESSION_ID : UUID
         # EVENT_ID : UUID
         # USER_ID : UUID
+        # DISTRIBUTOR_TERMINAL_ID : UUID
         AMOUNT : NUMERIC
         TRIPS_ADDED : INT
         PAYMENT_METHOD : VARCHAR
@@ -362,40 +426,9 @@ package "6. Карты, Льготы, Тарифы и Платежи" {
         EXTERNAL_REF : VARCHAR
         CREATED_AT : TIMESTAMP
     }
-
-    package "6.1 Ценообразование" {
-        class ASOP_PATH_SERVICES {
-            * PATH_SERVICE_ID : UUID
-            # PATH_ID : UUID
-            # SERVICE_ID : UUID
-            # CARRIER_ID : UUID
-            # VEHICLE_ID : UUID
-            # TARIFF_TYPE_ID : UUID
-            PRICE : NUMERIC
-            IS_ACTIVE : BOOLEAN
-        }
-        class ASOP_PATH_DISCOUNTS {
-            * PATH_DISCOUNT_ID : UUID
-            # PATH_ID : UUID
-            # CARRIER_ID : UUID
-            # VEHICLE_ID : UUID
-            # TARIFF_TYPE_ID : UUID
-            DISCOUNT_NAME : VARCHAR
-            DISCOUNT_TYPE : VARCHAR
-            DISCOUNT_VALUE : NUMERIC
-            VALID_FROM : TIMESTAMP
-            VALID_UNTIL : TIMESTAMP
-            IS_ACTIVE : BOOLEAN
-        }
-        class ASOP_PATH_BENEFITS {
-            * PATH_BENEFIT_ID : UUID
-            # PATH_ID : UUID
-            # BENEFIT_ID : UUID
-        }
-    }
 }
 
-package "7. Сессии, Транзакции, Аудит, КРС" {
+package "8. Сессии, Транзакции, Аудит, КРС" {
     class ASOP_SESSIONS {
         * SESSION_ID : UUID
         # SESSION_TYPE_ID : UUID
@@ -532,7 +565,7 @@ package "7. Сессии, Транзакции, Аудит, КРС" {
 }
 
 ' =========================================================
-' ПОЛНЫЙ СПИСОК ВСЕХ СВЯЗЕЙ (Foreign Keys) из SQL-скрипта
+' ПОЛНЫЙ СПИСОК ВСЕХ СВЯЗЕЙ (Foreign Keys)
 ' =========================================================
 
 ' 0. Регионы
@@ -542,8 +575,16 @@ ASOP_ORGANIZER_TERRITORIES --> ASOP_TERRITORIES
 
 ' 1. Справочники
 ASOP_SERVICES --> ASOP_REGIONS
+ASOP_BENEFIT_STEPS --> ASOP_BENEFITS
 
-' 2. Маршруты
+' 2. Перевозчики, Дистрибьюторы и Договоры
+ASOP_CARRIERS --> ASOP_REGIONS
+ASOP_CONTRACTS --> ASOP_CARRIERS
+ASOP_CONTRACTS --> ASOP_CARDS_DISTRIBUTORS
+ASOP_CONTRACT_ROUTES --> ASOP_CONTRACTS
+ASOP_CONTRACT_ROUTES --> ASOP_ROUTES
+
+' 3. Маршруты
 ASOP_ROUTES --> ASOP_ORGANIZERS
 ASOP_ROUTES --> ASOP_REGIONS
 ASOP_PATHS --> ASOP_ROUTES
@@ -556,58 +597,6 @@ ASOP_PATH_TRANSPORT_STOPS --> ASOP_PATHS
 ASOP_PATH_TRANSPORT_STOPS --> ASOP_TRANSPORT_STOPS
 ASOP_SCHEDULE --> ASOP_PATHS
 ASOP_SCHEDULE --> ASOP_TRANSPORT_STOPS
-
-' 3. Перевозчики и ТС
-ASOP_CARRIERS --> ASOP_REGIONS
-ASOP_CARRIER_CONTRACTS --> ASOP_CARRIERS
-ASOP_CARRIER_CONTRACTS --> ASOP_REGIONS
-ASOP_CONTRACT_ROUTES --> ASOP_CARRIER_CONTRACTS
-ASOP_CONTRACT_ROUTES --> ASOP_ROUTES
-ASOP_VEHICLES --> ASOP_CARRIERS
-ASOP_VEHICLES --> ASOP_VEHICLE_TYPES
-ASOP_VEHICLES --> ASOP_VEHICLE_MODELS
-
-' 4. Пользователи
-ASOP_USER_ROLES --> ASOP_USERS
-ASOP_USER_ROLES --> ASOP_ROLES
-ASOP_USER_CARRIERS --> ASOP_USERS
-ASOP_USER_CARRIERS --> ASOP_CARRIERS
-ASOP_USER_REGIONS --> ASOP_USERS
-ASOP_USER_REGIONS --> ASOP_REGIONS
-
-' 5. Оборудование
-ASOP_TIDS --> ASOP_CARRIERS
-ASOP_TIDS --> ASOP_TERMINALS
-ASOP_TERMINALS --> ASOP_CARRIERS
-ASOP_TERMINALS --> ASOP_USERS : mol_user
-ASOP_TERMINALS --> ASOP_TERMINALS : parent
-ASOP_TERMINALS --> ASOP_TIDS
-ASOP_TERMINALS --> ASOP_VEHICLES
-ASOP_TERMINALS --> ASOP_TERMINAL_PROFILES
-ASOP_TERMINALS --> ASOP_TERMINAL_SOFTWARE
-
-' 6. Карты, Льготы, Тарифы, Платежи
-ASOP_CARDS --> ASOP_CARD_TYPES
-ASOP_CARDS --> ASOP_USERS
-ASOP_CARD_MIFARES --> ASOP_CARDS
-ASOP_CARD_BANKS --> ASOP_CARDS
-ASOP_CARD_TARIFFS --> ASOP_CARDS
-ASOP_CARD_TARIFFS --> ASOP_TARIFF_TYPES
-ASOP_CARD_TARIFFS --> ASOP_TRANSACTIONS : purchase
-ASOP_BLACKLISTS --> ASOP_CARDS
-ASOP_BENEFIT_STEPS --> ASOP_BENEFITS
-ASOP_USER_BENEFITS --> ASOP_USERS
-ASOP_USER_BENEFITS --> ASOP_BENEFITS
-ASOP_TARIFF_RATES --> ASOP_TARIFF_TYPES
-ASOP_TARIFF_RATES --> ASOP_CARRIERS
-ASOP_TARIFF_RATES --> ASOP_FARE_ZONES
-ASOP_TARIFF_RATES --> ASOP_PATHS
-ASOP_PAYMENTS --> ASOP_CARDS
-ASOP_PAYMENTS --> ASOP_SESSIONS
-ASOP_PAYMENTS --> ASOP_EVENTS
-ASOP_PAYMENTS --> ASOP_USERS
-
-' 6.1 Ценообразование
 ASOP_PATH_SERVICES --> ASOP_PATHS
 ASOP_PATH_SERVICES --> ASOP_SERVICES
 ASOP_PATH_SERVICES --> ASOP_CARRIERS
@@ -620,7 +609,57 @@ ASOP_PATH_DISCOUNTS --> ASOP_TARIFF_TYPES
 ASOP_PATH_BENEFITS --> ASOP_PATHS
 ASOP_PATH_BENEFITS --> ASOP_BENEFITS
 
-' 7. Сессии, Транзакции, Аудит, КРС
+' 4. Транспортные средства
+ASOP_VEHICLES --> ASOP_CARRIERS
+ASOP_VEHICLES --> ASOP_VEHICLE_TYPES
+ASOP_VEHICLES --> ASOP_VEHICLE_MODELS
+
+' 5. Пользователи
+ASOP_USER_ROLES --> ASOP_USERS
+ASOP_USER_ROLES --> ASOP_ROLES
+ASOP_USER_CARRIERS --> ASOP_USERS
+ASOP_USER_CARRIERS --> ASOP_CARRIERS
+ASOP_USER_REGIONS --> ASOP_USERS
+ASOP_USER_REGIONS --> ASOP_REGIONS
+
+' 6. Оборудование
+ASOP_DISTRIBUTOR_TERMINALS --> ASOP_CARDS_DISTRIBUTORS
+ASOP_DISTRIBUTOR_TERMINALS --> ASOP_CONTRACTS
+ASOP_DISTRIBUTOR_TERMINALS --> ASOP_USERS : mol_user
+ASOP_DISTRIBUTOR_TERMINALS --> ASOP_TERMINAL_PROFILES
+ASOP_DISTRIBUTOR_TERMINALS --> ASOP_TERMINAL_SOFTWARE
+ASOP_TIDS --> ASOP_CARRIERS
+ASOP_TIDS --> ASOP_TERMINALS
+ASOP_TERMINALS --> ASOP_CARRIERS
+ASOP_TERMINALS --> ASOP_USERS : mol_user
+ASOP_TERMINALS --> ASOP_TERMINALS : parent
+ASOP_TERMINALS --> ASOP_TIDS
+ASOP_TERMINALS --> ASOP_VEHICLES
+ASOP_TERMINALS --> ASOP_TERMINAL_PROFILES
+ASOP_TERMINALS --> ASOP_TERMINAL_SOFTWARE
+
+' 7. Карты, Льготы, Тарифы, Платежи
+ASOP_CARDS --> ASOP_CARD_TYPES
+ASOP_CARDS --> ASOP_USERS
+ASOP_CARD_MIFARES --> ASOP_CARDS
+ASOP_CARD_BANKS --> ASOP_CARDS
+ASOP_CARD_TARIFFS --> ASOP_CARDS
+ASOP_CARD_TARIFFS --> ASOP_TARIFF_TYPES
+ASOP_CARD_TARIFFS --> ASOP_TRANSACTIONS : purchase
+ASOP_BLACKLISTS --> ASOP_CARDS
+ASOP_USER_BENEFITS --> ASOP_USERS
+ASOP_USER_BENEFITS --> ASOP_BENEFITS
+ASOP_TARIFF_RATES --> ASOP_TARIFF_TYPES
+ASOP_TARIFF_RATES --> ASOP_CARRIERS
+ASOP_TARIFF_RATES --> ASOP_FARE_ZONES
+ASOP_TARIFF_RATES --> ASOP_PATHS
+ASOP_PAYMENTS --> ASOP_CARDS
+ASOP_PAYMENTS --> ASOP_SESSIONS
+ASOP_PAYMENTS --> ASOP_EVENTS
+ASOP_PAYMENTS --> ASOP_USERS
+ASOP_PAYMENTS --> ASOP_DISTRIBUTOR_TERMINALS
+
+' 8. Сессии, Транзакции, Аудит, КРС
 ASOP_SESSIONS --> ASOP_SESSION_TYPES
 ASOP_SESSIONS --> ASOP_SESSIONS : parent
 ASOP_SESSIONS --> ASOP_TERMINALS

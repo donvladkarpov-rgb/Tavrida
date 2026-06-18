@@ -1,7 +1,8 @@
 # Полная документация схемы базы данных АСОП (TAVRIDA)
 
 > **Назначение:** Высокоуровневая карта архитектуры базы данных для навигации и детальное описание всех полей.  
-> **СУБД:** PostgreSQL 14+ с расширением PostGIS
+> **СУБД:** PostgreSQL 14+ с расширением PostGIS  
+> **Всего таблиц:** 60
 
 ---
 
@@ -22,53 +23,55 @@
 * [`ASOP_TRANSACTION_TYPES`](#asop_transaction_types)
 * [`ASOP_TRANSACTION_RESULTS`](#asop_transaction_results)
 * [`ASOP_SERVICES`](#asop_services)
+* [`ASOP_BENEFITS`](#asop_benefits)
+* [`ASOP_BENEFIT_STEPS`](#asop_benefit_steps)
 
-### [2. Маршруты и Пути](#2-маршруты-и-пути)
+### [2. Перевозчики, Дистрибьюторы и Договоры](#2-перевозчики-дистрибьюторы-и-договоры)
+* [`ASOP_CARRIERS`](#asop_carriers)
+* [`ASOP_CARDS_DISTRIBUTORS`](#asop_cards_distributors) *(Новая: юрлица-дистрибьюторы карт)*
+* [`ASOP_CONTRACTS`](#asop_contracts) *(Новая: общий справочник договоров)*
+* [`ASOP_CONTRACT_ROUTES`](#asop_contract_routes)
+
+### [3. Маршруты и Пути](#3-маршруты-и-пути)
 * [`ASOP_ROUTES`](#asop_routes)
 * [`ASOP_PATHS`](#asop_paths)
 * [`ASOP_FARE_ZONES`](#asop_fare_zones)
 * [`ASOP_TRANSPORT_STOPS`](#asop_transport_stops)
 * [`ASOP_PATH_TRANSPORT_STOPS`](#asop_path_transport_stops)
 * [`ASOP_SCHEDULE`](#asop_schedule)
+* [`ASOP_PATH_SERVICES`](#asop_path_services)
+* [`ASOP_PATH_DISCOUNTS`](#asop_path_discounts)
+* [`ASOP_PATH_BENEFITS`](#asop_path_benefits)
 
-### [3. Перевозчики, Договоры и ТС](#3-перевозчики-договоры-и-тс)
-* [`ASOP_CARRIERS`](#asop_carriers)
-* [`ASOP_CARRIER_CONTRACTS`](#asop_carrier_contracts)
-* [`ASOP_CONTRACT_ROUTES`](#asop_contract_routes)
+### [4. Транспортные средства](#4-транспортные-средства)
 * [`ASOP_VEHICLE_TYPES`](#asop_vehicle_types)
 * [`ASOP_VEHICLE_MODELS`](#asop_vehicle_models)
 * [`ASOP_VEHICLES`](#asop_vehicles)
 
-### [4. Пользователи и Безопасность](#4-пользователи-и-безопасность)
+### [5. Пользователи и Безопасность](#5-пользователи-и-безопасность)
 * [`ASOP_USERS`](#asop_users)
 * [`ASOP_USER_ROLES`](#asop_user_roles)
 * [`ASOP_USER_CARRIERS`](#asop_user_carriers)
 * [`ASOP_USER_REGIONS`](#asop_user_regions)
 
-### [5. Оборудование: Терминалы, TID, Профили, ПО](#5-оборудование-терминалы-tid-профили-по)
+### [6. Оборудование: Терминалы, TID, Профили, ПО](#6-оборудование-терминалы-tid-профили-по)
 * [`ASOP_TERMINAL_PROFILES`](#asop_terminal_profiles)
 * [`ASOP_TERMINAL_SOFTWARE`](#asop_terminal_software)
+* [`ASOP_DISTRIBUTOR_TERMINALS`](#asop_distributor_terminals) *(Новая: платёжные терминалы дистрибьюторов)*
 * [`ASOP_TIDS`](#asop_tids)
 * [`ASOP_TERMINALS`](#asop_terminals)
 
-### [6. Карты, Льготы, Тарифы и Платежи](#6-карты-льготы-тарифы-и-платежи)
+### [7. Карты, Льготы, Тарифы и Платежи](#7-карты-льготы-тарифы-и-платежи)
 * [`ASOP_CARDS`](#asop_cards)
 * [`ASOP_CARD_MIFARES`](#asop_card_mifares)
 * [`ASOP_CARD_BANKS`](#asop_card_banks)
 * [`ASOP_CARD_TARIFFS`](#asop_card_tariffs)
 * [`ASOP_BLACKLISTS`](#asop_blacklists)
-* [`ASOP_BENEFITS`](#asop_benefits)
-* [`ASOP_BENEFIT_STEPS`](#asop_benefit_steps)
 * [`ASOP_USER_BENEFITS`](#asop_user_benefits)
 * [`ASOP_TARIFF_RATES`](#asop_tariff_rates)
-* [`ASOP_PAYMENTS`](#asop_payments) *(Новая: таблица поступлений/пополнений)*
+* [`ASOP_PAYMENTS`](#asop_payments)
 
-#### [6.1 Ценообразование](#61-ценообразование)
-* [`ASOP_PATH_SERVICES`](#asop_path_services)
-* [`ASOP_PATH_DISCOUNTS`](#asop_path_discounts)
-* [`ASOP_PATH_BENEFITS`](#asop_path_benefits)
-
-### [7. Сессии, Транзакции, Аудит, КРС](#7-сессии-транзакции-аудит-крс)
+### [8. Сессии, Транзакции, Аудит, КРС](#8-сессии-транзакции-аудит-крс)
 * [`ASOP_SESSIONS`](#asop_sessions)
 * [`ASOP_AUDIT_SERVICES`](#asop_audit_services)
 * [`ASOP_AUDIT_TASKS`](#asop_audit_tasks)
@@ -79,7 +82,7 @@
 * [`ASOP_AUDIT_INSPECTION_TASKS`](#asop_audit_inspection_tasks)
 * [`ASOP_TRANSACTIONS`](#asop_transactions)
 * [`ASOP_TRANSACTION_CARDS`](#asop_transaction_cards)
-* [`ASOP_GPS_TRACKING`](#asop_gps_tracking) *(Переименовано из ASOP_DISPATCH_POSITIONS)*
+* [`ASOP_GPS_TRACKING`](#asop_gps_tracking)
 * [`ASOP_EVENTS`](#asop_events)
 
 ---
@@ -226,11 +229,101 @@
 | `PRIORITY` | INT | UNIQUE, NOT NULL | Уникальный приоритет |
 | `REGION_ID` | UUID | FK → ASOP_REGIONS, NOT NULL | Привязка к региону |
 
+<a id="asop_benefits"></a>
+### `ASOP_BENEFITS`
+Справочник льготных категорий.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `BENEFIT_ID` | UUID | PK | Первичный ключ |
+| `BENEFIT_CODE` | VARCHAR(50) | UNIQUE, NOT NULL | Код |
+| `BENEFIT_NAME` | VARCHAR(100) | NOT NULL | Название |
+| `REGION_CODE` | VARCHAR(50) | NOT NULL | Региональный код |
+| `DESCRIPTION` | TEXT | | Описание |
+| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
+| `CREATED_AT` | TIMESTAMP | NOT NULL | Дата создания |
+| `UPDATED_AT` | TIMESTAMP | NOT NULL | Дата обновления |
+
+<a id="asop_benefit_steps"></a>
+### `ASOP_BENEFIT_STEPS`
+Шаги накопительных льгот.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `STEP_ID` | UUID | PK | Первичный ключ |
+| `BENEFIT_ID` | UUID | FK → ASOP_BENEFITS, NOT NULL, CASCADE | Льгота |
+| `STEP_ORDER` | INT | NOT NULL | Порядок шага |
+| `TRIP_THRESHOLD_FROM` | INT | DEFAULT 0, NOT NULL | Нижняя граница |
+| `TRIP_THRESHOLD_TO` | INT | | Верхняя граница |
+| `DISCOUNT_SHARE` | NUMERIC(4,2) | NOT NULL, CHECK 0-1 | Доля скидки |
+| `PERIOD_TYPE` | VARCHAR(20) | DEFAULT 'MONTHLY', NOT NULL | Тип периода |
+
 [↑ Наверх](#-оглавление)
 
 ---
 
-## 2. Маршруты и Пути
+## 2. Перевозчики, Дистрибьюторы и Договоры
+
+<a id="asop_carriers"></a>
+### `ASOP_CARRIERS`
+Перевозчики (транспортные компании, ГУП, ИП).
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `CARRIER_ID` | UUID | PK | Первичный ключ |
+| `CARRIER_NAME` | VARCHAR(255) | NOT NULL | Наименование |
+| `INN` | VARCHAR(12) | UNIQUE, NOT NULL | ИНН организации |
+| `REGION_ID` | UUID | FK → ASOP_REGIONS, NOT NULL | Привязка к региону |
+
+<a id="asop_cards_distributors"></a>
+### `ASOP_CARDS_DISTRIBUTORS`
+Юрлица-дистрибьюторы карт, которые могут пополнять MIFARE-карты через свои платёжные терминалы.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `CARDS_DISTRIBUTOR_ID` | UUID | PK | Первичный ключ |
+| `DISTRIBUTOR_NAME` | VARCHAR(255) | NOT NULL | Наименование дистрибьютора |
+| `INN` | VARCHAR(12) | UNIQUE, NOT NULL | ИНН организации |
+| `KPP` | VARCHAR(9) | | КПП организации |
+| `LEGAL_ADDRESS` | VARCHAR(500) | | Юридический адрес |
+| `CONTACT_PHONE` | VARCHAR(20) | | Контактный телефон |
+| `CONTACT_EMAIL` | VARCHAR(100) | | Контактный email |
+| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
+| `CREATED_AT` | TIMESTAMP | NOT NULL | Дата создания |
+| `UPDATED_AT` | TIMESTAMP | NOT NULL | Дата обновления |
+
+<a id="asop_contracts"></a>
+### `ASOP_CONTRACTS`
+Общий справочник договоров с контрагентами (перевозчиками или дистрибьюторами карт).
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `CONTRACT_ID` | UUID | PK | Первичный ключ |
+| `CONTRACTOR_TYPE` | VARCHAR(20) | NOT NULL, CHECK | Тип контрагента (CARRIER, CARDS_DISTRIBUTOR) |
+| `CARRIER_ID` | UUID | FK → ASOP_CARRIERS | Перевозчик (если CONTRACTOR_TYPE='CARRIER') |
+| `CARDS_DISTRIBUTOR_ID` | UUID | FK → ASOP_CARDS_DISTRIBUTORS | Дистрибьютор (если CONTRACTOR_TYPE='CARDS_DISTRIBUTOR') |
+| `CONTRACT_NUMBER` | VARCHAR(100) | NOT NULL | Номер договора |
+| `START_DATE` | DATE | NOT NULL | Дата начала действия |
+| `END_DATE` | DATE | | Дата окончания действия |
+| `STATUS` | VARCHAR(20) | DEFAULT 'ACTIVE', CHECK | Статус (DRAFT, ACTIVE, SUSPENDED, TERMINATED) |
+| `COMMISSION_PERCENT` | NUMERIC(5,2) | | Комиссия АСОП за обслуживание (опционально) |
+| `CREATED_AT` | TIMESTAMP | NOT NULL | Дата создания |
+| `UPDATED_AT` | TIMESTAMP | NOT NULL | Дата обновления |
+
+<a id="asop_contract_routes"></a>
+### `ASOP_CONTRACT_ROUTES`
+Связь договора с маршрутами из справочника.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `CONTRACT_ID` | UUID | PK, FK → ASOP_CONTRACTS | Договор |
+| `ROUTE_ID` | UUID | PK, FK → ASOP_ROUTES | Маршрут |
+
+[↑ Наверх](#-оглавление)
+
+---
+
+## 3. Маршруты и Пути
 
 <a id="asop_routes"></a>
 ### `ASOP_ROUTES`
@@ -321,44 +414,54 @@
 | `DWELL_TIME_SEC` | INT | DEFAULT 30 | Время стоянки (сек) |
 | `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
 
+<a id="asop_path_services"></a>
+### `ASOP_PATH_SERVICES`
+Дополнительные услуги на пути. Цена и доступность могут зависеть от перевозчика, ТС или тарифа.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `PATH_SERVICE_ID` | UUID | PK | Первичный ключ |
+| `PATH_ID` | UUID | FK → ASOP_PATHS, NOT NULL, CASCADE | Путь |
+| `SERVICE_ID` | UUID | FK → ASOP_SERVICES, NOT NULL | Услуга |
+| `CARRIER_ID` | UUID | FK → ASOP_CARRIERS | Опционально: только для конкретного перевозчика |
+| `VEHICLE_ID` | UUID | FK → ASOP_VEHICLES | Опционально: только для конкретного ТС |
+| `TARIFF_TYPE_ID` | UUID | FK → ASOP_TARIFF_TYPES | Опционально: только для конкретного типа тарифа |
+| `PRICE` | NUMERIC(10,2) | NOT NULL | Стоимость услуги при данных условиях |
+| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
+
+<a id="asop_path_discounts"></a>
+### `ASOP_PATH_DISCOUNTS`
+Скидки на пути. Поддерживает фиксированные суммы и проценты, может быть уточнена по перевозчику, ТС или тарифу.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `PATH_DISCOUNT_ID` | UUID | PK | Первичный ключ |
+| `PATH_ID` | UUID | FK → ASOP_PATHS, NOT NULL, CASCADE | Путь |
+| `CARRIER_ID` | UUID | FK → ASOP_CARRIERS | Опционально |
+| `VEHICLE_ID` | UUID | FK → ASOP_VEHICLES | Опционально |
+| `TARIFF_TYPE_ID` | UUID | FK → ASOP_TARIFF_TYPES | Опционально |
+| `DISCOUNT_NAME` | VARCHAR(100) | NOT NULL | Название |
+| `DISCOUNT_TYPE` | VARCHAR(20) | DEFAULT 'PERCENT', CHECK | Тип: PERCENT или FIXED |
+| `DISCOUNT_VALUE` | NUMERIC(10,2) | NOT NULL, CHECK >= 0 | Значение скидки (10 для 10%, или 10.00 для 10 руб.) |
+| `VALID_FROM` | TIMESTAMP | NOT NULL | Дата начала |
+| `VALID_UNTIL` | TIMESTAMP | | Дата окончания |
+| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
+
+<a id="asop_path_benefits"></a>
+### `ASOP_PATH_BENEFITS`
+Льготы, действующие на конкретных путях.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `PATH_BENEFIT_ID` | UUID | PK | Первичный ключ |
+| `PATH_ID` | UUID | FK → ASOP_PATHS, NOT NULL, CASCADE | Путь |
+| `BENEFIT_ID` | UUID | FK → ASOP_BENEFITS, NOT NULL, CASCADE | Льгота |
+
 [↑ Наверх](#-оглавление)
 
 ---
 
-## 3. Перевозчики, Договоры и ТС
-
-<a id="asop_carriers"></a>
-### `ASOP_CARRIERS`
-Перевозчики (транспортные компании, ГУП, ИП).
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `CARRIER_ID` | UUID | PK | Первичный ключ |
-| `CARRIER_NAME` | VARCHAR(255) | NOT NULL | Наименование |
-| `INN` | VARCHAR(12) | UNIQUE, NOT NULL | ИНН организации |
-| `REGION_ID` | UUID | FK → ASOP_REGIONS, NOT NULL | Привязка к региону |
-
-<a id="asop_carrier_contracts"></a>
-### `ASOP_CARRIER_CONTRACTS`
-Договоры перевозчиков.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `CONTRACT_ID` | UUID | PK | Первичный ключ |
-| `CARRIER_ID` | UUID | FK → ASOP_CARRIERS, NOT NULL | Перевозчик |
-| `CONTRACT_NUMBER` | VARCHAR(100) | NOT NULL | Номер договора |
-| `START_DATE` | DATE | NOT NULL | Дата начала действия |
-| `END_DATE` | DATE | | Дата окончания действия |
-| `REGION_ID` | UUID | FK → ASOP_REGIONS, NOT NULL | Привязка к региону |
-
-<a id="asop_contract_routes"></a>
-### `ASOP_CONTRACT_ROUTES`
-Связь договора с маршрутами из справочника.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `CONTRACT_ID` | UUID | PK, FK → ASOP_CARRIER_CONTRACTS | Договор |
-| `ROUTE_ID` | UUID | PK, FK → ASOP_ROUTES | Маршрут |
+## 4. Транспортные средства
 
 <a id="asop_vehicle_types"></a>
 ### `ASOP_VEHICLE_TYPES`
@@ -395,7 +498,7 @@
 
 ---
 
-## 4. Пользователи и Безопасность
+## 5. Пользователи и Безопасность
 
 <a id="asop_users"></a>
 ### `ASOP_USERS`
@@ -443,7 +546,7 @@
 
 ---
 
-## 5. Оборудование: Терминалы, TID, Профили, ПО
+## 6. Оборудование: Терминалы, TID, Профили, ПО
 
 <a id="asop_terminal_profiles"></a>
 ### `ASOP_TERMINAL_PROFILES`
@@ -466,6 +569,26 @@
 | `VERSION` | VARCHAR(100) | NOT NULL | Версия ПО (например, '2.1.2.bc1a6f5e') |
 | `FILE_PATH` | VARCHAR(500) | | Путь к файлу прошивки/ПО |
 | `UPDATE_DATE` | TIMESTAMP | NOT NULL | Дата обновления |
+
+<a id="asop_distributor_terminals"></a>
+### `ASOP_DISTRIBUTOR_TERMINALS`
+Платёжные терминалы дистрибьюторов карт для пополнения MIFARE-карт. Имеют те же связи, что и транспортные терминалы (профиль, ПО, МОЛ).
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| `DISTRIBUTOR_TERMINAL_ID` | UUID | PK | Первичный ключ |
+| `CARDS_DISTRIBUTOR_ID` | UUID | FK → ASOP_CARDS_DISTRIBUTORS, NOT NULL | Дистрибьютор карт |
+| `CONTRACT_ID` | UUID | FK → ASOP_CONTRACTS | Договор с дистрибьютором |
+| `TERMINAL_NUMBER` | VARCHAR(16) | NOT NULL | Инвентарный номер |
+| `TERMINAL_SERIAL` | VARCHAR(64) | NOT NULL | Серийный номер (SN) |
+| `TERMINAL_MODEL` | VARCHAR(100) | | Модель терминала |
+| `PAYMENT_PROVIDER_ID` | VARCHAR(100) | UNIQUE, NOT NULL | Уникальный идентификатор терминала в платёжной системе дистрибьютора |
+| `STATUS` | VARCHAR(50) | DEFAULT 'WAREHOUSE', CHECK | Статус (WAREHOUSE, ISSUED, ACTIVE, SUSPENDED, DECOMMISSIONED) |
+| `MOL_USER_ID` | UUID | FK → ASOP_USERS | Материально-ответственное лицо |
+| `PROFILE_ID` | UUID | FK → ASOP_TERMINAL_PROFILES | Ссылка на профиль настроек |
+| `SOFTWARE_VERSION_ID` | UUID | FK → ASOP_TERMINAL_SOFTWARE | Ссылка на версию ПО |
+| `CREATED_AT` | TIMESTAMP | NOT NULL | Дата создания |
+| `UPDATED_AT` | TIMESTAMP | NOT NULL | Дата обновления |
 
 <a id="asop_tids"></a>
 ### `ASOP_TIDS`
@@ -508,7 +631,7 @@
 
 ---
 
-## 6. Карты, Льготы, Тарифы и Платежи
+## 7. Карты, Льготы, Тарифы и Платежи
 
 <a id="asop_cards"></a>
 ### `ASOP_CARDS`
@@ -580,35 +703,6 @@
 | `BLOCK_TYPE` | VARCHAR(20) | NOT NULL, CHECK | Тип блокировки (PERMANENT, NEGATIVE_BALANCE) |
 | `BLOCKED_AT` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP, NOT NULL | Дата блокировки |
 
-<a id="asop_benefits"></a>
-### `ASOP_BENEFITS`
-Справочник льготных категорий.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `BENEFIT_ID` | UUID | PK | Первичный ключ |
-| `BENEFIT_CODE` | VARCHAR(50) | UNIQUE, NOT NULL | Код |
-| `BENEFIT_NAME` | VARCHAR(100) | NOT NULL | Название |
-| `REGION_CODE` | VARCHAR(50) | NOT NULL | Региональный код |
-| `DESCRIPTION` | TEXT | | Описание |
-| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
-| `CREATED_AT` | TIMESTAMP | NOT NULL | Дата создания |
-| `UPDATED_AT` | TIMESTAMP | NOT NULL | Дата обновления |
-
-<a id="asop_benefit_steps"></a>
-### `ASOP_BENEFIT_STEPS`
-Шаги накопительных льгот.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `STEP_ID` | UUID | PK | Первичный ключ |
-| `BENEFIT_ID` | UUID | FK → ASOP_BENEFITS, NOT NULL, CASCADE | Льгота |
-| `STEP_ORDER` | INT | NOT NULL | Порядок шага |
-| `TRIP_THRESHOLD_FROM` | INT | DEFAULT 0, NOT NULL | Нижняя граница |
-| `TRIP_THRESHOLD_TO` | INT | | Верхняя граница |
-| `DISCOUNT_SHARE` | NUMERIC(4,2) | NOT NULL, CHECK 0-1 | Доля скидки |
-| `PERIOD_TYPE` | VARCHAR(20) | DEFAULT 'MONTHLY', NOT NULL | Тип периода |
-
 <a id="asop_user_benefits"></a>
 ### `ASOP_USER_BENEFITS`
 Привязка льгот к пользователям с датами действия.
@@ -653,6 +747,7 @@
 | `SESSION_ID` | UUID | FK → ASOP_SESSIONS | Сессия (если пополнение произошло в терминале) |
 | `EVENT_ID` | UUID | FK → ASOP_EVENTS | Системное событие создания платежа (для аудита) |
 | `USER_ID` | UUID | FK → ASOP_USERS | Пользователь, инициировавший (если известно, например, через приложение) |
+| `DISTRIBUTOR_TERMINAL_ID` | UUID | FK → ASOP_DISTRIBUTOR_TERMINALS | Платёжный терминал дистрибьютора (если пополнение через терминал дистрибьютора) |
 | `AMOUNT` | NUMERIC(10,2) | DEFAULT 0 | Сумма деньгами |
 | `TRIPS_ADDED` | INT | DEFAULT 0 | Количество добавленных поездок (если тарификация в поездках) |
 | `PAYMENT_METHOD` | VARCHAR(50) | | Способ оплаты (CASH, CARD, ONLINE, AUTO_TOPUP) |
@@ -660,56 +755,11 @@
 | `EXTERNAL_REF` | VARCHAR(128) | | Ссылка на внешний чек, ID банковской транзакции или фискального чека |
 | `CREATED_AT` | TIMESTAMP | NOT NULL | Дата создания |
 
-#### 6.1 Ценообразование
-
-<a id="asop_path_services"></a>
-### `ASOP_PATH_SERVICES`
-Дополнительные услуги на пути. Цена и доступность могут зависеть от перевозчика, ТС или тарифа.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `PATH_SERVICE_ID` | UUID | PK | Первичный ключ |
-| `PATH_ID` | UUID | FK → ASOP_PATHS, NOT NULL, CASCADE | Путь |
-| `SERVICE_ID` | UUID | FK → ASOP_SERVICES, NOT NULL | Услуга |
-| `CARRIER_ID` | UUID | FK → ASOP_CARRIERS | Опционально: только для конкретного перевозчика |
-| `VEHICLE_ID` | UUID | FK → ASOP_VEHICLES | Опционально: только для конкретного ТС |
-| `TARIFF_TYPE_ID` | UUID | FK → ASOP_TARIFF_TYPES | Опционально: только для конкретного типа тарифа |
-| `PRICE` | NUMERIC(10,2) | NOT NULL | Стоимость услуги при данных условиях |
-| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
-
-<a id="asop_path_discounts"></a>
-### `ASOP_PATH_DISCOUNTS`
-Скидки на пути. Поддерживает фиксированные суммы и проценты, может быть уточнена по перевозчику, ТС или тарифу.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `PATH_DISCOUNT_ID` | UUID | PK | Первичный ключ |
-| `PATH_ID` | UUID | FK → ASOP_PATHS, NOT NULL, CASCADE | Путь |
-| `CARRIER_ID` | UUID | FK → ASOP_CARRIERS | Опционально |
-| `VEHICLE_ID` | UUID | FK → ASOP_VEHICLES | Опционально |
-| `TARIFF_TYPE_ID` | UUID | FK → ASOP_TARIFF_TYPES | Опционально |
-| `DISCOUNT_NAME` | VARCHAR(100) | NOT NULL | Название |
-| `DISCOUNT_TYPE` | VARCHAR(20) | DEFAULT 'PERCENT', CHECK | Тип: PERCENT или FIXED |
-| `DISCOUNT_VALUE` | NUMERIC(10,2) | NOT NULL, CHECK >= 0 | Значение скидки (10 для 10%, или 10.00 для 10 руб.) |
-| `VALID_FROM` | TIMESTAMP | NOT NULL | Дата начала |
-| `VALID_UNTIL` | TIMESTAMP | | Дата окончания |
-| `IS_ACTIVE` | BOOLEAN | DEFAULT true | Флаг активности |
-
-<a id="asop_path_benefits"></a>
-### `ASOP_PATH_BENEFITS`
-Льготы, действующие на конкретных путях.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| `PATH_BENEFIT_ID` | UUID | PK | Первичный ключ |
-| `PATH_ID` | UUID | FK → ASOP_PATHS, NOT NULL, CASCADE | Путь |
-| `BENEFIT_ID` | UUID | FK → ASOP_BENEFITS, NOT NULL, CASCADE | Льгота |
-
 [↑ Наверх](#-оглавление)
 
 ---
 
-## 7. Сессии, Транзакции, Аудит, КРС
+## 8. Сессии, Транзакции, Аудит, КРС
 
 <a id="asop_sessions"></a>
 ### `ASOP_SESSIONS`
