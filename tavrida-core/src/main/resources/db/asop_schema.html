@@ -45,6 +45,16 @@
             border-radius: 4px;
             color: #0c5460;
         }
+        .new-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
         .toc {
             background: var(--code-bg);
             padding: 1.5rem 2rem;
@@ -100,7 +110,8 @@
     <h1>Полная документация схемы БД АСОП (TAVRIDA)</h1>
     <div class="info-block">
         <strong>Назначение:</strong> Высокоуровневая карта архитектуры и детальное описание всех полей.<br>
-        <strong>СУБД:</strong> PostgreSQL 14+ с расширением PostGIS
+        <strong>СУБД:</strong> PostgreSQL 14+ с расширением PostGIS<br>
+        <strong>Всего таблиц:</strong> 60
     </div>
 
     <div class="toc">
@@ -108,14 +119,13 @@
         <ul>
             <li><a href="#sec0">0. Регионы и Территории (ФИАС/ГАР)</a></li>
             <li><a href="#sec1">1. Справочники</a></li>
-            <li><a href="#sec2">2. Маршруты и Пути</a></li>
-            <li><a href="#sec3">3. Перевозчики, Договоры и ТС</a></li>
-            <li><a href="#sec4">4. Пользователи и Безопасность</a></li>
-            <li><a href="#sec5">5. Оборудование: Терминалы, TID, Профили, ПО</a></li>
-            <li><a href="#sec6">6. Карты, Льготы, Тарифы и Платежи</a>
-                <ul><li><a href="#sec6.1">6.1 Ценообразование</a></li></ul>
-            </li>
-            <li><a href="#sec7">7. Сессии, Транзакции, Аудит, КРС</a></li>
+            <li><a href="#sec2">2. Перевозчики, Дистрибьюторы и Договоры</a></li>
+            <li><a href="#sec3">3. Маршруты и Пути</a></li>
+            <li><a href="#sec4">4. Транспортные средства</a></li>
+            <li><a href="#sec5">5. Пользователи и Безопасность</a></li>
+            <li><a href="#sec6">6. Оборудование: Терминалы, TID, Профили, ПО</a></li>
+            <li><a href="#sec7">7. Карты, Льготы, Тарифы и Платежи</a></li>
+            <li><a href="#sec8">8. Сессии, Транзакции, Аудит, КРС</a></li>
         </ul>
     </div>
 
@@ -223,9 +233,80 @@
     <tr><td><code>PRIORITY</code></td><td>INT</td><td>UNIQUE, NOT NULL</td><td>Уникальный приоритет</td></tr>
     <tr><td><code>REGION_ID</code></td><td>UUID</td><td>FK → ASOP_REGIONS, NOT NULL</td><td>Привязка к региону</td></tr>
     </tbody></table>
+
+    <a id="ASOP_BENEFITS"></a><h3><code>ASOP_BENEFITS</code></h3><p>Справочник льготных категорий.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>BENEFIT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>BENEFIT_CODE</code></td><td>VARCHAR(50)</td><td>UNIQUE, NOT NULL</td><td>Код</td></tr>
+    <tr><td><code>BENEFIT_NAME</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Название</td></tr>
+    <tr><td><code>REGION_CODE</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Региональный код</td></tr>
+    <tr><td><code>DESCRIPTION</code></td><td>TEXT</td><td></td><td>Описание</td></tr>
+    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
+    <tr><td><code>CREATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата создания</td></tr>
+    <tr><td><code>UPDATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата обновления</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_BENEFIT_STEPS"></a><h3><code>ASOP_BENEFIT_STEPS</code></h3><p>Шаги накопительных льгот.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>STEP_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>BENEFIT_ID</code></td><td>UUID</td><td>FK → ASOP_BENEFITS, NOT NULL, CASCADE</td><td>Льгота</td></tr>
+    <tr><td><code>STEP_ORDER</code></td><td>INT</td><td>NOT NULL</td><td>Порядок шага</td></tr>
+    <tr><td><code>TRIP_THRESHOLD_FROM</code></td><td>INT</td><td>DEFAULT 0, NOT NULL</td><td>Нижняя граница</td></tr>
+    <tr><td><code>TRIP_THRESHOLD_TO</code></td><td>INT</td><td></td><td>Верхняя граница</td></tr>
+    <tr><td><code>DISCOUNT_SHARE</code></td><td>NUMERIC(4,2)</td><td>NOT NULL, CHECK 0-1</td><td>Доля скидки</td></tr>
+    <tr><td><code>PERIOD_TYPE</code></td><td>VARCHAR(20)</td><td>DEFAULT 'MONTHLY', NOT NULL</td><td>Тип периода</td></tr>
+    </tbody></table>
     <a href="#" class="back-to-top">↑ Наверх</a>
 
-    <h2 id="sec2">2. Маршруты и Пути</h2>
+    <h2 id="sec2">2. Перевозчики, Дистрибьюторы и Договоры</h2>
+    <a id="ASOP_CARRIERS"></a><h3><code>ASOP_CARRIERS</code></h3><p>Перевозчики (транспортные компании, ГУП, ИП).</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>CARRIER_NAME</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Наименование</td></tr>
+    <tr><td><code>INN</code></td><td>VARCHAR(12)</td><td>UNIQUE, NOT NULL</td><td>ИНН организации</td></tr>
+    <tr><td><code>REGION_ID</code></td><td>UUID</td><td>FK → ASOP_REGIONS, NOT NULL</td><td>Привязка к региону</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_CARDS_DISTRIBUTORS"></a><h3><code>ASOP_CARDS_DISTRIBUTORS</code> <span class="new-badge">Новая</span></h3>
+    <p>Юрлица-дистрибьюторы карт, которые могут пополнять MIFARE-карты через свои платёжные терминалы.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>CARDS_DISTRIBUTOR_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>DISTRIBUTOR_NAME</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Наименование дистрибьютора</td></tr>
+    <tr><td><code>INN</code></td><td>VARCHAR(12)</td><td>UNIQUE, NOT NULL</td><td>ИНН организации</td></tr>
+    <tr><td><code>KPP</code></td><td>VARCHAR(9)</td><td></td><td>КПП организации</td></tr>
+    <tr><td><code>LEGAL_ADDRESS</code></td><td>VARCHAR(500)</td><td></td><td>Юридический адрес</td></tr>
+    <tr><td><code>CONTACT_PHONE</code></td><td>VARCHAR(20)</td><td></td><td>Контактный телефон</td></tr>
+    <tr><td><code>CONTACT_EMAIL</code></td><td>VARCHAR(100)</td><td></td><td>Контактный email</td></tr>
+    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
+    <tr><td><code>CREATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата создания</td></tr>
+    <tr><td><code>UPDATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата обновления</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_CONTRACTS"></a><h3><code>ASOP_CONTRACTS</code> <span class="new-badge">Новая</span></h3>
+    <p>Общий справочник договоров с контрагентами (перевозчиками или дистрибьюторами карт).</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>CONTRACT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>CONTRACTOR_TYPE</code></td><td>VARCHAR(20)</td><td>NOT NULL, CHECK</td><td>Тип контрагента (CARRIER, CARDS_DISTRIBUTOR)</td></tr>
+    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>FK → ASOP_CARRIERS</td><td>Перевозчик (если CONTRACTOR_TYPE='CARRIER')</td></tr>
+    <tr><td><code>CARDS_DISTRIBUTOR_ID</code></td><td>UUID</td><td>FK → ASOP_CARDS_DISTRIBUTORS</td><td>Дистрибьютор (если CONTRACTOR_TYPE='CARDS_DISTRIBUTOR')</td></tr>
+    <tr><td><code>CONTRACT_NUMBER</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Номер договора</td></tr>
+    <tr><td><code>START_DATE</code></td><td>DATE</td><td>NOT NULL</td><td>Дата начала действия</td></tr>
+    <tr><td><code>END_DATE</code></td><td>DATE</td><td></td><td>Дата окончания действия</td></tr>
+    <tr><td><code>STATUS</code></td><td>VARCHAR(20)</td><td>DEFAULT 'ACTIVE', CHECK</td><td>Статус (DRAFT, ACTIVE, SUSPENDED, TERMINATED)</td></tr>
+    <tr><td><code>COMMISSION_PERCENT</code></td><td>NUMERIC(5,2)</td><td></td><td>Комиссия АСОП за обслуживание (опционально)</td></tr>
+    <tr><td><code>CREATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата создания</td></tr>
+    <tr><td><code>UPDATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата обновления</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_CONTRACT_ROUTES"></a><h3><code>ASOP_CONTRACT_ROUTES</code></h3>
+    <p>Связь договора с маршрутами из справочника.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>CONTRACT_ID</code></td><td>UUID</td><td>PK, FK → ASOP_CONTRACTS</td><td>Договор</td></tr>
+    <tr><td><code>ROUTE_ID</code></td><td>UUID</td><td>PK, FK → ASOP_ROUTES</td><td>Маршрут</td></tr>
+    </tbody></table>
+    <a href="#" class="back-to-top">↑ Наверх</a>
+
+    <h2 id="sec3">3. Маршруты и Пути</h2>
     <a id="ASOP_ROUTES"></a><h3><code>ASOP_ROUTES</code></h3><p>Справочник маршрутов (номер, название, категория).</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>ROUTE_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -296,33 +377,43 @@
     <tr><td><code>DWELL_TIME_SEC</code></td><td>INT</td><td>DEFAULT 30</td><td>Время стоянки (сек)</td></tr>
     <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
     </tbody></table>
+
+    <a id="ASOP_PATH_SERVICES"></a><h3><code>ASOP_PATH_SERVICES</code></h3><p>Дополнительные услуги на пути. Цена и доступность могут зависеть от перевозчика, ТС или тарифа.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>PATH_SERVICE_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>PATH_ID</code></td><td>UUID</td><td>FK → ASOP_PATHS, NOT NULL, CASCADE</td><td>Путь</td></tr>
+    <tr><td><code>SERVICE_ID</code></td><td>UUID</td><td>FK → ASOP_SERVICES, NOT NULL</td><td>Услуга</td></tr>
+    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>FK → ASOP_CARRIERS</td><td>Опционально: только для конкретного перевозчика</td></tr>
+    <tr><td><code>VEHICLE_ID</code></td><td>UUID</td><td>FK → ASOP_VEHICLES</td><td>Опционально: только для конкретного ТС</td></tr>
+    <tr><td><code>TARIFF_TYPE_ID</code></td><td>UUID</td><td>FK → ASOP_TARIFF_TYPES</td><td>Опционально: только для конкретного типа тарифа</td></tr>
+    <tr><td><code>PRICE</code></td><td>NUMERIC(10,2)</td><td>NOT NULL</td><td>Стоимость услуги при данных условиях</td></tr>
+    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_PATH_DISCOUNTS"></a><h3><code>ASOP_PATH_DISCOUNTS</code></h3><p>Скидки на пути. Поддерживает фиксированные суммы и проценты, может быть уточнена по перевозчику, ТС или тарифу.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>PATH_DISCOUNT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>PATH_ID</code></td><td>UUID</td><td>FK → ASOP_PATHS, NOT NULL, CASCADE</td><td>Путь</td></tr>
+    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>FK → ASOP_CARRIERS</td><td>Опционально</td></tr>
+    <tr><td><code>VEHICLE_ID</code></td><td>UUID</td><td>FK → ASOP_VEHICLES</td><td>Опционально</td></tr>
+    <tr><td><code>TARIFF_TYPE_ID</code></td><td>UUID</td><td>FK → ASOP_TARIFF_TYPES</td><td>Опционально</td></tr>
+    <tr><td><code>DISCOUNT_NAME</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Название</td></tr>
+    <tr><td><code>DISCOUNT_TYPE</code></td><td>VARCHAR(20)</td><td>DEFAULT 'PERCENT', CHECK</td><td>Тип: PERCENT или FIXED</td></tr>
+    <tr><td><code>DISCOUNT_VALUE</code></td><td>NUMERIC(10,2)</td><td>NOT NULL, CHECK >= 0</td><td>Значение скидки (10 для 10%, или 10.00 для 10 руб.)</td></tr>
+    <tr><td><code>VALID_FROM</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата начала</td></tr>
+    <tr><td><code>VALID_UNTIL</code></td><td>TIMESTAMP</td><td></td><td>Дата окончания</td></tr>
+    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_PATH_BENEFITS"></a><h3><code>ASOP_PATH_BENEFITS</code></h3><p>Льготы, действующие на конкретных путях.</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>PATH_BENEFIT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>PATH_ID</code></td><td>UUID</td><td>FK → ASOP_PATHS, NOT NULL, CASCADE</td><td>Путь</td></tr>
+    <tr><td><code>BENEFIT_ID</code></td><td>UUID</td><td>FK → ASOP_BENEFITS, NOT NULL, CASCADE</td><td>Льгота</td></tr>
+    </tbody></table>
     <a href="#" class="back-to-top">↑ Наверх</a>
 
-    <h2 id="sec3">3. Перевозчики, Договоры и ТС</h2>
-    <a id="ASOP_CARRIERS"></a><h3><code>ASOP_CARRIERS</code></h3><p>Перевозчики (транспортные компании, ГУП, ИП).</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>CARRIER_NAME</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Наименование</td></tr>
-    <tr><td><code>INN</code></td><td>VARCHAR(12)</td><td>UNIQUE, NOT NULL</td><td>ИНН организации</td></tr>
-    <tr><td><code>REGION_ID</code></td><td>UUID</td><td>FK → ASOP_REGIONS, NOT NULL</td><td>Привязка к региону</td></tr>
-    </tbody></table>
-
-    <a id="ASOP_CARRIER_CONTRACTS"></a><h3><code>ASOP_CARRIER_CONTRACTS</code></h3><p>Договоры перевозчиков.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>CONTRACT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>FK → ASOP_CARRIERS, NOT NULL</td><td>Перевозчик</td></tr>
-    <tr><td><code>CONTRACT_NUMBER</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Номер договора</td></tr>
-    <tr><td><code>START_DATE</code></td><td>DATE</td><td>NOT NULL</td><td>Дата начала действия</td></tr>
-    <tr><td><code>END_DATE</code></td><td>DATE</td><td></td><td>Дата окончания действия</td></tr>
-    <tr><td><code>REGION_ID</code></td><td>UUID</td><td>FK → ASOP_REGIONS, NOT NULL</td><td>Привязка к региону</td></tr>
-    </tbody></table>
-
-    <a id="ASOP_CONTRACT_ROUTES"></a><h3><code>ASOP_CONTRACT_ROUTES</code></h3><p>Связь договора с маршрутами из справочника.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>CONTRACT_ID</code></td><td>UUID</td><td>PK, FK → ASOP_CARRIER_CONTRACTS</td><td>Договор</td></tr>
-    <tr><td><code>ROUTE_ID</code></td><td>UUID</td><td>PK, FK → ASOP_ROUTES</td><td>Маршрут</td></tr>
-    </tbody></table>
-
+    <h2 id="sec4">4. Транспортные средства</h2>
     <a id="ASOP_VEHICLE_TYPES"></a><h3><code>ASOP_VEHICLE_TYPES</code></h3><p>Справочник типов транспортных средств.</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>VEHICLE_TYPE_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -346,7 +437,7 @@
     </tbody></table>
     <a href="#" class="back-to-top">↑ Наверх</a>
 
-    <h2 id="sec4">4. Пользователи и Безопасность</h2>
+    <h2 id="sec5">5. Пользователи и Безопасность</h2>
     <a id="ASOP_USERS"></a><h3><code>ASOP_USERS</code></h3><p>Пользователи системы. ПДн защищены: СНИЛС хэшируется и шифруется, ФИО сокращено, аутентификация через Keycloak.</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>USER_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -378,7 +469,7 @@
     </tbody></table>
     <a href="#" class="back-to-top">↑ Наверх</a>
 
-    <h2 id="sec5">5. Оборудование: Терминалы, TID, Профили, ПО</h2>
+    <h2 id="sec6">6. Оборудование: Терминалы, TID, Профили, ПО</h2>
     <a id="ASOP_TERMINAL_PROFILES"></a><h3><code>ASOP_TERMINAL_PROFILES</code></h3><p>Справочник профилей настроек терминалов.</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>PROFILE_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -393,6 +484,24 @@
     <tr><td><code>VERSION</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Версия ПО (например, '2.1.2.bc1a6f5e')</td></tr>
     <tr><td><code>FILE_PATH</code></td><td>VARCHAR(500)</td><td></td><td>Путь к файлу прошивки/ПО</td></tr>
     <tr><td><code>UPDATE_DATE</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата обновления</td></tr>
+    </tbody></table>
+
+    <a id="ASOP_DISTRIBUTOR_TERMINALS"></a><h3><code>ASOP_DISTRIBUTOR_TERMINALS</code> <span class="new-badge">Новая</span></h3>
+    <p>Платёжные терминалы дистрибьюторов карт для пополнения MIFARE-карт. Имеют те же связи, что и транспортные терминалы (профиль, ПО, МОЛ).</p>
+    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
+    <tr><td><code>DISTRIBUTOR_TERMINAL_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
+    <tr><td><code>CARDS_DISTRIBUTOR_ID</code></td><td>UUID</td><td>FK → ASOP_CARDS_DISTRIBUTORS, NOT NULL</td><td>Дистрибьютор карт</td></tr>
+    <tr><td><code>CONTRACT_ID</code></td><td>UUID</td><td>FK → ASOP_CONTRACTS</td><td>Договор с дистрибьютором</td></tr>
+    <tr><td><code>TERMINAL_NUMBER</code></td><td>VARCHAR(16)</td><td>NOT NULL</td><td>Инвентарный номер</td></tr>
+    <tr><td><code>TERMINAL_SERIAL</code></td><td>VARCHAR(64)</td><td>NOT NULL</td><td>Серийный номер (SN)</td></tr>
+    <tr><td><code>TERMINAL_MODEL</code></td><td>VARCHAR(100)</td><td></td><td>Модель терминала</td></tr>
+    <tr><td><code>PAYMENT_PROVIDER_ID</code></td><td>VARCHAR(100)</td><td>UNIQUE, NOT NULL</td><td>Уникальный идентификатор терминала в платёжной системе дистрибьютора</td></tr>
+    <tr><td><code>STATUS</code></td><td>VARCHAR(50)</td><td>DEFAULT 'WAREHOUSE', CHECK</td><td>Статус (WAREHOUSE, ISSUED, ACTIVE, SUSPENDED, DECOMMISSIONED)</td></tr>
+    <tr><td><code>MOL_USER_ID</code></td><td>UUID</td><td>FK → ASOP_USERS</td><td>Материально-ответственное лицо</td></tr>
+    <tr><td><code>PROFILE_ID</code></td><td>UUID</td><td>FK → ASOP_TERMINAL_PROFILES</td><td>Ссылка на профиль настроек</td></tr>
+    <tr><td><code>SOFTWARE_VERSION_ID</code></td><td>UUID</td><td>FK → ASOP_TERMINAL_SOFTWARE</td><td>Ссылка на версию ПО</td></tr>
+    <tr><td><code>CREATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата создания</td></tr>
+    <tr><td><code>UPDATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата обновления</td></tr>
     </tbody></table>
 
     <a id="ASOP_TIDS"></a><h3><code>ASOP_TIDS</code></h3><p>Пул эквайринговых идентификаторов терминалов (TID).</p>
@@ -427,7 +536,7 @@
     </tbody></table>
     <a href="#" class="back-to-top">↑ Наверх</a>
 
-    <h2 id="sec6">6. Карты, Льготы, Тарифы и Платежи</h2>
+    <h2 id="sec7">7. Карты, Льготы, Тарифы и Платежи</h2>
     <a id="ASOP_CARDS"></a><h3><code>ASOP_CARDS</code></h3><p>Транспортные и банковские карты, зарегистрированные в системе.</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>CARD_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -483,29 +592,6 @@
     <tr><td><code>BLOCKED_AT</code></td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP, NOT NULL</td><td>Дата блокировки</td></tr>
     </tbody></table>
 
-    <a id="ASOP_BENEFITS"></a><h3><code>ASOP_BENEFITS</code></h3><p>Справочник льготных категорий.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>BENEFIT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>BENEFIT_CODE</code></td><td>VARCHAR(50)</td><td>UNIQUE, NOT NULL</td><td>Код</td></tr>
-    <tr><td><code>BENEFIT_NAME</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Название</td></tr>
-    <tr><td><code>REGION_CODE</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Региональный код</td></tr>
-    <tr><td><code>DESCRIPTION</code></td><td>TEXT</td><td></td><td>Описание</td></tr>
-    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
-    <tr><td><code>CREATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата создания</td></tr>
-    <tr><td><code>UPDATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата обновления</td></tr>
-    </tbody></table>
-
-    <a id="ASOP_BENEFIT_STEPS"></a><h3><code>ASOP_BENEFIT_STEPS</code></h3><p>Шаги накопительных льгот.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>STEP_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>BENEFIT_ID</code></td><td>UUID</td><td>FK → ASOP_BENEFITS, NOT NULL, CASCADE</td><td>Льгота</td></tr>
-    <tr><td><code>STEP_ORDER</code></td><td>INT</td><td>NOT NULL</td><td>Порядок шага</td></tr>
-    <tr><td><code>TRIP_THRESHOLD_FROM</code></td><td>INT</td><td>DEFAULT 0, NOT NULL</td><td>Нижняя граница</td></tr>
-    <tr><td><code>TRIP_THRESHOLD_TO</code></td><td>INT</td><td></td><td>Верхняя граница</td></tr>
-    <tr><td><code>DISCOUNT_SHARE</code></td><td>NUMERIC(4,2)</td><td>NOT NULL, CHECK 0-1</td><td>Доля скидки</td></tr>
-    <tr><td><code>PERIOD_TYPE</code></td><td>VARCHAR(20)</td><td>DEFAULT 'MONTHLY', NOT NULL</td><td>Тип периода</td></tr>
-    </tbody></table>
-
     <a id="ASOP_USER_BENEFITS"></a><h3><code>ASOP_USER_BENEFITS</code></h3><p>Привязка льгот к пользователям с датами действия.</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>ASSIGNMENT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -540,6 +626,7 @@
     <tr><td><code>SESSION_ID</code></td><td>UUID</td><td>FK → ASOP_SESSIONS</td><td>Сессия (если пополнение произошло в терминале)</td></tr>
     <tr><td><code>EVENT_ID</code></td><td>UUID</td><td>FK → ASOP_EVENTS</td><td>Системное событие создания платежа (для аудита)</td></tr>
     <tr><td><code>USER_ID</code></td><td>UUID</td><td>FK → ASOP_USERS</td><td>Пользователь, инициировавший (если известно, например, через приложение)</td></tr>
+    <tr><td><code>DISTRIBUTOR_TERMINAL_ID</code></td><td>UUID</td><td>FK → ASOP_DISTRIBUTOR_TERMINALS</td><td>Платёжный терминал дистрибьютора (если пополнение через терминал дистрибьютора)</td></tr>
     <tr><td><code>AMOUNT</code></td><td>NUMERIC(10,2)</td><td>DEFAULT 0</td><td>Сумма деньгами</td></tr>
     <tr><td><code>TRIPS_ADDED</code></td><td>INT</td><td>DEFAULT 0</td><td>Количество добавленных поездок (если тарификация в поездках)</td></tr>
     <tr><td><code>PAYMENT_METHOD</code></td><td>VARCHAR(50)</td><td></td><td>Способ оплаты (CASH, CARD, ONLINE, AUTO_TOPUP)</td></tr>
@@ -547,44 +634,9 @@
     <tr><td><code>EXTERNAL_REF</code></td><td>VARCHAR(128)</td><td></td><td>Ссылка на внешний чек, ID банковской транзакции или фискального чека</td></tr>
     <tr><td><code>CREATED_AT</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата создания</td></tr>
     </tbody></table>
-
-    <h3 id="sec6.1">6.1 Ценообразование</h3>
-    <a id="ASOP_PATH_SERVICES"></a><h4><code>ASOP_PATH_SERVICES</code></h4><p>Дополнительные услуги на пути. Цена и доступность могут зависеть от перевозчика, ТС или тарифа.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>PATH_SERVICE_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>PATH_ID</code></td><td>UUID</td><td>FK → ASOP_PATHS, NOT NULL, CASCADE</td><td>Путь</td></tr>
-    <tr><td><code>SERVICE_ID</code></td><td>UUID</td><td>FK → ASOP_SERVICES, NOT NULL</td><td>Услуга</td></tr>
-    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>FK → ASOP_CARRIERS</td><td>Опционально: только для конкретного перевозчика</td></tr>
-    <tr><td><code>VEHICLE_ID</code></td><td>UUID</td><td>FK → ASOP_VEHICLES</td><td>Опционально: только для конкретного ТС</td></tr>
-    <tr><td><code>TARIFF_TYPE_ID</code></td><td>UUID</td><td>FK → ASOP_TARIFF_TYPES</td><td>Опционально: только для конкретного типа тарифа</td></tr>
-    <tr><td><code>PRICE</code></td><td>NUMERIC(10,2)</td><td>NOT NULL</td><td>Стоимость услуги при данных условиях</td></tr>
-    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
-    </tbody></table>
-
-    <a id="ASOP_PATH_DISCOUNTS"></a><h4><code>ASOP_PATH_DISCOUNTS</code></h4><p>Скидки на пути. Поддерживает фиксированные суммы и проценты, может быть уточнена по перевозчику, ТС или тарифу.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>PATH_DISCOUNT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>PATH_ID</code></td><td>UUID</td><td>FK → ASOP_PATHS, NOT NULL, CASCADE</td><td>Путь</td></tr>
-    <tr><td><code>CARRIER_ID</code></td><td>UUID</td><td>FK → ASOP_CARRIERS</td><td>Опционально</td></tr>
-    <tr><td><code>VEHICLE_ID</code></td><td>UUID</td><td>FK → ASOP_VEHICLES</td><td>Опционально</td></tr>
-    <tr><td><code>TARIFF_TYPE_ID</code></td><td>UUID</td><td>FK → ASOP_TARIFF_TYPES</td><td>Опционально</td></tr>
-    <tr><td><code>DISCOUNT_NAME</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Название</td></tr>
-    <tr><td><code>DISCOUNT_TYPE</code></td><td>VARCHAR(20)</td><td>DEFAULT 'PERCENT', CHECK</td><td>Тип: PERCENT или FIXED</td></tr>
-    <tr><td><code>DISCOUNT_VALUE</code></td><td>NUMERIC(10,2)</td><td>NOT NULL, CHECK >= 0</td><td>Значение скидки (10 для 10%, или 10.00 для 10 руб.)</td></tr>
-    <tr><td><code>VALID_FROM</code></td><td>TIMESTAMP</td><td>NOT NULL</td><td>Дата начала</td></tr>
-    <tr><td><code>VALID_UNTIL</code></td><td>TIMESTAMP</td><td></td><td>Дата окончания</td></tr>
-    <tr><td><code>IS_ACTIVE</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Флаг активности</td></tr>
-    </tbody></table>
-
-    <a id="ASOP_PATH_BENEFITS"></a><h4><code>ASOP_PATH_BENEFITS</code></h4><p>Льготы, действующие на конкретных путях.</p>
-    <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
-    <tr><td><code>PATH_BENEFIT_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
-    <tr><td><code>PATH_ID</code></td><td>UUID</td><td>FK → ASOP_PATHS, NOT NULL, CASCADE</td><td>Путь</td></tr>
-    <tr><td><code>BENEFIT_ID</code></td><td>UUID</td><td>FK → ASOP_BENEFITS, NOT NULL, CASCADE</td><td>Льгота</td></tr>
-    </tbody></table>
     <a href="#" class="back-to-top">↑ Наверх</a>
 
-    <h2 id="sec7">7. Сессии, Транзакции, Аудит, КРС</h2>
+    <h2 id="sec8">8. Сессии, Транзакции, Аудит, КРС</h2>
     <a id="ASOP_SESSIONS"></a><h3><code>ASOP_SESSIONS</code></h3><p>Иерархические сессии. Привязаны к PATH_ID (конкретному пути). ATTRIBUTES хранит контекст.</p>
     <table><thead><tr><th>Поле</th><th>Тип</th><th>Ограничения</th><th>Описание</th></tr></thead><tbody>
     <tr><td><code>SESSION_ID</code></td><td>UUID</td><td>PK</td><td>Первичный ключ</td></tr>
@@ -744,7 +796,7 @@
     <a href="#" class="back-to-top">↑ Наверх</a>
 
     <div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); text-align: center; color: #777; font-size: 0.9rem;">
-        Документация сгенерирована для схемы БД АСОП (TAVRIDA).
+        Документация сгенерирована для схемы БД АСОП (TAVRIDA). Всего таблиц: 60.
     </div>
 </div>
 </body>
