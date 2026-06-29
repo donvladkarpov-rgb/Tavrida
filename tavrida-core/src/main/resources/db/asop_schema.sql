@@ -1,19 +1,18 @@
 -- ============================================================
 -- FILE: asop_schema.sql
 -- DATABASE: PostgreSQL (с PostGIS)
--- ОПИСАНИЕ: Финальная схема БД АСОП.
---           - Разделение Маршрут (справочник) / Путь (физическое направление).
---           - Безопасность ПДн: Keycloak, хэширование и шифрование СНИЛС, M:N доступы.
---           - Справочники ФИАС/ГАР для регионов и территорий.
---           - Гибкие правила скидок и услуг (с необязательной привязкой к перевозчику, ТС, тарифу).
---           - Расширенная модель управления терминалами (профили, ПО, МОЛ, иерархия).
---           - IS_PRIMARY в ASOP_CARDS (одна основная карта на пользователя для льгот).
---           - ASOP_GPS_TRACKING (вместо ASOP_DISPATCH_POSITIONS).
---           - ASOP_PAYMENTS (таблица поступлений/пополнений на карту) с поддержкой Offline Top-Up.
---           - LAST_SYNC_RECEIPT_TIME (INT) в ASOP_CARDS для синхронизации с 32-битной памятью чипа MIFARE.
---           - НОВОЕ: ASOP_CARDS_DISTRIBUTORS (юрлица-дистрибьюторы карт).
---           - НОВОЕ: ASOP_CONTRACTS (общий справочник договоров с перевозчиками и дистрибьюторами).
---           - НОВОЕ: ASOP_DISTRIBUTOR_TERMINALS (платёжные терминалы дистрибьюторов).
+-- ОПИСАНИЕ: Финальная схема БД АСОП (консолидированная).
+--           Включает все модули:
+--           - Базовая схема (регионы, маршруты, карты, терминалы, КРС)
+--           - Дистрибьюторы карт и платёжные терминалы
+--           - Модуль фискализации (Бифит, АТОЛ и др.)
+--           - Модуль долгов по картам (проезд в долг, retry-списание)
+--           - ИСПРАВЛЕНО: CHECK для ASOP_TERMINALS.STATUS
+--           - ИСПРАВЛЕНО: CHECK для ASOP_TRANSACTION_CARDS.CARD_ROLE
+--           - ИСПРАВЛЕНО: ASOP_BENEFITS.REGION_CODE → REGION_ID (FK)
+--           - ИСПРАВЛЕНО: REGION_ID добавлен в ASOP_TRANSPORT_STOPS
+--           - ИСПРАВЛЕНО: REGION_ID добавлен в связующие таблицы
+--           - ИСПРАВЛЕНО: CHECK для COMMISSION_PERCENT и PERIOD_TYPE
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS postgis;
@@ -150,21 +149,24 @@ CREATE TABLE ASOP_SERVICES
 );
 COMMENT ON TABLE ASOP_SERVICES IS 'Классификатор платных услуг ("Услуга" в чеке).';
 
--- Льготы вынесены сюда, т.к. на них ссылаются маршруты (ASOP_PATH_BENEFITS)
+-- ИСПРАВЛЕНО: REGION_CODE заменён на REGION_ID с FK
 CREATE TABLE ASOP_BENEFITS
 (
     BENEFIT_ID   UUID         NOT NULL,
     BENEFIT_CODE VARCHAR(50)  NOT NULL,
     BENEFIT_NAME VARCHAR(100) NOT NULL,
-    REGION_CODE  VARCHAR(50)  NOT NULL,
+    REGION_ID    UUID         NOT NULL,  -- ИСПРАВЛЕНО: было REGION_CODE VARCHAR(50)
     DESCRIPTION  TEXT,
     IS_ACTIVE    BOOLEAN DEFAULT true,
     CREATED_AT   TIMESTAMP    NOT NULL,
     UPDATED_AT   TIMESTAMP    NOT NULL,
     CONSTRAINT pk_benefits PRIMARY KEY (BENEFIT_ID),
-    CONSTRAINT uq_benefits_code UNIQUE (BENEFIT_CODE)
+    CONSTRAINT uq_benefits_code UNIQUE (BENEFIT_CODE),
+    CONSTRAINT fk_benefits_region FOREIGN KEY (REGION_ID) REFERENCES ASOP_REGIONS (REGION_ID)
 );
+COMMENT ON TABLE ASOP_BENEFITS IS 'Справочник льготных категорий. Привязан к регионам через REGION_ID.';
 
+-- ИСПРАВЛЕНО: Добавлен CHECK для PERIOD_TYPE
 CREATE TABLE ASOP_BENEFIT_STEPS
 (
     STEP_ID             UUID          NOT NULL,
@@ -173,7 +175,8 @@ CREATE TABLE ASOP_BENEFIT_STEPS
     TRIP_THRESHOLD_FROM INT           NOT NULL DEFAULT 0,
     TRIP_THRESHOLD_TO   INT,
     DISCOUNT_SHARE      NUMERIC(4, 2) NOT NULL CHECK (DISCOUNT_SHARE BETWEEN 0 AND 1),
-    PERIOD_TYPE         VARCHAR(20)   NOT NULL DEFAULT 'MONTHLY',
+    PERIOD_TYPE         VARCHAR(20)   NOT NULL DEFAULT 'MONTHLY'
+        CHECK (PERIOD_TYPE IN ('DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY')),
     CONSTRAINT pk_benefit_steps PRIMARY KEY (STEP_ID),
     CONSTRAINT fk_steps_benefit FOREIGN KEY (BENEFIT_ID) REFERENCES ASOP_BENEFITS (BENEFIT_ID) ON DELETE CASCADE,
     CONSTRAINT uq_benefit_steps_order UNIQUE (BENEFIT_ID, STEP_ORDER),
@@ -181,7 +184,7 @@ CREATE TABLE ASOP_BENEFIT_STEPS
 );
 
 -- ========================
--- 1.1. ДИСТРИБЬЮТОРЫ КАРТ (НОВОЕ)
+-- 1.1. ДИСТРИБЬЮТОРЫ КАРТ
 -- ========================
 
 CREATE TABLE ASOP_CARDS_DISTRIBUTORS
@@ -217,7 +220,7 @@ CREATE TABLE ASOP_CARRIERS
     CONSTRAINT fk_carriers_region FOREIGN KEY (REGION_ID) REFERENCES ASOP_REGIONS (REGION_ID)
 );
 
--- Общий справочник договоров (НОВОЕ, заменяет ASOP_CARRIER_CONTRACTS)
+-- ИСПРАВЛЕНО: Добавлен CHECK для COMMISSION_PERCENT (0-100)
 CREATE TABLE ASOP_CONTRACTS
 (
     CONTRACT_ID            UUID         NOT NULL,
@@ -227,8 +230,10 @@ CREATE TABLE ASOP_CONTRACTS
     CONTRACT_NUMBER        VARCHAR(100) NOT NULL,
     START_DATE             DATE         NOT NULL,
     END_DATE               DATE,
-    STATUS                 VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE' CHECK (STATUS IN ('DRAFT', 'ACTIVE', 'SUSPENDED', 'TERMINATED')),
-    COMMISSION_PERCENT     NUMERIC(5, 2),
+    STATUS                 VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE'
+        CHECK (STATUS IN ('DRAFT', 'ACTIVE', 'SUSPENDED', 'TERMINATED')),
+    COMMISSION_PERCENT     NUMERIC(5, 2)
+        CHECK (COMMISSION_PERCENT IS NULL OR (COMMISSION_PERCENT >= 0 AND COMMISSION_PERCENT <= 100)),
     CREATED_AT             TIMESTAMP    NOT NULL,
     UPDATED_AT             TIMESTAMP    NOT NULL,
     CONSTRAINT pk_contracts PRIMARY KEY (CONTRACT_ID),
@@ -240,6 +245,7 @@ CREATE TABLE ASOP_CONTRACTS
     )
 );
 COMMENT ON TABLE ASOP_CONTRACTS IS 'Общий справочник договоров с контрагентами (перевозчиками или дистрибьюторами карт).';
+COMMENT ON COLUMN ASOP_CONTRACTS.COMMISSION_PERCENT IS 'Комиссия АСОП в процентах (0-100).';
 CREATE INDEX idx_contracts_carrier ON ASOP_CONTRACTS (CARRIER_ID) WHERE CARRIER_ID IS NOT NULL;
 CREATE INDEX idx_contracts_cards_distributor ON ASOP_CONTRACTS (CARDS_DISTRIBUTOR_ID) WHERE CARDS_DISTRIBUTOR_ID IS NOT NULL;
 CREATE INDEX idx_contracts_status ON ASOP_CONTRACTS (STATUS);
@@ -297,7 +303,7 @@ CREATE TABLE ASOP_USERS
     KEYCLOAK_ID        VARCHAR(255) UNIQUE,
     CONSTRAINT pk_users PRIMARY KEY (USER_ID)
 );
-COMMENT ON TABLE ASOP_USERS IS 'ПДн защищены: СНИЛС хэшируется и шифруется, ФИО сокращено, аутентификация через Keycloak. Пустые M:N таблицы = доступ ко всем.';
+COMMENT ON TABLE ASOP_USERS IS 'ПДн защищены: СНИЛС хэшируется и шифруется, ФИО сокращено, аутентификация через Keycloak.';
 
 CREATE TABLE ASOP_USER_ROLES
 (
@@ -344,10 +350,12 @@ CREATE TABLE ASOP_FARE_ZONES
     CONSTRAINT chk_fare_zones_valid_polygon CHECK (ZONE_POLYGON IS NULL OR ST_IsValid(ZONE_POLYGON))
 );
 
+-- ИСПРАВЛЕНО: Добавлен REGION_ID с FK
 CREATE TABLE ASOP_TRANSPORT_STOPS
 (
     STOP_ID      UUID         NOT NULL,
     FARE_ZONE_ID UUID,
+    REGION_ID    UUID         NOT NULL,  -- ИСПРАВЛЕНО: добавлен прямой FK на регион
     STOP_CODE    VARCHAR(20)  NOT NULL,
     STOP_NAME    VARCHAR(200) NOT NULL,
     STOP_ADDRESS VARCHAR(500),
@@ -358,9 +366,12 @@ CREATE TABLE ASOP_TRANSPORT_STOPS
     UPDATED_AT   TIMESTAMP    NOT NULL,
     CONSTRAINT pk_transport_stops PRIMARY KEY (STOP_ID),
     CONSTRAINT uq_stop_code UNIQUE (STOP_CODE),
-    CONSTRAINT fk_transport_stops_zone_id FOREIGN KEY (FARE_ZONE_ID) REFERENCES ASOP_FARE_ZONES (ZONE_ID)
+    CONSTRAINT fk_transport_stops_zone_id FOREIGN KEY (FARE_ZONE_ID) REFERENCES ASOP_FARE_ZONES (ZONE_ID),
+    CONSTRAINT fk_transport_stops_region FOREIGN KEY (REGION_ID) REFERENCES ASOP_REGIONS (REGION_ID)
 );
+COMMENT ON TABLE ASOP_TRANSPORT_STOPS IS 'Справочник остановок. REGION_ID обеспечивает прямой доступ к региону и поддержку RLS.';
 CREATE INDEX idx_transport_stops_geo ON ASOP_TRANSPORT_STOPS USING GIST (ZONE_POLYGON);
+CREATE INDEX idx_transport_stops_region ON ASOP_TRANSPORT_STOPS (REGION_ID);
 
 CREATE TABLE ASOP_ROUTES
 (
@@ -400,20 +411,24 @@ CREATE TABLE ASOP_PATHS
 );
 COMMENT ON TABLE ASOP_PATHS IS 'Физические пути (направления) маршрута с начальной и конечной остановками.';
 
+-- ИСПРАВЛЕНО: Добавлен REGION_ID для прямой связи с регионом (избыточность для производительности и RLS)
 CREATE TABLE ASOP_PATH_TRANSPORT_STOPS
 (
     PATH_STOP_ID  UUID      NOT NULL,
     PATH_ID       UUID      NOT NULL,
     STOP_ID       UUID      NOT NULL,
     SERIAL_NUMBER INT       NOT NULL,
+    REGION_ID     UUID      NOT NULL,
     CREATED_AT    TIMESTAMP NOT NULL,
     UPDATED_AT    TIMESTAMP NOT NULL,
     CONSTRAINT pk_path_transport_stops PRIMARY KEY (PATH_STOP_ID),
     CONSTRAINT fk_pts_path FOREIGN KEY (PATH_ID) REFERENCES ASOP_PATHS (PATH_ID),
-    CONSTRAINT fk_pts_stop FOREIGN KEY (STOP_ID) REFERENCES ASOP_TRANSPORT_STOPS (STOP_ID)
+    CONSTRAINT fk_pts_stop FOREIGN KEY (STOP_ID) REFERENCES ASOP_TRANSPORT_STOPS (STOP_ID),
+    CONSTRAINT fk_pts_region FOREIGN KEY (REGION_ID) REFERENCES ASOP_REGIONS (REGION_ID)
 );
 CREATE UNIQUE INDEX uk_path_transport_stops ON ASOP_PATH_TRANSPORT_STOPS (PATH_ID, STOP_ID);
 
+-- ИСПРАВЛЕНО: Добавлен REGION_ID
 CREATE TABLE ASOP_SCHEDULE
 (
     SCHEDULE_ID    UUID NOT NULL,
@@ -422,10 +437,12 @@ CREATE TABLE ASOP_SCHEDULE
     DAY_MASK       INT  NOT NULL DEFAULT 127,
     ARRIVAL_TIME   TIME NOT NULL,
     DWELL_TIME_SEC INT           DEFAULT 30,
+    REGION_ID      UUID NOT NULL,
     IS_ACTIVE      BOOLEAN       DEFAULT true,
     CONSTRAINT pk_schedule PRIMARY KEY (SCHEDULE_ID),
     CONSTRAINT fk_sched_path FOREIGN KEY (PATH_ID) REFERENCES ASOP_PATHS (PATH_ID) ON DELETE CASCADE,
     CONSTRAINT fk_sched_stop FOREIGN KEY (STOP_ID) REFERENCES ASOP_TRANSPORT_STOPS (STOP_ID),
+    CONSTRAINT fk_sched_region FOREIGN KEY (REGION_ID) REFERENCES ASOP_REGIONS (REGION_ID),
     CONSTRAINT chk_day_mask CHECK (DAY_MASK BETWEEN 1 AND 127)
 );
 
@@ -447,7 +464,7 @@ CREATE TABLE ASOP_PATH_SERVICES
     CONSTRAINT fk_ps_tariff FOREIGN KEY (TARIFF_TYPE_ID) REFERENCES ASOP_TARIFF_TYPES (TARIFF_TYPE_ID),
     CONSTRAINT uq_path_service UNIQUE (PATH_ID, SERVICE_ID, CARRIER_ID, VEHICLE_ID, TARIFF_TYPE_ID)
 );
-COMMENT ON TABLE ASOP_PATH_SERVICES IS 'Дополнительные услуги на пути. Цена и доступность могут зависеть от перевозчика, ТС или тарифа.';
+COMMENT ON TABLE ASOP_PATH_SERVICES IS 'Дополнительные услуги на пути.';
 
 CREATE TABLE ASOP_PATH_DISCOUNTS
 (
@@ -468,7 +485,7 @@ CREATE TABLE ASOP_PATH_DISCOUNTS
     CONSTRAINT fk_pd_vehicle FOREIGN KEY (VEHICLE_ID) REFERENCES ASOP_VEHICLES (VEHICLE_ID),
     CONSTRAINT fk_pd_tariff FOREIGN KEY (TARIFF_TYPE_ID) REFERENCES ASOP_TARIFF_TYPES (TARIFF_TYPE_ID)
 );
-COMMENT ON TABLE ASOP_PATH_DISCOUNTS IS 'Скидки на пути. Поддерживает фиксированные суммы и проценты, может быть уточнена по перевозчику, ТС или тарифу.';
+COMMENT ON TABLE ASOP_PATH_DISCOUNTS IS 'Скидки на пути. Поддерживает фиксированные суммы и проценты.';
 
 CREATE TABLE ASOP_PATH_BENEFITS
 (
@@ -500,8 +517,8 @@ CREATE TABLE ASOP_CARDS
     CONSTRAINT fk_cards_type_id FOREIGN KEY (CARD_TYPE_ID) REFERENCES ASOP_CARD_TYPES (CARD_TYPE_ID),
     CONSTRAINT fk_cards_user_id FOREIGN KEY (USER_ID) REFERENCES ASOP_USERS (USER_ID)
 );
-COMMENT ON COLUMN ASOP_CARDS.IS_PRIMARY IS 'У одного пользователя может быть только одна карта с этим флагом = true (обеспечивается частичным уникальным индексом).';
-COMMENT ON COLUMN ASOP_CARDS.LAST_SYNC_RECEIPT_TIME IS 'Значение RECEIPT_UNIX_TIME (INT) последнего платежа, успешно записанного на физическую карту. Тип INT выбран для соответствия 32-битной структуре данных чипа MIFARE.';
+COMMENT ON COLUMN ASOP_CARDS.IS_PRIMARY IS 'У одного пользователя может быть только одна карта с этим флагом = true.';
+COMMENT ON COLUMN ASOP_CARDS.LAST_SYNC_RECEIPT_TIME IS 'Значение RECEIPT_UNIX_TIME (INT) последнего платежа, успешно записанного на физическую карту.';
 CREATE UNIQUE INDEX uk_user_primary_card ON ASOP_CARDS (USER_ID) WHERE IS_PRIMARY = true AND USER_ID IS NOT NULL;
 
 CREATE TABLE ASOP_CARD_MIFARES
@@ -592,6 +609,102 @@ CREATE TABLE ASOP_TARIFF_RATES
 );
 
 -- ========================
+-- 5.1. ДОЛГИ ПО КАРТАМ
+-- ========================
+
+CREATE TABLE ASOP_CARD_DEBTS
+(
+    DEBT_ID                    UUID           NOT NULL,
+    CARD_ID                    UUID           NOT NULL,
+    TRANSACTION_ID             UUID,
+    SESSION_ID                 UUID,
+    TERMINAL_ID                UUID,
+    CARRIER_ID                 UUID           NOT NULL,
+    DEBT_AMOUNT                NUMERIC(10, 2) NOT NULL,
+    CURRENCY                   CHAR(3)        NOT NULL DEFAULT 'RUB',
+    DEBT_STATUS                VARCHAR(30)    NOT NULL DEFAULT 'OPEN' CHECK (DEBT_STATUS IN (
+                                                                    'OPEN', 'RECOVERY_IN_PROGRESS', 'RECOVERED',
+                                                                    'EXPIRED', 'WRITTEN_OFF'
+                                                                )),
+    DEBT_OPENED_AT             TIMESTAMP      NOT NULL,
+    DEBT_DUE_DATE              TIMESTAMP      NOT NULL,
+    RECOVERED_AT               TIMESTAMP,
+    RECOVERED_TRANSACTION_ID   UUID,
+    WRITE_OFF_AT               TIMESTAMP,
+    WRITE_OFF_REASON           VARCHAR(255),
+    BLACKLIST_ENTRY_ID         UUID,
+    CREATED_AT                 TIMESTAMP      NOT NULL,
+    UPDATED_AT                 TIMESTAMP      NOT NULL,
+    CONSTRAINT pk_card_debts PRIMARY KEY (DEBT_ID),
+    CONSTRAINT fk_debt_card FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARDS (CARD_ID),
+    CONSTRAINT fk_debt_transaction FOREIGN KEY (TRANSACTION_ID) REFERENCES ASOP_TRANSACTIONS (TRANSACTION_ID),
+    CONSTRAINT fk_debt_session FOREIGN KEY (SESSION_ID) REFERENCES ASOP_SESSIONS (SESSION_ID),
+    CONSTRAINT fk_debt_terminal FOREIGN KEY (TERMINAL_ID) REFERENCES ASOP_TERMINALS (TERMINAL_ID),
+    CONSTRAINT fk_debt_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID),
+    CONSTRAINT chk_debt_amount_positive CHECK (DEBT_AMOUNT > 0),
+    CONSTRAINT chk_debt_dates CHECK (DEBT_DUE_DATE > DEBT_OPENED_AT)
+);
+COMMENT ON TABLE ASOP_CARD_DEBTS IS 'Долги по картам. Жизненный цикл: OPEN → RECOVERY_IN_PROGRESS → RECOVERED/EXPIRED/WRITTEN_OFF.';
+CREATE INDEX idx_debt_card ON ASOP_CARD_DEBTS (CARD_ID);
+CREATE INDEX idx_debt_status ON ASOP_CARD_DEBTS (DEBT_STATUS);
+CREATE INDEX idx_debt_active ON ASOP_CARD_DEBTS (CARD_ID, DEBT_STATUS) WHERE DEBT_STATUS IN ('OPEN', 'RECOVERY_IN_PROGRESS');
+CREATE INDEX idx_debt_due_date ON ASOP_CARD_DEBTS (DEBT_DUE_DATE) WHERE DEBT_STATUS IN ('OPEN', 'RECOVERY_IN_PROGRESS');
+CREATE INDEX idx_debt_carrier ON ASOP_CARD_DEBTS (CARRIER_ID, DEBT_STATUS);
+
+CREATE TABLE ASOP_DEBT_RECOVERY_ATTEMPTS
+(
+    ATTEMPT_ID              UUID           NOT NULL,
+    DEBT_ID                 UUID           NOT NULL,
+    ATTEMPT_NUMBER          INT            NOT NULL,
+    RECOVERY_TRANSACTION_ID UUID,
+    AMOUNT_ATTEMPTED        NUMERIC(10, 2) NOT NULL,
+    STATUS                  VARCHAR(20)    NOT NULL DEFAULT 'PENDING' CHECK (STATUS IN (
+                                                                    'PENDING', 'SUCCESS', 'FAILED', 'TIMEOUT', 'REJECTED'
+                                                                )),
+    ERROR_CODE              VARCHAR(50),
+    ERROR_MESSAGE           VARCHAR(1000),
+    BANK_RESPONSE           JSONB,
+    ATTEMPTED_AT            TIMESTAMP      NOT NULL,
+    COMPLETED_AT            TIMESTAMP,
+    DURATION_MS             INT,
+    NEXT_RETRY_AT           TIMESTAMP,
+    CONSTRAINT pk_debt_recovery_attempts PRIMARY KEY (ATTEMPT_ID),
+    CONSTRAINT fk_dra_debt FOREIGN KEY (DEBT_ID) REFERENCES ASOP_CARD_DEBTS (DEBT_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_dra_transaction FOREIGN KEY (RECOVERY_TRANSACTION_ID) REFERENCES ASOP_TRANSACTIONS (TRANSACTION_ID),
+    CONSTRAINT uq_debt_attempt UNIQUE (DEBT_ID, ATTEMPT_NUMBER),
+    CONSTRAINT chk_attempt_amount_positive CHECK (AMOUNT_ATTEMPTED > 0)
+);
+COMMENT ON TABLE ASOP_DEBT_RECOVERY_ATTEMPTS IS 'История попыток списания долга с карты.';
+CREATE INDEX idx_dra_debt ON ASOP_DEBT_RECOVERY_ATTEMPTS (DEBT_ID);
+CREATE INDEX idx_dra_status ON ASOP_DEBT_RECOVERY_ATTEMPTS (STATUS);
+CREATE INDEX idx_dra_retry_queue ON ASOP_DEBT_RECOVERY_ATTEMPTS (NEXT_RETRY_AT) WHERE STATUS = 'PENDING' AND NEXT_RETRY_AT IS NOT NULL;
+CREATE INDEX idx_dra_attempted_at ON ASOP_DEBT_RECOVERY_ATTEMPTS (ATTEMPTED_AT DESC);
+
+-- Представление для отчётности по активным долгам
+CREATE OR REPLACE VIEW V_ACTIVE_CARD_DEBTS AS
+SELECT
+    d.DEBT_ID,
+    d.CARD_ID,
+    c.CARD_TYPE_ID,
+    ct.CARD_TYPE_NAME,
+    d.CARRIER_ID,
+    cr.CARRIER_NAME,
+    d.DEBT_AMOUNT,
+    d.DEBT_STATUS,
+    d.DEBT_OPENED_AT,
+    d.DEBT_DUE_DATE,
+    EXTRACT(DAY FROM (NOW() - d.DEBT_OPENED_AT)) AS DAYS_OPEN,
+    EXTRACT(DAY FROM (d.DEBT_DUE_DATE - NOW())) AS DAYS_REMAINING,
+    (SELECT COUNT(*) FROM ASOP_DEBT_RECOVERY_ATTEMPTS a WHERE a.DEBT_ID = d.DEBT_ID) AS TOTAL_ATTEMPTS,
+    (SELECT COUNT(*) FROM ASOP_DEBT_RECOVERY_ATTEMPTS a WHERE a.DEBT_ID = d.DEBT_ID AND a.STATUS = 'SUCCESS') AS SUCCESSFUL_ATTEMPTS
+FROM ASOP_CARD_DEBTS d
+JOIN ASOP_CARDS c ON c.CARD_ID = d.CARD_ID
+JOIN ASOP_CARD_TYPES ct ON ct.CARD_TYPE_ID = c.CARD_TYPE_ID
+JOIN ASOP_CARRIERS cr ON cr.CARRIER_ID = d.CARRIER_ID
+WHERE d.DEBT_STATUS IN ('OPEN', 'RECOVERY_IN_PROGRESS');
+COMMENT ON VIEW V_ACTIVE_CARD_DEBTS IS 'Представление для отчётности по активным долгам.';
+
+-- ========================
 -- 6. ОБОРУДОВАНИЕ: ТЕРМИНАЛЫ, TID, ПРОФИЛИ, ПО
 -- ========================
 
@@ -616,7 +729,6 @@ CREATE TABLE ASOP_TERMINAL_SOFTWARE
 );
 COMMENT ON TABLE ASOP_TERMINAL_SOFTWARE IS 'Справочник версий программного обеспечения терминалов.';
 
--- НОВОЕ: Платёжные терминалы дистрибьюторов карт
 CREATE TABLE ASOP_DISTRIBUTOR_TERMINALS
 (
     DISTRIBUTOR_TERMINAL_ID UUID         NOT NULL,
@@ -626,7 +738,8 @@ CREATE TABLE ASOP_DISTRIBUTOR_TERMINALS
     TERMINAL_SERIAL         VARCHAR(64)  NOT NULL,
     TERMINAL_MODEL          VARCHAR(100),
     PAYMENT_PROVIDER_ID     VARCHAR(100) NOT NULL,
-    STATUS                  VARCHAR(50)  NOT NULL DEFAULT 'WAREHOUSE' CHECK (STATUS IN ('WAREHOUSE', 'ISSUED', 'ACTIVE', 'SUSPENDED', 'DECOMMISSIONED')),
+    STATUS                  VARCHAR(50)  NOT NULL DEFAULT 'WAREHOUSE'
+        CHECK (STATUS IN ('WAREHOUSE', 'ISSUED', 'ACTIVE', 'SUSPENDED', 'DECOMMISSIONED')),
     MOL_USER_ID             UUID,
     PROFILE_ID              UUID,
     SOFTWARE_VERSION_ID     UUID,
@@ -640,8 +753,7 @@ CREATE TABLE ASOP_DISTRIBUTOR_TERMINALS
     CONSTRAINT fk_distributor_terminals_software FOREIGN KEY (SOFTWARE_VERSION_ID) REFERENCES ASOP_TERMINAL_SOFTWARE (SOFTWARE_VERSION_ID),
     CONSTRAINT uq_distributor_terminals_provider_id UNIQUE (PAYMENT_PROVIDER_ID)
 );
-COMMENT ON TABLE ASOP_DISTRIBUTOR_TERMINALS IS 'Платёжные терминалы дистрибьюторов карт для пополнения MIFARE-карт. Имеют те же связи, что и транспортные терминалы (профиль, ПО, МОЛ).';
-COMMENT ON COLUMN ASOP_DISTRIBUTOR_TERMINALS.PAYMENT_PROVIDER_ID IS 'Уникальный идентификатор терминала в платёжной системе дистрибьютора.';
+COMMENT ON TABLE ASOP_DISTRIBUTOR_TERMINALS IS 'Платёжные терминалы дистрибьюторов карт для пополнения MIFARE-карт.';
 CREATE INDEX idx_distributor_terminals_distributor ON ASOP_DISTRIBUTOR_TERMINALS (CARDS_DISTRIBUTOR_ID);
 CREATE INDEX idx_distributor_terminals_contract ON ASOP_DISTRIBUTOR_TERMINALS (CONTRACT_ID) WHERE CONTRACT_ID IS NOT NULL;
 CREATE INDEX idx_distributor_terminals_status ON ASOP_DISTRIBUTOR_TERMINALS (STATUS);
@@ -663,8 +775,9 @@ CREATE TABLE ASOP_TIDS
     CONSTRAINT uq_tids_value UNIQUE (TID_VALUE),
     CONSTRAINT chk_tid_status CHECK (STATUS IN ('UNUSED', 'ASSIGNED', 'REVOKED'))
 );
-COMMENT ON TABLE ASOP_TIDS IS 'Пул TID. 1:N к перевозчику. Привязка к терминалу происходит в рейсе (сессии) или напрямую.';
+COMMENT ON TABLE ASOP_TIDS IS 'Пул TID. 1:N к перевозчику.';
 
+-- ИСПРАВЛЕНО: Добавлен CHECK для STATUS
 CREATE TABLE ASOP_TERMINALS
 (
     TERMINAL_ID           UUID        NOT NULL,
@@ -672,7 +785,8 @@ CREATE TABLE ASOP_TERMINALS
     TERMINAL_NUMBER       VARCHAR(16) NOT NULL,
     TERMINAL_SERIAL       VARCHAR(64) NOT NULL,
     TERMINAL_MODEL        VARCHAR(100),
-    STATUS                VARCHAR(50) DEFAULT 'WAREHOUSE',
+    STATUS                VARCHAR(50) DEFAULT 'WAREHOUSE'
+        CHECK (STATUS IN ('WAREHOUSE', 'ISSUED_TO_ENGINEER', 'IN_OPERATION', 'REPAIR', 'DECOMMISSIONED')),
     MOL_USER_ID           UUID,
     PARENT_TERMINAL_ID    UUID,
     TID_ID                UUID,
@@ -840,7 +954,7 @@ CREATE TABLE ASOP_AUDIT_INSPECTIONS
     CONSTRAINT fk_inspection_session FOREIGN KEY (CONTROLLER_SESSION_ID) REFERENCES ASOP_SESSIONS (SESSION_ID),
     CONSTRAINT fk_inspection_path FOREIGN KEY (PATH_ID) REFERENCES ASOP_PATHS (PATH_ID)
 );
-COMMENT ON TABLE ASOP_AUDIT_INSPECTIONS IS 'Акты проверок. Данные о ТС/терминале/пути вытягиваются из CONTROLLER_SESSION_ID.';
+COMMENT ON TABLE ASOP_AUDIT_INSPECTIONS IS 'Акты проверок.';
 
 CREATE TABLE ASOP_AUDIT_INSPECTION_TASKS
 (
@@ -877,12 +991,14 @@ COMMENT ON TABLE ASOP_TRANSACTIONS IS 'Финансовые проводки (с
 CREATE INDEX idx_transactions_session ON ASOP_TRANSACTIONS (SESSION_ID);
 CREATE INDEX idx_transactions_completed_at ON ASOP_TRANSACTIONS (COMPLETED_AT) WHERE COMPLETED_AT IS NULL;
 
+-- ИСПРАВЛЕНО: Добавлен CHECK для CARD_ROLE
 CREATE TABLE ASOP_TRANSACTION_CARDS
 (
     TRANSACTION_CARD_ID UUID        NOT NULL,
     TRANSACTION_ID      UUID        NOT NULL,
     CARD_ID             UUID        NOT NULL,
-    CARD_ROLE           VARCHAR(20) NOT NULL,
+    CARD_ROLE           VARCHAR(20) NOT NULL
+        CHECK (CARD_ROLE IN ('PAYER', 'REFUND', 'BENEFIT', 'GUEST')),
     TARIFF_APPLIED_ID   UUID,
     BALANCE_BEFORE      NUMERIC(10, 2),
     BALANCE_AFTER       NUMERIC(10, 2),
@@ -891,24 +1007,25 @@ CREATE TABLE ASOP_TRANSACTION_CARDS
     CONSTRAINT fk_tc_card FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARDS (CARD_ID),
     CONSTRAINT fk_tc_tariff FOREIGN KEY (TARIFF_APPLIED_ID) REFERENCES ASOP_CARD_TARIFFS (CARD_TARIFF_ID)
 );
+COMMENT ON TABLE ASOP_TRANSACTION_CARDS IS 'Детализация транзакций по картам. CARD_ROLE: PAYER (оплата), REFUND (возврат), BENEFIT (льгота), GUEST (анонимная карта).';
 CREATE UNIQUE INDEX uk_transaction_cards_main ON ASOP_TRANSACTION_CARDS (TRANSACTION_ID, CARD_ID);
 
 -- Поступления (пополнения) на карту с поддержкой Offline Top-Up
 CREATE TABLE ASOP_PAYMENTS
 (
-    PAYMENT_ID               UUID        NOT NULL,
-    CARD_ID                  UUID        NOT NULL,
-    RECEIPT_UNIX_TIME        INT         NOT NULL,
-    SESSION_ID               UUID,
-    EVENT_ID                 UUID,
-    USER_ID                  UUID,
-    DISTRIBUTOR_TERMINAL_ID  UUID,
-    AMOUNT                   NUMERIC(10, 2)       DEFAULT 0,
-    TRIPS_ADDED              INT                  DEFAULT 0,
-    PAYMENT_METHOD           VARCHAR(50),
-    STATUS                   VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (STATUS IN ('PENDING', 'APPLIED', 'FAILED', 'REFUNDED')),
-    EXTERNAL_REF             VARCHAR(128),
-    CREATED_AT               TIMESTAMP   NOT NULL,
+    PAYMENT_ID              UUID        NOT NULL,
+    CARD_ID                 UUID        NOT NULL,
+    RECEIPT_UNIX_TIME       INT         NOT NULL,
+    SESSION_ID              UUID,
+    EVENT_ID                UUID,
+    USER_ID                 UUID,
+    DISTRIBUTOR_TERMINAL_ID UUID,
+    AMOUNT                  NUMERIC(10, 2)       DEFAULT 0,
+    TRIPS_ADDED             INT                  DEFAULT 0,
+    PAYMENT_METHOD          VARCHAR(50),
+    STATUS                  VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (STATUS IN ('PENDING', 'APPLIED', 'FAILED', 'REFUNDED')),
+    EXTERNAL_REF            VARCHAR(128),
+    CREATED_AT              TIMESTAMP   NOT NULL,
     CONSTRAINT pk_payments PRIMARY KEY (PAYMENT_ID),
     CONSTRAINT fk_payments_card FOREIGN KEY (CARD_ID) REFERENCES ASOP_CARDS (CARD_ID),
     CONSTRAINT fk_payments_session FOREIGN KEY (SESSION_ID) REFERENCES ASOP_SESSIONS (SESSION_ID),
@@ -916,8 +1033,7 @@ CREATE TABLE ASOP_PAYMENTS
     CONSTRAINT fk_payments_user FOREIGN KEY (USER_ID) REFERENCES ASOP_USERS (USER_ID),
     CONSTRAINT fk_payments_distributor_terminal FOREIGN KEY (DISTRIBUTOR_TERMINAL_ID) REFERENCES ASOP_DISTRIBUTOR_TERMINALS (DISTRIBUTOR_TERMINAL_ID)
 );
-COMMENT ON TABLE ASOP_PAYMENTS IS 'Поступления (пополнения) на карту: деньги или поездки. Связана с картой, опционально с сессией, событием, пользователем и платёжным терминалом дистрибьютора.';
-COMMENT ON COLUMN ASOP_PAYMENTS.DISTRIBUTOR_TERMINAL_ID IS 'Ссылка на платёжный терминал дистрибьютора (если пополнение произошло через терминал, а не онлайн или в транспорте).';
+COMMENT ON TABLE ASOP_PAYMENTS IS 'Поступления (пополнения) на карту: деньги или поездки. Поддержка Offline Top-Up.';
 CREATE INDEX idx_payments_card_sync ON ASOP_PAYMENTS (CARD_ID, RECEIPT_UNIX_TIME);
 CREATE INDEX idx_payments_status ON ASOP_PAYMENTS (STATUS);
 CREATE INDEX idx_payments_distributor_terminal ON ASOP_PAYMENTS (DISTRIBUTOR_TERMINAL_ID) WHERE DISTRIBUTOR_TERMINAL_ID IS NOT NULL;
@@ -960,12 +1076,161 @@ CREATE TABLE ASOP_EVENTS
 );
 
 -- ========================
--- 8. ОТЛОЖЕННЫЕ ВНЕШНИЕ КЛЮЧИ И ИНДЕКСЫ
+-- 8. МОДУЛЬ ФИСКАЛИЗАЦИИ
+-- ========================
+
+CREATE TABLE ASOP_FISCALIZERS
+(
+    FISCALIZER_ID   UUID         NOT NULL,
+    FISCALIZER_CODE VARCHAR(50)  NOT NULL,
+    FISCALIZER_NAME VARCHAR(255) NOT NULL,
+    BASE_API_URL    VARCHAR(500),
+    DESCRIPTION     TEXT,
+    IS_ACTIVE       BOOLEAN      DEFAULT true,
+    CREATED_AT      TIMESTAMP    NOT NULL,
+    UPDATED_AT      TIMESTAMP    NOT NULL,
+    CONSTRAINT pk_fiscalizers PRIMARY KEY (FISCALIZER_ID),
+    CONSTRAINT uq_fiscalizers_code UNIQUE (FISCALIZER_CODE)
+);
+COMMENT ON TABLE ASOP_FISCALIZERS IS 'Справочник фискализаторов (ОФД/сервисов фискализации).';
+CREATE INDEX idx_fiscalizers_active ON ASOP_FISCALIZERS (IS_ACTIVE) WHERE IS_ACTIVE = true;
+
+CREATE TABLE ASOP_CARRIER_FISCALIZERS
+(
+    CARRIER_FISCALIZER_ID UUID         NOT NULL,
+    CARRIER_ID            UUID         NOT NULL,
+    FISCALIZER_ID         UUID         NOT NULL,
+    CUSTOM_API_URL        VARCHAR(500),
+    IS_PRIMARY            BOOLEAN      DEFAULT false,
+    IS_ACTIVE             BOOLEAN      DEFAULT true,
+    SETTINGS              JSONB,
+    CREATED_AT            TIMESTAMP    NOT NULL,
+    UPDATED_AT            TIMESTAMP    NOT NULL,
+    CONSTRAINT pk_carrier_fiscalizers PRIMARY KEY (CARRIER_FISCALIZER_ID),
+    CONSTRAINT fk_cf_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID),
+    CONSTRAINT fk_cf_fiscalizer FOREIGN KEY (FISCALIZER_ID) REFERENCES ASOP_FISCALIZERS (FISCALIZER_ID),
+    CONSTRAINT uq_carrier_fiscalizer UNIQUE (CARRIER_ID, FISCALIZER_ID)
+);
+COMMENT ON TABLE ASOP_CARRIER_FISCALIZERS IS 'Настройки фискализации для конкретного перевозчика.';
+CREATE INDEX idx_cf_carrier ON ASOP_CARRIER_FISCALIZERS (CARRIER_ID);
+CREATE INDEX idx_cf_primary ON ASOP_CARRIER_FISCALIZERS (CARRIER_ID) WHERE IS_PRIMARY = true AND IS_ACTIVE = true;
+
+CREATE TABLE ASOP_FISCALIZER_TOKENS
+(
+    TOKEN_ID              UUID         NOT NULL,
+    CARRIER_FISCALIZER_ID UUID         NOT NULL,
+    TOKEN_ENCRYPTED       BYTEA        NOT NULL,
+    TOKEN_HINT            VARCHAR(50),
+    VALID_FROM            TIMESTAMP    NOT NULL,
+    VALID_UNTIL           TIMESTAMP    NOT NULL,
+    STATUS                VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE' CHECK (STATUS IN ('ACTIVE', 'EXPIRED', 'REVOKED')),
+    CREATED_AT            TIMESTAMP    NOT NULL,
+    UPDATED_AT            TIMESTAMP    NOT NULL,
+    CONSTRAINT pk_fiscalizer_tokens PRIMARY KEY (TOKEN_ID),
+    CONSTRAINT fk_ft_carrier_fiscalizer FOREIGN KEY (CARRIER_FISCALIZER_ID) REFERENCES ASOP_CARRIER_FISCALIZERS (CARRIER_FISCALIZER_ID),
+    CONSTRAINT chk_ft_dates CHECK (VALID_UNTIL > VALID_FROM)
+);
+COMMENT ON TABLE ASOP_FISCALIZER_TOKENS IS 'История токенов доступа к API фискализатора. Токены хранятся в зашифрованном виде.';
+CREATE INDEX idx_ft_carrier_fiscalizer ON ASOP_FISCALIZER_TOKENS (CARRIER_FISCALIZER_ID);
+CREATE INDEX idx_ft_active ON ASOP_FISCALIZER_TOKENS (CARRIER_FISCALIZER_ID, VALID_FROM, VALID_UNTIL) WHERE STATUS = 'ACTIVE';
+
+CREATE TABLE ASOP_FISCAL_RECEIPTS
+(
+    RECEIPT_ID            UUID           NOT NULL,
+    TRANSACTION_ID        UUID           NOT NULL,
+    CARRIER_ID            UUID           NOT NULL,
+    CARRIER_FISCALIZER_ID UUID           NOT NULL,
+    RECEIPT_NUMBER        VARCHAR(100),
+    FISCAL_SIGN           VARCHAR(100),
+    STATUS                VARCHAR(20)    NOT NULL DEFAULT 'PENDING' CHECK (STATUS IN ('PENDING', 'SENT', 'CONFIRMED', 'RETRY', 'FAILED', 'CANCELLED')),
+    ATTEMPT_COUNT         INT            NOT NULL DEFAULT 0,
+    MAX_ATTEMPTS          INT            NOT NULL DEFAULT 10,
+    LAST_ATTEMPT_AT       TIMESTAMP,
+    NEXT_RETRY_AT         TIMESTAMP,
+    LAST_ERROR_MESSAGE    VARCHAR(1000),
+    RECEIPT_DATA          JSONB,
+    RESPONSE_DATA         JSONB,
+    CONFIRMED_AT          TIMESTAMP,
+    CREATED_AT            TIMESTAMP      NOT NULL,
+    UPDATED_AT            TIMESTAMP      NOT NULL,
+    CONSTRAINT pk_fiscal_receipts PRIMARY KEY (RECEIPT_ID),
+    CONSTRAINT fk_fr_transaction FOREIGN KEY (TRANSACTION_ID) REFERENCES ASOP_TRANSACTIONS (TRANSACTION_ID),
+    CONSTRAINT fk_fr_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID),
+    CONSTRAINT fk_fr_carrier_fiscalizer FOREIGN KEY (CARRIER_FISCALIZER_ID) REFERENCES ASOP_CARRIER_FISCALIZERS (CARRIER_FISCALIZER_ID)
+);
+COMMENT ON TABLE ASOP_FISCAL_RECEIPTS IS 'Фискальные чеки. Retry-механизм при ошибках.';
+CREATE INDEX idx_fr_transaction ON ASOP_FISCAL_RECEIPTS (TRANSACTION_ID);
+CREATE INDEX idx_fr_carrier ON ASOP_FISCAL_RECEIPTS (CARRIER_ID);
+CREATE INDEX idx_fr_status ON ASOP_FISCAL_RECEIPTS (STATUS);
+CREATE INDEX idx_fr_retry_queue ON ASOP_FISCAL_RECEIPTS (NEXT_RETRY_AT) WHERE STATUS = 'RETRY';
+CREATE INDEX idx_fr_monthly_report ON ASOP_FISCAL_RECEIPTS (CARRIER_ID, CREATED_AT);
+CREATE INDEX idx_fr_retry_pending ON ASOP_FISCAL_RECEIPTS (STATUS, NEXT_RETRY_AT) WHERE STATUS = 'RETRY' AND NEXT_RETRY_AT IS NOT NULL;
+CREATE INDEX idx_fr_carrier_status ON ASOP_FISCAL_RECEIPTS (CARRIER_ID, STATUS, CREATED_AT);
+
+CREATE TABLE ASOP_FISCAL_RECEIPT_ATTEMPTS
+(
+    ATTEMPT_ID       UUID           NOT NULL,
+    RECEIPT_ID       UUID           NOT NULL,
+    ATTEMPT_NUMBER   INT            NOT NULL,
+    TOKEN_ID         UUID,
+    REQUEST_PAYLOAD  JSONB,
+    RESPONSE_PAYLOAD JSONB,
+    HTTP_STATUS      INT,
+    SUCCESS          BOOLEAN        NOT NULL DEFAULT false,
+    ERROR_MESSAGE    VARCHAR(1000),
+    ERROR_CODE       VARCHAR(50),
+    ATTEMPTED_AT     TIMESTAMP      NOT NULL,
+    DURATION_MS      INT,
+    CONSTRAINT pk_fiscal_receipt_attempts PRIMARY KEY (ATTEMPT_ID),
+    CONSTRAINT fk_fra_receipt FOREIGN KEY (RECEIPT_ID) REFERENCES ASOP_FISCAL_RECEIPTS (RECEIPT_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_fra_token FOREIGN KEY (TOKEN_ID) REFERENCES ASOP_FISCALIZER_TOKENS (TOKEN_ID),
+    CONSTRAINT uq_receipt_attempt UNIQUE (RECEIPT_ID, ATTEMPT_NUMBER)
+);
+COMMENT ON TABLE ASOP_FISCAL_RECEIPT_ATTEMPTS IS 'История попыток отправки каждого чека.';
+CREATE INDEX idx_fra_receipt ON ASOP_FISCAL_RECEIPT_ATTEMPTS (RECEIPT_ID);
+CREATE INDEX idx_fra_attempted_at ON ASOP_FISCAL_RECEIPT_ATTEMPTS (ATTEMPTED_AT DESC);
+
+CREATE TABLE ASOP_FISCAL_MONTHLY_REPORTS
+(
+    REPORT_ID           UUID           NOT NULL,
+    CARRIER_ID          UUID           NOT NULL,
+    FISCALIZER_ID       UUID           NOT NULL,
+    REPORT_MONTH        DATE           NOT NULL,
+    TOTAL_RECEIPTS      INT            NOT NULL DEFAULT 0,
+    CONFIRMED_RECEIPTS  INT            NOT NULL DEFAULT 0,
+    FAILED_RECEIPTS     INT            NOT NULL DEFAULT 0,
+    PENDING_RECEIPTS    INT            NOT NULL DEFAULT 0,
+    CANCELLED_RECEIPTS  INT            NOT NULL DEFAULT 0,
+    TOTAL_AMOUNT        NUMERIC(15, 2) NOT NULL DEFAULT 0,
+    AVG_CONFIRMATION_MS INT,
+    SUCCESS_RATE        NUMERIC(5, 2),
+    STATUS              VARCHAR(20)    NOT NULL DEFAULT 'DRAFT' CHECK (STATUS IN ('DRAFT', 'FINALIZED')),
+    GENERATED_AT        TIMESTAMP      NOT NULL,
+    FINALIZED_AT        TIMESTAMP,
+    FILE_PATH           VARCHAR(500),
+    CONSTRAINT pk_fiscal_monthly_reports PRIMARY KEY (REPORT_ID),
+    CONSTRAINT fk_fmr_carrier FOREIGN KEY (CARRIER_ID) REFERENCES ASOP_CARRIERS (CARRIER_ID),
+    CONSTRAINT fk_fmr_fiscalizer FOREIGN KEY (FISCALIZER_ID) REFERENCES ASOP_FISCALIZERS (FISCALIZER_ID),
+    CONSTRAINT uq_carrier_fiscalizer_month UNIQUE (CARRIER_ID, FISCALIZER_ID, REPORT_MONTH)
+);
+COMMENT ON TABLE ASOP_FISCAL_MONTHLY_REPORTS IS 'Ежемесячные агрегированные отчёты по фискализации.';
+CREATE INDEX idx_fmr_carrier ON ASOP_FISCAL_MONTHLY_REPORTS (CARRIER_ID);
+CREATE INDEX idx_fmr_month ON ASOP_FISCAL_MONTHLY_REPORTS (REPORT_MONTH DESC);
+
+-- ========================
+-- 9. ОТЛОЖЕННЫЕ ВНЕШНИЕ КЛЮЧИ И ИНДЕКСЫ
 -- ========================
 
 -- FK для PURCHASE_TRANSACTION_ID (ASOP_TRANSACTIONS создаётся позже ASOP_CARD_TARIFFS)
 ALTER TABLE ASOP_CARD_TARIFFS
     ADD CONSTRAINT fk_tariff_purchase FOREIGN KEY (PURCHASE_TRANSACTION_ID) REFERENCES ASOP_TRANSACTIONS (TRANSACTION_ID);
+
+-- Связь ASOP_BLACKLISTS с ASOP_CARD_DEBTS
+ALTER TABLE ASOP_BLACKLISTS
+    ADD COLUMN RELATED_DEBT_ID UUID,
+    ADD COLUMN AUTO_UNBLOCK_ON_RECOVERY BOOLEAN DEFAULT false,
+    ADD CONSTRAINT fk_blacklists_debt FOREIGN KEY (RELATED_DEBT_ID) REFERENCES ASOP_CARD_DEBTS (DEBT_ID);
+CREATE INDEX idx_blacklists_debt ON ASOP_BLACKLISTS (RELATED_DEBT_ID) WHERE RELATED_DEBT_ID IS NOT NULL;
 
 CREATE INDEX idx_users_keycloak ON ASOP_USERS (KEYCLOAK_ID) WHERE KEYCLOAK_ID IS NOT NULL;
 CREATE INDEX idx_blacklists_type ON ASOP_BLACKLISTS (BLOCK_TYPE);
@@ -976,3 +1241,167 @@ CREATE INDEX idx_sched_time ON ASOP_SCHEDULE (ARRIVAL_TIME);
 COMMENT ON TABLE ASOP_ROUTES IS 'Справочник маршрутов (номер, название, категория).';
 COMMENT ON TABLE ASOP_PATHS IS 'Физические пути маршрута (прямой/обратный) с начальной и конечной остановками.';
 COMMENT ON TABLE ASOP_REGIONS IS 'Справочник регионов на основе данных ФИАС/ГАР.';
+
+-- ========================
+-- 10. ФУНКЦИИ
+-- ========================
+
+-- Функция: выбор действующего токена фискализатора на момент транзакции
+CREATE OR REPLACE FUNCTION fn_get_active_fiscal_token(
+    p_carrier_fiscalizer_id UUID,
+    p_transaction_time TIMESTAMP
+)
+RETURNS UUID AS $$
+DECLARE
+    v_token_id UUID;
+BEGIN
+    SELECT TOKEN_ID INTO v_token_id
+    FROM ASOP_FISCALIZER_TOKENS
+    WHERE CARRIER_FISCALIZER_ID = p_carrier_fiscalizer_id
+      AND STATUS = 'ACTIVE'
+      AND VALID_FROM <= p_transaction_time
+      AND VALID_UNTIL >= p_transaction_time
+    ORDER BY VALID_FROM DESC
+    LIMIT 1;
+    RETURN v_token_id;
+END;
+$$ LANGUAGE plpgsql STABLE;
+COMMENT ON FUNCTION fn_get_active_fiscal_token IS 'Возвращает ID токена, действующего на момент транзакции.';
+
+-- Функция: вычисление next_retry_at для фискализации
+CREATE OR REPLACE FUNCTION fn_calculate_next_retry(
+    p_attempt_count INT
+)
+RETURNS TIMESTAMP AS $$
+DECLARE
+    v_delay_minutes INT;
+BEGIN
+    CASE p_attempt_count
+        WHEN 1 THEN v_delay_minutes := 1;
+        WHEN 2 THEN v_delay_minutes := 5;
+        WHEN 3 THEN v_delay_minutes := 15;
+        WHEN 4 THEN v_delay_minutes := 60;
+        WHEN 5 THEN v_delay_minutes := 360;
+        WHEN 6 THEN v_delay_minutes := 720;
+        ELSE v_delay_minutes := 1440;
+    END CASE;
+    RETURN NOW() + (v_delay_minutes || ' minutes')::INTERVAL;
+END;
+$$ LANGUAGE plpgsql;
+COMMENT ON FUNCTION fn_calculate_next_retry IS 'Вычисляет время следующей попытки отправки чека по экспоненциальной схеме.';
+
+-- Функция: создание долга при проезде в долг
+CREATE OR REPLACE FUNCTION fn_create_card_debt(
+    p_card_id UUID,
+    p_transaction_id UUID,
+    p_session_id UUID,
+    p_terminal_id UUID,
+    p_carrier_id UUID,
+    p_debt_amount NUMERIC,
+    p_recovery_days INT DEFAULT 14
+)
+RETURNS UUID AS $$
+DECLARE
+    v_debt_id UUID;
+BEGIN
+    INSERT INTO ASOP_CARD_DEBTS (
+        DEBT_ID, CARD_ID, TRANSACTION_ID, SESSION_ID, TERMINAL_ID, CARRIER_ID,
+        DEBT_AMOUNT, DEBT_STATUS, DEBT_OPENED_AT, DEBT_DUE_DATE, CREATED_AT, UPDATED_AT
+    ) VALUES (
+        gen_random_uuid(), p_card_id, p_transaction_id, p_session_id, p_terminal_id, p_carrier_id,
+        p_debt_amount, 'OPEN', NOW(), NOW() + (p_recovery_days || ' days')::INTERVAL, NOW(), NOW()
+    ) RETURNING DEBT_ID INTO v_debt_id;
+
+    INSERT INTO ASOP_BLACKLISTS (CARD_ID, BLOCK_TYPE, BLOCKED_AT, RELATED_DEBT_ID, AUTO_UNBLOCK_ON_RECOVERY)
+    VALUES (p_card_id, 'NEGATIVE_BALANCE', NOW(), v_debt_id, true)
+    ON CONFLICT (CARD_ID) DO UPDATE
+        SET RELATED_DEBT_ID = v_debt_id,
+            AUTO_UNBLOCK_ON_RECOVERY = true,
+            BLOCKED_AT = NOW();
+
+    RETURN v_debt_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Функция: погашение долга
+CREATE OR REPLACE FUNCTION fn_recover_card_debt(
+    p_debt_id UUID,
+    p_recovery_transaction_id UUID
+)
+RETURNS VOID AS $$
+DECLARE
+    v_card_id UUID;
+BEGIN
+    UPDATE ASOP_CARD_DEBTS
+    SET DEBT_STATUS = 'RECOVERED',
+        RECOVERED_AT = NOW(),
+        RECOVERED_TRANSACTION_ID = p_recovery_transaction_id,
+        UPDATED_AT = NOW()
+    WHERE DEBT_ID = p_debt_id
+      AND DEBT_STATUS IN ('OPEN', 'RECOVERY_IN_PROGRESS')
+    RETURNING CARD_ID INTO v_card_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Debt % not found or already processed', p_debt_id;
+    END IF;
+
+    DELETE FROM ASOP_BLACKLISTS
+    WHERE CARD_ID = v_card_id
+      AND RELATED_DEBT_ID = p_debt_id
+      AND AUTO_UNBLOCK_ON_RECOVERY = true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Функция: списание просроченных долгов
+CREATE OR REPLACE FUNCTION fn_expire_overdue_debts(
+    p_write_off_reason VARCHAR DEFAULT 'Истёк срок списания (14 дней)'
+)
+RETURNS INT AS $$
+DECLARE
+    v_expired_count INT;
+BEGIN
+    WITH expired_debts AS (
+        UPDATE ASOP_CARD_DEBTS
+        SET DEBT_STATUS = 'WRITTEN_OFF',
+            WRITE_OFF_AT = NOW(),
+            WRITE_OFF_REASON = p_write_off_reason,
+            UPDATED_AT = NOW()
+        WHERE DEBT_STATUS IN ('OPEN', 'RECOVERY_IN_PROGRESS')
+          AND DEBT_DUE_DATE < NOW()
+        RETURNING DEBT_ID
+    )
+    SELECT COUNT(*) INTO v_expired_count FROM expired_debts;
+
+    DELETE FROM ASOP_BLACKLISTS
+    WHERE AUTO_UNBLOCK_ON_RECOVERY = true
+      AND RELATED_DEBT_ID IN (
+          SELECT DEBT_ID FROM ASOP_CARD_DEBTS
+          WHERE DEBT_STATUS = 'WRITTEN_OFF' AND WRITE_OFF_AT >= NOW() - INTERVAL '1 minute'
+      );
+
+    RETURN v_expired_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Функция: расчёт next_retry_at для попыток списания долга
+CREATE OR REPLACE FUNCTION fn_calculate_debt_recovery_retry(
+    p_attempt_count INT
+)
+RETURNS TIMESTAMP AS $$
+DECLARE
+    v_delay_minutes INT;
+BEGIN
+    CASE p_attempt_count
+        WHEN 1 THEN v_delay_minutes := 60;
+        WHEN 2 THEN v_delay_minutes := 360;
+        WHEN 3 THEN v_delay_minutes := 1440;
+        WHEN 4 THEN v_delay_minutes := 4320;
+        ELSE v_delay_minutes := 1440;
+    END CASE;
+    RETURN NOW() + (v_delay_minutes || ' minutes')::INTERVAL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================
+-- ГОТОВО!
+-- ============================================================
